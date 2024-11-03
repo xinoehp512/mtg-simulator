@@ -1,0 +1,43 @@
+from card import Creature_Card, Instant_Card, Land_Card, Sorcery_Card
+from enums import BasicLandType, CardType, ManaCost
+from objects.abilities import *
+
+plains = Land_Card("Plains", [CardType.LAND, BasicLandType.PLAINS], [plains_ability], "")
+island = Land_Card("Island", [CardType.LAND, BasicLandType.ISLAND], [island_ability], "")
+swamp = Land_Card("Swamp ", [CardType.LAND, BasicLandType.SWAMP], [swamp_ability], "")
+mountain = Land_Card("Mountn", [CardType.LAND, BasicLandType.MOUNTAIN], [mountain_ability], "")
+forest = Land_Card("Forest", [CardType.LAND, BasicLandType.FOREST], [forest_ability], "")
+
+# savannah_lions = Creature_Card("Savannah Lions (W)", [ManaCost.WHITE], [CardType.CREATURE], [], "", 2, 1)
+# triton_shorethief = Creature_Card("Triton Shorethief (U)", [ManaCost.BLUE], [CardType.CREATURE], [], "", 1, 2)
+# dwarven_trader = Creature_Card("Dwarven Trader (R)", [ManaCost.RED], [CardType.CREATURE], [], "", 1, 1)
+# woodland_druid = Creature_Card("Woodland Druid (G)", [ManaCost.GREEN], [CardType.CREATURE], [], "", 1, 2)
+
+human = Creature_Card("Human (W)", [ManaCost.WHITE], [], [CardType.CREATURE], [], "", 1, 1)
+merfolk = Creature_Card("Merfolk (U)", [ManaCost.BLUE], [], [CardType.CREATURE], [], "", 1, 1)
+goblin = Creature_Card("Goblin (R)", [ManaCost.RED], [], [CardType.CREATURE], [], "", 1, 1)
+druid = Creature_Card("Druid (G)", [ManaCost.GREEN], [], [CardType.CREATURE], [], "", 1, 1)
+
+ox = Creature_Card("Ox (1W)", [ManaCost.GENERIC, ManaCost.WHITE], [], [CardType.CREATURE], [], "", 2, 2)
+crab = Creature_Card("Crab (1U)", [ManaCost.GENERIC, ManaCost.BLUE], [], [CardType.CREATURE], [], "", 1, 3)
+dwarf = Creature_Card("Dwarf (1R)", [ManaCost.GENERIC, ManaCost.RED], [], [CardType.CREATURE], [], "", 3, 1)
+bear = Creature_Card("Bear (1G)", [ManaCost.GENERIC, ManaCost.GREEN], [], [CardType.CREATURE], [], "", 2, 2)
+
+horse = Creature_Card("Horse (2W)", [ManaCost.GENERIC, ManaCost.GENERIC, ManaCost.WHITE], [], [CardType.CREATURE], [], "", 3, 3)
+serpent = Creature_Card("Serpent (2U)", [ManaCost.GENERIC, ManaCost.GENERIC, ManaCost.BLUE], [], [CardType.CREATURE], [], "", 2, 5)
+drake = Creature_Card("Drake (2R)", [ManaCost.GENERIC, ManaCost.GENERIC, ManaCost.RED], [], [CardType.CREATURE], [], "", 4, 2)
+ent = Creature_Card("Ent (2G)", [ManaCost.GENERIC, ManaCost.GENERIC, ManaCost.GREEN], [], [CardType.CREATURE], [], "", 3, 3)
+
+angel = Creature_Card("Angel (3W)", [ManaCost.GENERIC, ManaCost.GENERIC, ManaCost.GENERIC,
+                      ManaCost.WHITE], [], [CardType.CREATURE], [], "", 4, 4)
+sphinx = Creature_Card("Sphinx (3U)", [ManaCost.GENERIC, ManaCost.GENERIC,
+                       ManaCost.GENERIC, ManaCost.BLUE], [], [CardType.CREATURE], [], "", 3, 6)
+dragon = Creature_Card("Dragon (3R)", [ManaCost.GENERIC, ManaCost.GENERIC,
+                       ManaCost.GENERIC, ManaCost.RED], [], [CardType.CREATURE], [], "", 7, 1)
+dinosaur = Creature_Card("Dinosaur (3G)", [ManaCost.GENERIC, ManaCost.GENERIC,
+                         ManaCost.GENERIC, ManaCost.GREEN], [], [CardType.CREATURE], [], "", 5, 5)
+
+lightning_bolt = Instant_Card("Lightning Bolt (R)", [ManaCost.RED], [CardType.INSTANT], [lightning_ability], "")
+giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INSTANT], [giant_growth_ability], "")
+rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
+                                   CardType.SORCERY], [reinforcements_ability], "")
