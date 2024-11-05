@@ -46,6 +46,15 @@ class BasicLandType(Enum):
     FOREST = 4
 
 
+class CreatureType(Enum):
+    TURTLE = 0
+    WOLF = 1
+
+
+class AbilityKeyword(Enum):
+    FLASH = 0
+
+
 class TargetType(Enum):
     DAMAGEABLE = 0
     CREATURE = 1

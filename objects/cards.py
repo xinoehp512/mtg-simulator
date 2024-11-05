@@ -1,5 +1,5 @@
 from card import Creature_Card, Instant_Card, Land_Card, Sorcery_Card
-from enums import BasicLandType, CardType, ManaCost
+from enums import BasicLandType, CardType, CreatureType, ManaCost
 from objects.abilities import *
 
 plains = Land_Card("Plains", [CardType.LAND, BasicLandType.PLAINS], [plains_ability], "")
@@ -7,6 +7,8 @@ island = Land_Card("Island", [CardType.LAND, BasicLandType.ISLAND], [island_abil
 swamp = Land_Card("Swamp ", [CardType.LAND, BasicLandType.SWAMP], [swamp_ability], "")
 mountain = Land_Card("Mountn", [CardType.LAND, BasicLandType.MOUNTAIN], [mountain_ability], "")
 forest = Land_Card("Forest", [CardType.LAND, BasicLandType.FOREST], [forest_ability], "")
+everywhere = Land_Card("Everywhere", [CardType.LAND, BasicLandType.PLAINS, BasicLandType.ISLAND, BasicLandType.SWAMP, BasicLandType.MOUNTAIN, BasicLandType.FOREST], [plains_ability,
+                       island_ability, swamp_ability, mountain_ability, forest_ability], "")
 
 # savannah_lions = Creature_Card("Savannah Lions (W)", [ManaCost.WHITE], [CardType.CREATURE], [], "", 2, 1)
 # triton_shorethief = Creature_Card("Triton Shorethief (U)", [ManaCost.BLUE], [CardType.CREATURE], [], "", 1, 2)
@@ -41,3 +43,7 @@ lightning_bolt = Instant_Card("Lightning Bolt (R)", [ManaCost.RED], [CardType.IN
 giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INSTANT], [giant_growth_ability], "")
 rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
                                    CardType.SORCERY], [reinforcements_ability], "")
+
+aegis_turtle = Creature_Card("Aegis Turtle (U)", [ManaCost.BLUE], [], [CardType.CREATURE, CreatureType.TURTLE], [], "", 0, 5)
+ambush_wolf = Creature_Card("Ambush Wolf (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN],
+                            [], [CardType.CREATURE, CreatureType.WOLF], [flash], "", 4, 2)

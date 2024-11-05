@@ -1,5 +1,6 @@
 from activated_ability import Activated_Ability
-from enums import CardType, ColorVis, color_to_vis, cost_to_colors
+from enums import CardType, ColorVis, color_to_vis, cost_to_colors, AbilityKeyword
+from keyword_ability import Keyword_Ability
 
 
 class Card:
@@ -72,6 +73,15 @@ class Card:
     @property
     def is_volatile(self):
         return CardType.INSTANT in self.types or CardType.SORCERY in self.types
+
+    @property
+    def is_instant_speed(self):
+        if self.is_instant:
+            return True
+        for ability in self.abilities:
+            if isinstance(ability, Keyword_Ability) and ability.keyword_ability == AbilityKeyword.FLASH:
+                return True
+        return False
 
     @property
     def spell_ability(self):

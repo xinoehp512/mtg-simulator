@@ -111,10 +111,10 @@ class Game:
             actions.append(Action(
                 descriptor=f"Activated Ability: {ability.name}", action=create_ability_action(ability), is_priority_holding=not ability.is_mana_ability))
         if self.player_can_sorcery(player):
-            for card in player.hand.get_by_criteria(lambda x: x.is_spell and not x.is_instant):
+            for card in player.hand.get_by_criteria(lambda x: x.is_spell and not (x.is_instant_speed)):
                 actions.append(
                     Action(descriptor=f"Cast: {card.name}", action=create_spellcast_action(card)))
-        for card in player.hand.get_by_criteria(lambda x: x.is_spell and x.is_instant):
+        for card in player.hand.get_by_criteria(lambda x: x.is_spell and x.is_instant_speed):
             actions.append(
                 Action(descriptor=f"Cast: {card.name}", action=create_spellcast_action(card)))
         return actions

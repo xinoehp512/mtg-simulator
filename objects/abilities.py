@@ -2,8 +2,9 @@ from action import Action
 from activated_ability import Activated_Ability
 from card import Creature_Token
 from effects import PT_Effect
-from enums import CardType, Color, EffectDuration, ManaType, TargetType
+from enums import AbilityKeyword, CardType, Color, EffectDuration, ManaType, TargetType
 from exceptions import IllegalActionException
+from keyword_ability import Keyword_Ability
 from mana import Mana
 from spell_ability import Spell_Ability
 
@@ -78,3 +79,5 @@ forest_ability = Activated_Ability("{T}: Add {G}", can_be_tapped, tap_self,
 lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [TargetType.DAMAGEABLE])
 giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [TargetType.CREATURE])
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
+
+flash = Keyword_Ability(AbilityKeyword.FLASH)
