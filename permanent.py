@@ -21,7 +21,6 @@ class Permanent(Damageable_Object):
         self.is_unblocked = False
         self.is_blocked = False
         self.blockers = []
-        self._combat_damage_order = []
         self.combat_damage_assignment = []
 
         # Effects
@@ -103,18 +102,6 @@ class Permanent(Damageable_Object):
             raise Exception("Not blocked or blocking")
 
     @property
-    def combat_damage_order(self):
-        self._combat_damage_order = [
-            creature for creature in self._combat_damage_order
-            if creature.is_alive and creature.in_combat
-        ]
-        return self._combat_damage_order
-
-    @combat_damage_order.setter
-    def combat_damage_order(self, value):
-        self._combat_damage_order = value
-
-    @property
     def combat_damage_assigned(self):
         return [creature for damage, creature in self.combat_damage_assignment]
 
@@ -127,7 +114,6 @@ class Permanent(Damageable_Object):
         self.is_unblocked = False
         self.is_blocked = False
         self.blockers = []
-        self._combat_damage_order = []
 
     def take_damage(self, damage):
         self.marked_damage += damage

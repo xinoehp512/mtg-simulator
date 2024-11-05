@@ -210,14 +210,6 @@ class Agent:
             blocks.append((blocker, target))
         return blocks
 
-    def choose_damage_order(self, game, damaging_creatures):
-        damage_orders = []
-        for creature in damaging_creatures:
-            damage_order = self.choose_order(
-                creature.combat_foes, f"Choose damage order for {creature}:")
-            damage_orders.append((creature, damage_order))
-        return damage_orders
-
     def choose_damage_assignments(self, game, damaging_creatures):
         damage_assignments = []
         for creature in damaging_creatures:
@@ -227,20 +219,20 @@ class Agent:
                 damage_assignments.append(
                     [creature, [[creature.power, creature.attack_target]]])
                 continue
-            damage_order = creature.combat_damage_order
-            if len(damage_order) == 0:
+            creatures_to_damage = creature.combat_foes
+            if len(creatures_to_damage) == 0:
                 continue
-            if len(damage_order) == 1:
+            if len(creatures_to_damage) == 1:
                 damage_assignments.append(
-                    [creature, [[creature.power, damage_order[0]]]])
+                    [creature, [[creature.power, creatures_to_damage[0]]]])
                 continue
             damage_assignment = self.distribute(
-                creature.power, damage_order, f"Distribute damage of {creature}:")
+                creature.power, creatures_to_damage, f"Distribute damage of {creature}:")
             damages = []
             for i, damage in enumerate(damage_assignment):
                 if damage <= 0:
                     continue
-                defending_creature = damage_order[i]
+                defending_creature = creatures_to_damage[i]
                 damages.append((damage, defending_creature))
             damage_assignments.append((creature, damages))
         return damage_assignments

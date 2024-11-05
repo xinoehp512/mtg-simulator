@@ -436,31 +436,14 @@ class Game:
             if not attacker.is_blocked:
                 self.creature_become_unblocked(attacker)
 
-        for player in self.apnap_order:
-            damage_orders = player.agent.choose_damage_order(
-                self, self.get_requiring_damage_order(player))
-            for damage_order in damage_orders:
-                creature, order = damage_order
-                creature.combat_damage_order = order
-
     def turn_resolve_combat_damage(self):
         for player in self.apnap_order:
             creatures = self.get_all_in_combat_of(player)
-            damage_assignment_legally_assigned = False
-            while not damage_assignment_legally_assigned:
-                damage_assignments = player.agent.choose_damage_assignments(
-                    self, creatures)
-                for damage_assignment in damage_assignments:
-                    damaging_creature, damages = damage_assignment
-                    damaging_creature.combat_damage_assignment = damages
-                damage_assignment_legally_assigned = True
-                for creature in creatures:
-                    if not creature.is_unblocked and not self.is_combat_damage_legally_assigned(creature):
-                        damage_assignment_legally_assigned = False
-                        break
-                if not damage_assignment_legally_assigned:
-                    for creature in creatures:
-                        creature.combat_damage_assignment = []
+            damage_assignments = player.agent.choose_damage_assignments(
+                self, creatures)
+            for damage_assignment in damage_assignments:
+                damaging_creature, damages = damage_assignment
+                damaging_creature.combat_damage_assignment = damages
         for creature in self.get_all_in_combat():
             self.creature_deal_combat_damage(creature)
 
