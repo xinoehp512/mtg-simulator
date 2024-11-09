@@ -510,6 +510,8 @@ class Game:
         player.mana_pool.add(mana)
 
     def player_draw(self, player):
+        if player.library.is_empty:
+            return False
         player.hand.add_objects([Hand_Object(player.library.pop())])
 
     def player_discard(self, player, card):
@@ -618,6 +620,16 @@ class Game:
     def create_continuous_effect(self, effect):
         self.effects.append(effect)
         self.apply_effects()
+
+    # Direct Gamestate Editing functions
+    def add_permanents(self, controller, cards):
+        for card in cards:
+            permanent = Permanent(card, controller, self.permanent_id)
+            self.permanent_id += 1
+            self.battlefield.add_objects([permanent])
+
+    def add_cards(self, player, cards):
+        player.hand.add_objects([Hand_Object(card) for card in cards])
 
     # Display functions
     def display(self):

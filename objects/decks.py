@@ -29,3 +29,4 @@ deck4 = Deck([cards.forest]*10+[cards.druid]*10+[cards.giant_growth]*10)
 deck5 = Deck([cards.mountain]*10+[cards.rals_reinforcements]*10)
 
 decktest = Deck([cards.ambush_wolf]+[cards.everywhere]*10)
+deck_empty = Deck([])

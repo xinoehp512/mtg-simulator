@@ -1,4 +1,7 @@
+import os
 input_file = open("input.txt")
+
+file_size = os.path.getsize("input.txt")
 
 
 def user_input(prompt) -> str:
@@ -8,6 +11,11 @@ def user_input(prompt) -> str:
     with open("user_input.txt", "a") as file:
         file.write(res+"\n")
     return res
+
+
+def user_display(game):
+    if file_size == input_file.tell():
+        game.display()
 
 
 class Agent:
@@ -153,7 +161,7 @@ class Agent:
                 break
         else:
             return False
-        game.display()
+        user_display(game)
         while True:
             for i, action in enumerate(actions):
                 print(f"{i}: {action}")
@@ -175,7 +183,7 @@ class Agent:
             return False
         if len(abilities) == 1:
             return abilities[0]
-        game.display()
+        user_display(game)
         while True:
             for i, ability in enumerate(abilities):
                 print(f"{i}: {ability.name}")
@@ -192,6 +200,7 @@ class Agent:
                 print("Invalid Answer.")
 
     def choose_attacks(self, game, legal_attackers, targets):
+        user_display(game)
         attackers = self.choose_any(legal_attackers,
                                     "Choose any to attack:")
         attacks = []
@@ -202,6 +211,7 @@ class Agent:
         return attacks
 
     def choose_blocks(self, game, legal_blocks, attackers):
+        user_display(game)
         blockers = self.choose_any(legal_blocks, "Choose any to block:")
         blocks = []
         for blocker in blockers:
@@ -211,6 +221,7 @@ class Agent:
         return blocks
 
     def choose_damage_assignments(self, game, damaging_creatures):
+        user_display(game)
         damage_assignments = []
         for creature in damaging_creatures:
             if creature.power <= 0:
@@ -255,6 +266,7 @@ class Agent:
 
     def choose_targets(self, game, targets_required):
         targets = []
+        user_display(game)
         for target_type in targets_required:
             legal_targets = game.get_targets(target_type)
             if len(legal_targets) == 0:
