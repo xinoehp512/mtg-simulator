@@ -4,7 +4,8 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import EffectDuration, EffectType, Phase, Privacy, Step, TargetType
-from exceptions import IllegalActionException
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
+from exceptions import IllegalActionException, UnpayableCostException
 from graveyard_object import Graveyard_Object
 from hand_object import Hand_Object
 from permanent import Permanent
@@ -15,18 +16,18 @@ from zone import Zone
 
 class Backup_Manager:
     def __init__(self) -> None:
-        self.currently_reversible_actions = []
-        self.reversible_actions_stack = []
+        self.events = []
 
-    def begin_dangerous_operation(self):
-        self.reversible_actions_stack.append(self.currently_reversible_actions)
-        self.currently_reversible_actions = []
+    @property
+    def last_event(self):
+        return self.events[-1]
 
-    def end_dangerous_operation(self):
-        self.currently_reversible_actions = self.reversible_actions_stack.pop()
+    def add_event(self, event):
+        self.events.append(event)
 
-    def add_reverse(self, reverse):
-        self.currently_reversible_actions.append(reverse)
+    def reverse_last_event(self):
+        last_event = self.events.pop()
+        last_event.undo()
 
 
 class Game:
@@ -508,9 +509,10 @@ class Game:
 
     def add_mana(self, player, mana):
         player.mana_pool.add(mana)
+        return Mana_Produced_Event(player, mana)
 
     def player_draw(self, player):
-        if player.library.is_empty:
+        if player.library.is_empty():
             return False
         player.hand.add_objects([Hand_Object(player.library.pop())])
 
@@ -529,20 +531,21 @@ class Game:
 
     def player_activate_ability(self, player, ability):
         # Send some sort of signal to the mana manager to provide a backup point.
-
+        self.backup_manager.add_event(Ability_Activate_Begin_Marker(player, ability))
         # If the ability is a mana ability, simply test the costs, then carry it out.
         if ability.is_mana_ability:
-            if ability.pay_cost(self, player):
-                ability.resolve(self, player, None)
-                if ability.reversible:
-                    self.backup_manager.add_reverse(Action(f"Reverse {ability}", lambda: ability.reverse(self, player)))
-            else:
+            try:
+                cost_effect = ability.pay_cost(self, player)
+                ability_effect = ability.resolve(self, player, None)
+                self.backup_manager.add_event(Mana_Ability_Event(cost_effect, ability_effect))
+            except UnpayableCostException:
                 # This exception indicates a rollback needs to take place.
                 raise Exception("Illegal Action")
+        self.backup_manager.add_event(Ability_Activate_End_Marker(player, ability))
         return True
 
     def player_cast_spell(self, player, spell):
-        self.backup_manager.begin_dangerous_operation()
+        self.backup_manager.add_event(Spellcast_Begin_Marker(player, spell))
         if spell not in player.hand.objects:
             raise Exception("Player does not have that spell in hand.")
         player.hand.remove(spell)
@@ -558,21 +561,13 @@ class Game:
         try:
             self.player_pay_cost(player, cost)
         except IllegalActionException:
-            while True:
-                action = player.agent.reverse_action(self, player, self.backup_manager.currently_reversible_actions)
-                if action:
-                    try:
-                        action.invoke()
-                        self.backup_manager.currently_reversible_actions.remove(action)
-                    except IllegalActionException:
-                        print("Can't reverse that!")
-                else:
-                    break
+            while not isinstance(self.backup_manager.last_event, Spellcast_Begin_Marker):
+                self.backup_manager.reverse_last_event()
+            self.backup_manager.reverse_last_event()
             player.hand.add_objects([spell])
-            self.backup_manager.end_dangerous_operation()
             return False
         self.put_on_stack(spell_object)
-        self.backup_manager.end_dangerous_operation()
+        self.backup_manager.add_event(Spellcast_End_Marker(player, spell))
         return True
 
     def player_activate_mana(self, player, cost):

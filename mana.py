@@ -20,7 +20,7 @@ class ManaPool:
         self.mana = []
 
     def add(self, m):
-        self.mana.append(m)
+        self.mana.extend(m)
 
     def empty(self):
         self.pool = []

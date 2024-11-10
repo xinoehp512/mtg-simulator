@@ -3,7 +3,8 @@ from activated_ability import Activated_Ability
 from card import Creature_Token
 from effects import PT_Effect
 from enums import AbilityKeyword, CardType, Color, EffectDuration, ManaType, TargetType
-from exceptions import IllegalActionException
+from event import Permanent_Tapped_Event
+from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
 from spell_ability import Spell_Ability
@@ -15,37 +16,29 @@ def can_be_tapped(game, _, object):
 
 def tap_self(game, _, object):
     if object.tapped:
-        return False
+        raise UnpayableCostException
     game.tap(object)
-    return True
+    return Permanent_Tapped_Event(object)
 
 
 def add_one_white_mana(game, player, object, _):
-    game.add_mana(player, Mana(ManaType.WHITE, object))
+    return game.add_mana(player, [Mana(ManaType.WHITE, object)])
 
 
 def add_one_blue_mana(game, player, object, _):
-    game.add_mana(player, Mana(ManaType.BLUE, object))
+    return game.add_mana(player, [Mana(ManaType.BLUE, object)])
 
 
 def add_one_black_mana(game, player, object, _):
-    game.add_mana(player, Mana(ManaType.BLACK, object))
+    return game.add_mana(player, [Mana(ManaType.BLACK, object)])
 
 
 def add_one_red_mana(game, player, object, _):
-    game.add_mana(player, Mana(ManaType.RED, object))
+    return game.add_mana(player, [Mana(ManaType.RED, object)])
 
 
 def add_one_green_mana(game, player, object, _):
-    game.add_mana(player, Mana(ManaType.GREEN, object))
-
-
-def basic_land_reverse(game, player, object):
-    legal_mana = [mana for mana in player.mana_pool.mana if mana.source == object]
-    if len(legal_mana) == 0:
-        raise IllegalActionException("Illegal Action")
-    player.mana_pool.remove([legal_mana[0]])
-    object.tapped = False
+    return game.add_mana(player, [Mana(ManaType.GREEN, object)])
 
 
 def deal_3(game, controller, targets):
@@ -65,15 +58,15 @@ def make_2_tokens(game, controller, targets):
 
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
-                                   add_one_white_mana, is_mana_ability=True, mana_produced=ManaType.WHITE, reverse_function=basic_land_reverse)
+                                   add_one_white_mana, is_mana_ability=True, mana_produced=ManaType.WHITE)
 island_ability = Activated_Ability("{T}: Add {U}", can_be_tapped, tap_self,
-                                   add_one_blue_mana, is_mana_ability=True, mana_produced=ManaType.BLUE, reverse_function=basic_land_reverse)
+                                   add_one_blue_mana, is_mana_ability=True, mana_produced=ManaType.BLUE)
 swamp_ability = Activated_Ability("{T}: Add {B}", can_be_tapped, tap_self,
-                                  add_one_black_mana, is_mana_ability=True, mana_produced=ManaType.BLACK, reverse_function=basic_land_reverse)
+                                  add_one_black_mana, is_mana_ability=True, mana_produced=ManaType.BLACK)
 mountain_ability = Activated_Ability("{T}: Add {R}", can_be_tapped, tap_self,
-                                     add_one_red_mana, is_mana_ability=True, mana_produced=ManaType.RED, reverse_function=basic_land_reverse)
+                                     add_one_red_mana, is_mana_ability=True, mana_produced=ManaType.RED)
 forest_ability = Activated_Ability("{T}: Add {G}", can_be_tapped, tap_self,
-                                   add_one_green_mana, is_mana_ability=True, mana_produced=ManaType.GREEN, reverse_function=basic_land_reverse)
+                                   add_one_green_mana, is_mana_ability=True, mana_produced=ManaType.GREEN)
 
 
 lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [TargetType.DAMAGEABLE])

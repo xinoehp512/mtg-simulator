@@ -37,7 +37,7 @@ class Player(Damageable_Object):
 
         starting_hand = []
         for _ in range(self.starting_hand_size):
-            if self.library.is_empty:
+            if self.library.is_empty():
                 break
             starting_hand.append(Hand_Object(self.library.pop()))
         self.hand.add_objects(starting_hand)
