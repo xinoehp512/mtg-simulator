@@ -49,10 +49,12 @@ class BasicLandType(Enum):
 class CreatureType(Enum):
     TURTLE = 0
     WOLF = 1
+    ELEPHANT = 2
 
 
 class AbilityKeyword(Enum):
     FLASH = 0
+    VIGILANCE = 1
 
 
 class TargetType(Enum):

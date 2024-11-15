@@ -3,7 +3,7 @@ from ability_stack_object import Ability_Stack_Object
 from action import Action
 from agent import Agent
 from canvas import Text_Canvas
-from enums import EffectDuration, EffectType, Phase, Privacy, Step, TargetType
+from enums import AbilityKeyword, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -437,7 +437,8 @@ class Game:
         for attack in attacks:
             attacker, target = attack
             self.creature_attack(attacker, target)
-            self.tap(attacker)
+            if not AbilityKeyword.VIGILANCE in attacker.keywords:
+                self.tap(attacker)
         if len(attacks) > 0:
             self.add_step([Phase.COMBAT, Step.COMBAT_DAMAGE])
             self.add_step([Phase.COMBAT, Step.DECLARE_BLOCKERS])

@@ -105,15 +105,15 @@ class Card:
 
 class Creature_Card(Card):
 
-    def __init__(self, name, cost, colors, types, abilities, text, power, toughness):
-        super().__init__(name, cost, colors, types, abilities, text)
+    def __init__(self, name, cost, types, abilities, text, power, toughness, color_indicator=[]):
+        super().__init__(name, cost, color_indicator, types, abilities, text)
         self.power = power
         self.toughness = toughness
 
     def copy(self):
-        return Creature_Card(self.name, self.cost, self.color_indicator, self.types,
+        return Creature_Card(self.name, self.cost, self.types,
                              [ability.copy() for ability in self.abilities],
-                             self.text, self.power, self.toughness)
+                             self.text, self.power, self.toughness, color_indicator=self.color_indicator)
 
 
 class Land_Card(Card):
@@ -146,13 +146,13 @@ class Sorcery_Card(Card):
 
 
 class Creature_Token(Card):
-    def __init__(self, name, cost, colors, types, abilities, text, power, toughness):
-        super().__init__(name, cost, colors, types, abilities, text)
+    def __init__(self, name, cost, types, abilities, text, power, toughness, color_indicator=[]):
+        super().__init__(name, cost, color_indicator, types, abilities, text)
         self.power = power
         self.toughness = toughness
         self.is_token = True
 
     def copy(self):
-        return Creature_Token(self.name, self.cost, self.color_indicator, self.types,
+        return Creature_Token(self.name, self.cost, self.types,
                               [ability.copy() for ability in self.abilities],
-                              self.text, self.power, self.toughness)
+                              self.text, self.power, self.toughness, color_indicator=self.color_indicator)

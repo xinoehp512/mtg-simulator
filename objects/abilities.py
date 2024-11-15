@@ -53,7 +53,7 @@ def grow_3(game, controller, targets):
 
 
 def make_2_tokens(game, controller, targets):
-    token = Creature_Token("Elemental Token", None, [Color.RED, Color.BLUE], [CardType.CREATURE], [], "", 1, 1)
+    token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
@@ -86,4 +86,5 @@ giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of tu
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
+vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, [TargetType.OPT_GRAVECARD], exile_gravecard)

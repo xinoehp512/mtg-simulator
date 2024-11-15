@@ -1,5 +1,6 @@
 from activated_ability import Activated_Ability
 from damageable_object import Damageable_Object
+from keyword_ability import Keyword_Ability
 from triggered_ability import Triggered_Ability
 
 
@@ -96,6 +97,14 @@ class Permanent(Damageable_Object):
             if isinstance(ability, Triggered_Ability):
                 abilities.append(ability)
         return abilities
+
+    @property
+    def keywords(self):
+        keywords = []
+        for ability in self.card.abilities:
+            if isinstance(ability, Keyword_Ability):
+                keywords.append(ability.keyword_ability)
+        return keywords
 
     # Dynamic Properties
 
