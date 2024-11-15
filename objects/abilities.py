@@ -2,11 +2,12 @@ from action import Action
 from activated_ability import Activated_Ability
 from card import Creature_Token
 from effects import PT_Effect
-from enums import AbilityKeyword, CardType, Color, EffectDuration, ManaType, TargetType
+from enums import AbilityKeyword, CardType, Color, CounterType, EffectDuration, ManaType, TargetType
 from event import Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
+from modes import Mode, ModeChoice
 from spell_ability import Spell_Ability
 from triggered_ability import Triggered_Ability
 
@@ -42,27 +43,35 @@ def add_one_green_mana(game, player, object, _):
     return game.add_mana(player, [Mana(ManaType.GREEN, object)])
 
 
-def deal_3(game, controller, targets):
+def deal_3(game, controller, mode, targets):
     game.deal_damage(targets[0].object, 3)
 
 
-def grow_3(game, controller, targets):
+def grow_3(game, controller, mode, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
     game.create_continuous_effect(effect)
 
 
-def make_2_tokens(game, controller, targets):
+def make_2_tokens(game, controller, mode, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
 
-def exile_gravecard(game, controller, targets):
+def exile_gravecard(game, controller, mode, targets):
     if targets == None:
         return
     target = targets[0].object
     game.exile_from_graveyard(target)
+
+
+def put_2_counters_or_gain_4(game, controller, mode, targets):
+    if mode == 0:
+        target = targets[0].object
+        game.put_counters_on(CounterType.P1P1, 2, target)
+    if mode == 1:
+        game.player_gain_life(controller, 4)
 
 
 def trigger_on_etb(event, object):
@@ -87,4 +96,6 @@ reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", 
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
-ambush_wolf_etb = Triggered_Ability(trigger_on_etb, [TargetType.OPT_GRAVECARD], exile_gravecard)
+ambush_wolf_etb = Triggered_Ability(trigger_on_etb, ModeChoice(1, [Mode([TargetType.OPT_GRAVECARD], "", 0)]), exile_gravecard)
+apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
+    1, [Mode([TargetType.CREATURE], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)

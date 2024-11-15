@@ -276,3 +276,8 @@ class Agent:
                 continue
             targets.append(target)
         return targets
+
+    def choose_modes(self, game, mode_choice):
+        user_display(game)
+        mode = self.choose_x(mode_choice.modes, mode_choice.modes_required)
+        return mode

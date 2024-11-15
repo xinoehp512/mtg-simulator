@@ -71,6 +71,10 @@ class EffectType(Enum):
     PT = 0
 
 
+class CounterType(Enum):
+    P1P1 = 0
+
+
 class Color(Enum):
     WHITE = 0
     BLUE = 1

@@ -356,7 +356,7 @@ class Game:
                 stack_object.controller, stack_object.card)
         else:
             stack_object.effect_function(
-                self, stack_object.controller, stack_object.targets)
+                self, stack_object.controller, stack_object.mode, stack_object.targets)
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:
@@ -529,6 +529,9 @@ class Game:
     def tap(self, permanent):
         permanent.tapped = True
 
+    def put_counters_on(self, counter_type, number, permanent):
+        pass
+
     def deal_damage(self, target, damage):
         target.take_damage(damage)
 
@@ -544,6 +547,9 @@ class Game:
         for ability in triggered_abilities:
             if ability.is_triggered_by(event):
                 self.triggers_waiting.append(ability.get_trigger())
+
+    def player_gain_life(self, player, amount):
+        player.life += amount
 
     def player_draw(self, player):
         if player.library.is_empty():
@@ -606,15 +612,23 @@ class Game:
 
     def trigger_ability(self, ability):
         controller = ability.controller
-        targets = None
-        if ability.is_targeted:
-            targets_required = ability.target_types
-            targets = self.player_choose_targets(controller, targets_required)
-            if targets == None:
-                return
-            if targets == []:
-                targets = None
-        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets)
+        modes = None
+        if ability.is_modal:
+            modes = self.player_choose_modes(controller, ability.mode_choice)
+        else:
+            modes = ability.mode_choice.modes
+
+        targets = []
+        for mode in modes:
+            if mode.is_targeted:
+                targets_required = mode.target_types
+                mode_targets = self.player_choose_targets(controller, targets_required)
+                if mode_targets == None:  # TODO: Make modes without valid targets un-choosable.
+                    return
+                targets.extend(mode_targets)
+        if targets == []:
+            targets = None
+        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets, mode=mode.id)
         self.put_on_stack(trigger_object)
 
     def player_activate_mana(self, player, cost):
@@ -636,6 +650,10 @@ class Game:
         if targets is None:
             raise Exception("Illegal Action")
         return targets
+
+    def player_choose_modes(self, player, mode_choice):
+        mode = player.agent.choose_modes(self, mode_choice)
+        return mode
 
     def creature_attack(self, creature, target):
         creature.is_attacking = True

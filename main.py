@@ -11,6 +11,8 @@ with open("user_input.txt", "w") as file:
 # game = Game([Agent("Player 1", deck1), Agent("Player 2", deck2)])
 game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 
+# TODO: Add test suites
+
 # player1 = game.players[0]
 # player2 = game.players[1]
 # game.add_cards(player1, [cards.ambush_wolf.copy()])
