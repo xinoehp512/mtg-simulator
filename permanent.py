@@ -1,5 +1,6 @@
 from activated_ability import Activated_Ability
 from damageable_object import Damageable_Object
+from triggered_ability import Triggered_Ability
 
 
 class Permanent(Damageable_Object):
@@ -75,10 +76,24 @@ class Permanent(Damageable_Object):
                 return True
 
     @property
+    def has_triggered_ability(self):
+        for ability in self.card.abilities:
+            if isinstance(ability, Triggered_Ability):
+                return True
+
+    @property
     def activated_abilities(self):
         abilities = []
         for ability in self.card.abilities:
             if isinstance(ability, Activated_Ability):
+                abilities.append(ability)
+        return abilities
+
+    @property
+    def triggered_abilities(self):
+        abilities = []
+        for ability in self.card.abilities:
+            if isinstance(ability, Triggered_Ability):
                 abilities.append(ability)
         return abilities
 

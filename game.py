@@ -4,8 +4,9 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import EffectDuration, EffectType, Phase, Privacy, Step, TargetType
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
+from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
 from hand_object import Hand_Object
 from permanent import Permanent
@@ -50,6 +51,7 @@ class Game:
         self.permanent_id = 0
 
         self.effects = []
+        self.triggers_waiting = []
     # Properties
 
     @property
@@ -139,6 +141,10 @@ class Game:
             ability for ability in self.get_activated_abilities_of(player)
             if ability.is_mana_ability
         ]
+
+    def get_triggered_abilities(self):
+        permanents_with_ability = self.battlefield.get_by_criteria(lambda p: p.has_triggered_ability)
+        return [ability for permanent in permanents_with_ability for ability in permanent.triggered_abilities]
     # Targeting
 
     def get_damageable(self):
@@ -147,11 +153,20 @@ class Game:
         damageable.extend(self.battlefield.get_by_criteria(lambda p: p.is_damageable))
         return damageable
 
+    def get_gravecards(self):
+        gravecards = []
+        for player in self.players:
+            gravecards.extend(player.graveyard.objects)
+        return gravecards
+
     def get_targets(self, target_type):
         if target_type == TargetType.DAMAGEABLE:
             return [Target(lambda t: isinstance(t, Player) or (isinstance(t, Permanent) and t.is_damageable), target) for target in self.get_damageable()]
         if target_type == TargetType.CREATURE:
             return [Target(lambda t: isinstance(t, Permanent) and t.is_creature, target) for target in self.get_creatures()]
+        if target_type == TargetType.OPT_GRAVECARD:
+            return [Target(lambda t: isinstance(t, Graveyard_Object), target) for target in self.get_gravecards()]+[None]
+
     # Combat Query functions
 
     def get_legal_attackers(self, player):
@@ -302,7 +317,7 @@ class Game:
     # Gameplay Functions
     def resolve_priority(self):
         while True:
-            self.check_state_based_actions()
+            self.check_state_based_actions_and_triggered_abilities()
             if self.is_ended:
                 return
             priority_player_index = self.active_player_index
@@ -343,7 +358,7 @@ class Game:
             stack_object.effect_function(
                 self, stack_object.controller, stack_object.targets)
 
-    def check_state_based_actions(self):
+    def check_state_based_actions_and_triggered_abilities(self):
         while True:
             if self.is_ended:
                 return
@@ -388,6 +403,10 @@ class Game:
                     state_based_action_performed = True
             if not state_based_action_performed:
                 break
+        if len(self.triggers_waiting) > 0:
+            for trigger in self.triggers_waiting:  # TODO: Order by APNAP, allow player choice
+                self.trigger_ability(trigger)
+            self.triggers_waiting = []
 
     def apply_effects(self):
         for creature in self.get_creatures():
@@ -473,6 +492,9 @@ class Game:
         permanent = Permanent(card, controller, self.permanent_id)
         self.permanent_id += 1
         self.battlefield.add_objects([permanent])
+        # TODO: Update continuous effects here
+        event = Permanent_Enter_Event(permanent)
+        self.check_event_for_triggers(event)
 
     def create_token(self, controller, token):
         token.owner = controller
@@ -495,6 +517,11 @@ class Game:
         permanent.is_alive = False
         self.put_in_graveyard(permanent.owner, permanent.card)
 
+    def exile_from_graveyard(self, card):
+        card.owner.graveyard.remove(card)
+        exile_card = Exile_Object(card)
+        self.exile.add_objects([exile_card])
+
     def untap(self, permanent):
         permanent.tapped = False
 
@@ -510,6 +537,12 @@ class Game:
     def add_mana(self, player, mana):
         player.mana_pool.add(mana)
         return Mana_Produced_Event(player, mana)
+
+    def check_event_for_triggers(self, event):
+        triggered_abilities = self.get_triggered_abilities()
+        for ability in triggered_abilities:
+            if ability.is_triggered_by(event):
+                self.triggers_waiting.append(ability.get_trigger())
 
     def player_draw(self, player):
         if player.library.is_empty():
@@ -570,6 +603,19 @@ class Game:
         self.backup_manager.add_event(Spellcast_End_Marker(player, spell))
         return True
 
+    def trigger_ability(self, ability):
+        controller = ability.controller
+        targets = None
+        if ability.is_targeted:
+            targets_required = ability.target_types
+            targets = self.player_choose_targets(controller, targets_required)
+            if targets == None:
+                return
+            if targets == []:
+                targets = None
+        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets)
+        self.put_on_stack(trigger_object)
+
     def player_activate_mana(self, player, cost):
         while True:
             ability = player.agent.mana_act(self, player, cost)
@@ -619,12 +665,20 @@ class Game:
     # Direct Gamestate Editing functions
     def add_permanents(self, controller, cards):
         for card in cards:
+            card.set_owner(controller)
             permanent = Permanent(card, controller, self.permanent_id)
             self.permanent_id += 1
             self.battlefield.add_objects([permanent])
 
     def add_cards(self, player, cards):
+        for card in cards:
+            card.set_owner(player)
         player.hand.add_objects([Hand_Object(card) for card in cards])
+
+    def add_gravecards(self, player, cards):
+        for card in cards:
+            card.set_owner(player)
+        player.graveyard.add_objects([Graveyard_Object(card) for card in cards])
 
     # Display functions
     def display(self):
@@ -648,6 +702,12 @@ class Game:
         p1_battlefield_y = p1_lands_y+(card_height+1)
         p2_battlefield_y = p2_lands_y-(card_height+1)
 
+        p1_graveyard_y = p1_hand_y
+        p2_graveyard_y = p2_hand_y
+        graveyard_card_width = 20
+        graveyard_card_height = card_height+2
+        player_graveyard_x = canvas_width-graveyard_card_width
+
         player_card_width = 20
         player_card_height = 5
         player_card_x = 0
@@ -657,7 +717,7 @@ class Game:
         turn_card_width = 20
         turn_card_height = 5
         turn_card_x = canvas_width-turn_card_width
-        turn_card_y = canvas_height-turn_card_height
+        turn_card_y = p2_hand_y-turn_card_height
 
         end_card_width = 20
         end_card_height = 5
@@ -692,6 +752,19 @@ class Game:
             draw_card(player_card_width+1+i*(card_width+1), p1_hand_y+1, card)
         for i, card in enumerate(self.players[1].hand.objects):
             draw_card(player_card_width+1+i*(card_width+1), p2_hand_y+1, card)
+
+        # Player Graveyards
+        canvas.draw_rect(player_graveyard_x, p1_graveyard_y, graveyard_card_width, graveyard_card_height, 0)
+        canvas.draw_rect(player_graveyard_x+1, p1_graveyard_y+1, graveyard_card_width-2, graveyard_card_height-2, 255)
+        canvas.draw_text(player_graveyard_x+1, p1_graveyard_y+1, "Graveyard", 0, 255)
+        for i, card in enumerate(self.players[0].graveyard.objects):
+            canvas.draw_text(player_graveyard_x+1, p1_graveyard_y+1+(i+1), card.name, 0, 255)
+
+        canvas.draw_rect(player_graveyard_x, p2_graveyard_y, graveyard_card_width, graveyard_card_height, 0)
+        canvas.draw_rect(player_graveyard_x+1, p2_graveyard_y+1, graveyard_card_width-2, graveyard_card_height-2, 255)
+        canvas.draw_text(player_graveyard_x+1, p2_graveyard_y+1, "Graveyard", 0, 255)
+        for i, card in enumerate(self.players[1].graveyard.objects):
+            canvas.draw_text(player_graveyard_x+1, p2_graveyard_y+1+(i+1), card.name, 0, 255)
 
         # Battlefield
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and p.is_land)):

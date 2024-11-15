@@ -46,4 +46,4 @@ rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERI
 
 aegis_turtle = Creature_Card("Aegis Turtle (U)", [ManaCost.BLUE], [], [CardType.CREATURE, CreatureType.TURTLE], [], "", 0, 5)
 ambush_wolf = Creature_Card("Ambush Wolf (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN],
-                            [], [CardType.CREATURE, CreatureType.WOLF], [flash], "", 4, 2)
+                            [], [CardType.CREATURE, CreatureType.WOLF], [flash, ambush_wolf_etb], "", 4, 2)

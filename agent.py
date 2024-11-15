@@ -272,23 +272,7 @@ class Agent:
             if len(legal_targets) == 0:
                 return None
             target = self.choose_one(legal_targets, f"Choose a {target_type.name} target.")
+            if target == None:
+                continue
             targets.append(target)
         return targets
-
-    def reverse_action(self, game, player, actions):
-        if len(actions) == 0:
-            return False
-        while True:
-            for i, action in enumerate(actions):
-                print(f"{i}: {action}")
-            choice = user_input("Act (%s)?" % self.name)
-            if choice.isnumeric():
-                choice = int(choice)
-                if choice < len(actions):
-                    return actions[choice]
-                else:
-                    print("Out of Bounds.")
-            elif choice == "pass":
-                return False
-            else:
-                print("Invalid Answer.")

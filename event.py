@@ -74,3 +74,9 @@ class Mana_Ability_Event(Event):
     def undo(self):
         self.mana_produced_event.undo()
         self.cost_event.undo()
+
+
+class Permanent_Enter_Event(Event):
+    def __init__(self, permanent):
+        super().__init__()
+        self.permanent = permanent

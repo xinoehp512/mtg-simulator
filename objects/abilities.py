@@ -3,11 +3,12 @@ from activated_ability import Activated_Ability
 from card import Creature_Token
 from effects import PT_Effect
 from enums import AbilityKeyword, CardType, Color, EffectDuration, ManaType, TargetType
-from event import Permanent_Tapped_Event
+from event import Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
 from spell_ability import Spell_Ability
+from triggered_ability import Triggered_Ability
 
 
 def can_be_tapped(game, _, object):
@@ -57,6 +58,17 @@ def make_2_tokens(game, controller, targets):
     game.create_token(controller, token.copy())
 
 
+def exile_gravecard(game, controller, targets):
+    if targets == None:
+        return
+    target = targets[0].object
+    game.exile_from_graveyard(target)
+
+
+def trigger_on_etb(event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent == object
+
+
 plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
                                    add_one_white_mana, is_mana_ability=True, mana_produced=ManaType.WHITE)
 island_ability = Activated_Ability("{T}: Add {U}", can_be_tapped, tap_self,
@@ -74,3 +86,4 @@ giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of tu
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
+ambush_wolf_etb = Triggered_Ability(trigger_on_etb, [TargetType.OPT_GRAVECARD], exile_gravecard)

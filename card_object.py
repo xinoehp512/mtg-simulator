@@ -16,6 +16,10 @@ class Card_Object(Targetable_Object):
         return self.card.cost
 
     @property
+    def owner(self):
+        return self.card.owner
+
+    @property
     def is_creature(self):
         return self.card.is_creature
 
