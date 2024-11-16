@@ -21,3 +21,8 @@ class ModeChoice:
     @property
     def mode_number(self):
         return len(self.modes)
+
+
+class SingleMode(ModeChoice):
+    def __init__(self, target_types):
+        super().__init__(1, [Mode(target_types, "", 0)])

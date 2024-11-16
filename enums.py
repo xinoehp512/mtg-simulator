@@ -47,9 +47,50 @@ class BasicLandType(Enum):
 
 
 class CreatureType(Enum):
-    TURTLE = 0
-    WOLF = 1
-    ELEPHANT = 2
+    ANGEL = 0
+    ARCHER = 1
+    BEAST = 2
+    BESERKER = 3
+    BIRD = 4
+    CAT = 5
+    CLERIC = 6
+    CYCLOPS = 7
+    DEVIL = 8
+    DINOSAUR = 9
+    DRUID = 10
+    DWARF = 11
+    ELEMENTAL = 12
+    ELEPHANT = 13
+    ELF = 14
+    GIANT = 15
+    GOBLIN = 16
+    GOLEM = 17
+    HUMAN = 18
+    HYENA = 19
+    KNIGHT = 20
+    LIZARD = 21
+    MINOTAUR = 22
+    NOBLE = 23
+    OTTER = 24
+    PIRATE = 25
+    RABBIT = 26
+    RANGER = 27
+    RAT = 28
+    ROGUE = 29
+    SCOUT = 30
+    SERPENT = 31
+    SHARK = 32
+    SKELETON = 33
+    SOLDIER = 34
+    SPIDER = 35
+    TURTLE = 36
+    VAMPIRE = 37
+    WALL = 38
+    WARLOCK = 39
+    WARRIOR = 40
+    WIZARD = 41
+    WOLF = 42
+    ZOMBIE = 43
 
 
 class AbilityKeyword(Enum):

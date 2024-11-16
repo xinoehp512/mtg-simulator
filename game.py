@@ -4,7 +4,7 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -451,6 +451,8 @@ class Game:
         if len(attacks) > 0:
             self.add_step([Phase.COMBAT, Step.COMBAT_DAMAGE])
             self.add_step([Phase.COMBAT, Step.DECLARE_BLOCKERS])
+        event = Attack_Event(attacks)
+        self.check_event_for_triggers(event)
 
     def turn_declare_blockers(self):
         for defending_player in self.inactive_players:

@@ -3,11 +3,11 @@ from activated_ability import Activated_Ability
 from card import Creature_Token
 from effects import PT_Effect
 from enums import AbilityKeyword, CardType, Color, CounterType, EffectDuration, ManaType, TargetType
-from event import Permanent_Enter_Event, Permanent_Tapped_Event
+from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
-from modes import Mode, ModeChoice
+from modes import Mode, ModeChoice, SingleMode
 from spell_ability import Spell_Ability
 from triggered_ability import Triggered_Ability
 
@@ -74,8 +74,17 @@ def put_2_counters_or_gain_4(game, controller, mode, targets):
         game.player_gain_life(controller, 4)
 
 
+def put_counter(game, controller, mode, targets):
+    target = targets[0].object
+    game.put_counters_on(CounterType.P1P1, 1, target)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
+
+
+def trigger_on_3_creatures_attack(event, object):
+    return isinstance(event, Attack_Event) and event.num_attacking >= 3
 
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
@@ -96,6 +105,7 @@ reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", 
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
-ambush_wolf_etb = Triggered_Ability(trigger_on_etb, ModeChoice(1, [Mode([TargetType.OPT_GRAVECARD], "", 0)]), exile_gravecard)
+ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_GRAVECARD]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
+armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)

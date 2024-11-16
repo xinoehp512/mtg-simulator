@@ -45,3 +45,5 @@ ambush_wolf = Creature_Card("Ambush Wolf (2G)", [ManaCost.GENERIC]*2+[ManaCost.G
                             [CardType.CREATURE, CreatureType.WOLF], [flash, ambush_wolf_etb], "", 4, 2)
 apothecary_stomper = Creature_Card("Apothecary Stomper (4GG)", [ManaCost.GENERIC]*4 +
                                    [ManaCost.GREEN]*2, [CardType.CREATURE, CreatureType.ELEPHANT], [vigilance, apothecary_stomper_etb], "", 4, 4)
+armasaur_guide = Creature_Card("Armasaur Guide (4W)", [ManaCost.GENERIC]*4+[ManaCost.WHITE],
+                               [CardType.CREATURE, CreatureType.DINOSAUR], [vigilance, armasaur_guide_attack], "", 4, 4)

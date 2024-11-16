@@ -80,3 +80,13 @@ class Permanent_Enter_Event(Event):
     def __init__(self, permanent):
         super().__init__()
         self.permanent = permanent
+
+
+class Attack_Event(Event):
+    def __init__(self, attacks):
+        super().__init__()
+        self.attacks = attacks
+
+    @property
+    def num_attacking(self):
+        return len(self.attacks)
