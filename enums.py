@@ -60,7 +60,8 @@ class AbilityKeyword(Enum):
 class TargetType(Enum):
     DAMAGEABLE = 0
     CREATURE = 1
-    OPT_GRAVECARD = 2
+    CREATURE_YOU_CONTROL = 2
+    OPT_GRAVECARD = 3
 
 
 class EffectDuration(Enum):

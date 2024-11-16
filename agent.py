@@ -264,11 +264,11 @@ class Agent:
                 return None
         return payment
 
-    def choose_targets(self, game, targets_required):
+    def choose_targets(self, game, player, targets_required):
         targets = []
         user_display(game)
         for target_type in targets_required:
-            legal_targets = game.get_targets(target_type)
+            legal_targets = game.get_targets(player, target_type)
             if len(legal_targets) == 0:
                 return None
             target = self.choose_one(legal_targets, f"Choose a {target_type.name} target.")

@@ -29,6 +29,8 @@ class Permanent(Damageable_Object):
         self.power_modification = 0
         self.toughness_modification = 0
 
+        self.counters = {}
+
         self.marked_damage = 0
         for ability in self.card.abilities:
             ability.object = self
@@ -144,6 +146,14 @@ class Permanent(Damageable_Object):
 
     def remove_marked_damage(self):
         self.marked_damage = 0
+
+    def add_counters(self, counter_type, number):
+        if number == 0:
+            return
+        if counter_type in self.counters:
+            self.counters[counter_type] += number
+        else:
+            self.counters[counter_type] = number
 
     def __str__(self):
         return str(self.card)

@@ -98,4 +98,4 @@ flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, ModeChoice(1, [Mode([TargetType.OPT_GRAVECARD], "", 0)]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
-    1, [Mode([TargetType.CREATURE], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
+    1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)

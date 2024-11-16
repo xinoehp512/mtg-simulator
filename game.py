@@ -3,7 +3,7 @@ from ability_stack_object import Ability_Stack_Object
 from action import Action
 from agent import Agent
 from canvas import Text_Canvas
-from enums import AbilityKeyword, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
+from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -131,6 +131,9 @@ class Game:
     def get_creatures(self):
         return self.battlefield.get_by_criteria(lambda p: p.is_creature)
 
+    def get_creatures_of(self, player):
+        return self.battlefield.get_by_criteria(lambda p: p.is_creature and p.controller == player)
+
     def get_activated_abilities_of(self, player):
         permanents_with_ability = self.battlefield.get_by_criteria(
             lambda p: p.controller == player and p.has_activated_ability)
@@ -159,11 +162,13 @@ class Game:
             gravecards.extend(player.graveyard.objects)
         return gravecards
 
-    def get_targets(self, target_type):
+    def get_targets(self, player, target_type):
         if target_type == TargetType.DAMAGEABLE:
             return [Target(lambda t: isinstance(t, Player) or (isinstance(t, Permanent) and t.is_damageable), target) for target in self.get_damageable()]
         if target_type == TargetType.CREATURE:
             return [Target(lambda t: isinstance(t, Permanent) and t.is_creature, target) for target in self.get_creatures()]
+        if target_type == TargetType.CREATURE_YOU_CONTROL:
+            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == player, target) for target in self.get_creatures_of(player)]
         if target_type == TargetType.OPT_GRAVECARD:
             return [Target(lambda t: isinstance(t, Graveyard_Object), target) for target in self.get_gravecards()]+[None]
 
@@ -419,6 +424,10 @@ class Game:
                         creature.power_modification += effect.power_change
                         creature.toughness_modification += effect.toughness_change
                         # Turn actions
+        for creature in self.get_creatures():
+            if CounterType.P1P1 in creature.counters:
+                creature.power_modification += creature.counters[CounterType.P1P1]
+                creature.toughness_modification += creature.counters[CounterType.P1P1]
 
     def turn_untap(self):
         active_permanents = self.get_permanents_of(self.active_player)
@@ -530,7 +539,8 @@ class Game:
         permanent.tapped = True
 
     def put_counters_on(self, counter_type, number, permanent):
-        pass
+        permanent.add_counters(counter_type, number)
+        self.apply_effects()
 
     def deal_damage(self, target, damage):
         target.take_damage(damage)
@@ -646,7 +656,7 @@ class Game:
         player.mana_pool.remove(mana_to_pay)
 
     def player_choose_targets(self, player, targets_required):
-        targets = player.agent.choose_targets(self, targets_required)
+        targets = player.agent.choose_targets(self, player, targets_required)
         if targets is None:
             raise Exception("Illegal Action")
         return targets
