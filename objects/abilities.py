@@ -1,7 +1,7 @@
 from action import Action
 from activated_ability import Activated_Ability
 from card import Creature_Token
-from effects import PT_Effect
+from effects import Ability_Grant_Effect, PT_Effect
 from enums import AbilityKeyword, CardType, Color, CounterType, EffectDuration, ManaType, TargetType
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -10,6 +10,10 @@ from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
 from spell_ability import Spell_Ability
 from triggered_ability import Triggered_Ability
+
+flash = Keyword_Ability(AbilityKeyword.FLASH)
+vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
+haste = Keyword_Ability(AbilityKeyword.HASTE)
 
 
 def can_be_tapped(game, _, object):
@@ -79,6 +83,12 @@ def put_counter(game, controller, mode, targets):
     game.put_counters_on(CounterType.P1P1, 1, target)
 
 
+def give_haste(game, controller, mode, targets):
+    target = targets[0].object
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
+    game.create_continuous_effect(effect)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -103,11 +113,10 @@ lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [Targe
 giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [TargetType.CREATURE])
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
-flash = Keyword_Ability(AbilityKeyword.FLASH)
-vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
-haste = Keyword_Ability(AbilityKeyword.HASTE)
 
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_GRAVECARD]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)
+
+haste_test_ability = Spell_Ability("Target creature gains haste until end of turn", give_haste, [TargetType.CREATURE])

@@ -417,17 +417,24 @@ class Game:
         for creature in self.get_creatures():
             creature.power_modification = 0
             creature.toughness_modification = 0
-        for effect in self.effects:
+            creature.added_abilities = []  # TODO: All permanents
+        for effect in self.effects:  # TODO: Layers, layers layers!
             if effect.type == EffectType.PT:
                 for creature in self.get_creatures():
                     if effect.applies_to(creature):
                         creature.power_modification += effect.power_change
                         creature.toughness_modification += effect.toughness_change
-                        # Turn actions
+            if effect.type == EffectType.ABILITY:
+                for creature in self.get_creatures():
+                    if effect.applies_to(creature):
+                        creature.added_abilities.extend(effect.abilities)
+
         for creature in self.get_creatures():
             if CounterType.P1P1 in creature.counters:
                 creature.power_modification += creature.counters[CounterType.P1P1]
                 creature.toughness_modification += creature.counters[CounterType.P1P1]
+
+    # Turn actions
 
     def turn_untap(self):
         active_permanents = self.get_permanents_of(self.active_player)

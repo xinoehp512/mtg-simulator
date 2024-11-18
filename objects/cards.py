@@ -49,3 +49,4 @@ armasaur_guide = Creature_Card("Armasaur Guide (4W)", [ManaCost.GENERIC]*4+[Mana
                                [CardType.CREATURE, CreatureType.DINOSAUR], [vigilance, armasaur_guide_attack], "", 4, 4)
 axgard_cavalry = Creature_Card("Axgard Cavalry (1R)", [ManaCost.GENERIC]+[ManaCost.RED],
                                [CardType.CREATURE, CreatureType.DWARF, CreatureType.BERSERKER], [haste], "", 2, 2)
+haste_test_card = Instant_Card("Haste (R)", [ManaCost.RED], [CardType.INSTANT], [haste_test_ability], "")

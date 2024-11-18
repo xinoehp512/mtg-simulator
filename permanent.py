@@ -28,6 +28,7 @@ class Permanent(Damageable_Object):
         # Effects
         self.power_modification = 0
         self.toughness_modification = 0
+        self.added_abilities = []
 
         self.counters = {}
 
@@ -73,21 +74,25 @@ class Permanent(Damageable_Object):
         return self.is_creature
 
     @property
+    def abilities(self):
+        return self.card.abilities+self.added_abilities
+
+    @property
     def has_activated_ability(self):
-        for ability in self.card.abilities:
+        for ability in self.abilities:
             if isinstance(ability, Activated_Ability):
                 return True
 
     @property
     def has_triggered_ability(self):
-        for ability in self.card.abilities:
+        for ability in self.abilities:
             if isinstance(ability, Triggered_Ability):
                 return True
 
     @property
     def activated_abilities(self):
         abilities = []
-        for ability in self.card.abilities:
+        for ability in self.abilities:
             if isinstance(ability, Activated_Ability):
                 abilities.append(ability)
         return abilities
@@ -95,7 +100,7 @@ class Permanent(Damageable_Object):
     @property
     def triggered_abilities(self):
         abilities = []
-        for ability in self.card.abilities:
+        for ability in self.abilities:
             if isinstance(ability, Triggered_Ability):
                 abilities.append(ability)
         return abilities
@@ -103,7 +108,7 @@ class Permanent(Damageable_Object):
     @property
     def keywords(self):
         keywords = []
-        for ability in self.card.abilities:
+        for ability in self.abilities:
             if isinstance(ability, Keyword_Ability):
                 keywords.append(ability.keyword_ability)
         return keywords

@@ -112,6 +112,7 @@ class EffectDuration(Enum):
 
 class EffectType(Enum):
     PT = 0
+    ABILITY = 1
 
 
 class CounterType(Enum):
