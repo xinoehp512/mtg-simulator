@@ -47,30 +47,31 @@ def add_one_green_mana(game, player, object, _):
     return game.add_mana(player, [Mana(ManaType.GREEN, object)])
 
 
-def deal_3(game, controller, mode, targets):
+def deal_3(game, controller, modes, targets):
     game.deal_damage(targets[0].object, 3)
 
 
-def grow_3(game, controller, mode, targets):
+def grow_3(game, controller, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
     game.create_continuous_effect(effect)
 
 
-def make_2_tokens(game, controller, mode, targets):
+def make_2_tokens(game, controller, modes, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
 
-def exile_gravecard(game, controller, mode, targets):
+def exile_gravecard(game, controller, modes, targets):
     if targets == None:
         return
     target = targets[0].object
     game.exile_from_graveyard(target)
 
 
-def put_2_counters_or_gain_4(game, controller, mode, targets):
+def put_2_counters_or_gain_4(game, controller, modes, targets):
+    mode = modes[0]
     if mode == 0:
         target = targets[0].object
         game.put_counters_on(CounterType.P1P1, 2, target)
@@ -78,12 +79,12 @@ def put_2_counters_or_gain_4(game, controller, mode, targets):
         game.player_gain_life(controller, 4)
 
 
-def put_counter(game, controller, mode, targets):
+def put_counter(game, controller, modes, targets):
     target = targets[0].object
     game.put_counters_on(CounterType.P1P1, 1, target)
 
 
-def give_haste(game, controller, mode, targets):
+def give_haste(game, controller, modes, targets):
     target = targets[0].object
     effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
     game.create_continuous_effect(effect)
@@ -98,15 +99,15 @@ def trigger_on_3_creatures_attack(event, object):
 
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
-                                   add_one_white_mana, is_mana_ability=True, mana_produced=ManaType.WHITE)
+                                   add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.WHITE)
 island_ability = Activated_Ability("{T}: Add {U}", can_be_tapped, tap_self,
-                                   add_one_blue_mana, is_mana_ability=True, mana_produced=ManaType.BLUE)
+                                   add_one_blue_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.BLUE)
 swamp_ability = Activated_Ability("{T}: Add {B}", can_be_tapped, tap_self,
-                                  add_one_black_mana, is_mana_ability=True, mana_produced=ManaType.BLACK)
+                                  add_one_black_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.BLACK)
 mountain_ability = Activated_Ability("{T}: Add {R}", can_be_tapped, tap_self,
-                                     add_one_red_mana, is_mana_ability=True, mana_produced=ManaType.RED)
+                                     add_one_red_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.RED)
 forest_ability = Activated_Ability("{T}: Add {G}", can_be_tapped, tap_self,
-                                   add_one_green_mana, is_mana_ability=True, mana_produced=ManaType.GREEN)
+                                   add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.GREEN)
 
 
 lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [TargetType.DAMAGEABLE])
@@ -118,5 +119,5 @@ ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_G
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)
-
-haste_test_ability = Spell_Ability("Target creature gains haste until end of turn", give_haste, [TargetType.CREATURE])
+axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
+                                       can_be_tapped, tap_self, give_haste, SingleMode([TargetType.CREATURE]))

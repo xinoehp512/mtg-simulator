@@ -361,7 +361,7 @@ class Game:
                 stack_object.controller, stack_object.card)
         else:
             stack_object.effect_function(
-                self, stack_object.controller, stack_object.mode, stack_object.targets)
+                self, stack_object.controller, stack_object.modes, stack_object.targets)
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:
@@ -600,6 +600,29 @@ class Game:
             except UnpayableCostException:
                 # This exception indicates a rollback needs to take place.
                 raise Exception("Illegal Action")
+        else:
+            modes = None  # TODO: Refactor out mode choice and target choice.
+            if ability.is_modal:
+                modes = self.player_choose_modes(player, ability.mode_choice)
+            else:
+                modes = ability.mode_choice.modes
+            targets = []
+            for mode in modes:
+                if mode.is_targeted:
+                    targets_required = mode.target_types
+                    mode_targets = self.player_choose_targets(player, targets_required)
+                    if mode_targets == None:
+                        raise Exception("Illegal Action")
+                    targets.extend(mode_targets)
+            if targets == []:
+                targets = None
+            activation_object = Ability_Stack_Object(player, ability.result_function, targets=targets, modes=[mode.id for mode in modes])
+            try:
+                cost_effect = ability.pay_cost(self, player)
+            except UnpayableCostException:
+                # This exception indicates a rollback needs to take place.
+                raise Exception("Illegal Action")
+            self.put_on_stack(activation_object)
         self.backup_manager.add_event(Ability_Activate_End_Marker(player, ability))
         return True
 
@@ -647,7 +670,7 @@ class Game:
                 targets.extend(mode_targets)
         if targets == []:
             targets = None
-        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets, mode=mode.id)
+        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets, modes=[mode.id for mode in modes])
         self.put_on_stack(trigger_object)
 
     def player_activate_mana(self, player, cost):
