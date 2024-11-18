@@ -29,12 +29,19 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 # game.add_permanents(player1, [cards.forest.copy() for i in range(6)])
 # game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
+# player1 = game.players[0]
+# player2 = game.players[1]
+# game.add_cards(player1, [cards.armasaur_guide.copy()])
+# game.add_cards(player2, [cards.forest.copy()])
+# game.add_permanents(player1, [cards.plains.copy() for i in range(6)] +
+#                     [cards.aegis_turtle.copy(), cards.ambush_wolf.copy(), cards.apothecary_stomper.copy()])
+# game.add_permanents(player2, [cards.aegis_turtle.copy()])
+
 player1 = game.players[0]
 player2 = game.players[1]
-game.add_cards(player1, [cards.armasaur_guide.copy()])
+game.add_cards(player1, [cards.axgard_cavalry.copy()])
 game.add_cards(player2, [cards.forest.copy()])
-game.add_permanents(player1, [cards.plains.copy() for i in range(6)] +
-                    [cards.aegis_turtle.copy(), cards.ambush_wolf.copy(), cards.apothecary_stomper.copy()])
+game.add_permanents(player1, [cards.mountain.copy() for i in range(2)]+[cards.axgard_cavalry.copy()])
 game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
 game.play_game()

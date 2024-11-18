@@ -175,7 +175,7 @@ class Game:
     # Combat Query functions
 
     def get_legal_attackers(self, player):
-        return self.battlefield.get_by_criteria(lambda p: p.controller == player and p.is_creature and not p.summoning_sick and not p.tapped)
+        return self.battlefield.get_by_criteria(lambda p: p.controller == player and p.is_creature and (not p.summoning_sick or AbilityKeyword.HASTE in p.keywords) and not p.tapped)
 
     def get_legal_attack_targets(self, player):
         return [opponent for opponent in self.players if opponent != player]

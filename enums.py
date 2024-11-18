@@ -50,7 +50,7 @@ class CreatureType(Enum):
     ANGEL = 0
     ARCHER = 1
     BEAST = 2
-    BESERKER = 3
+    BERSERKER = 3
     BIRD = 4
     CAT = 5
     CLERIC = 6
@@ -96,6 +96,7 @@ class CreatureType(Enum):
 class AbilityKeyword(Enum):
     FLASH = 0
     VIGILANCE = 1
+    HASTE = 2
 
 
 class TargetType(Enum):

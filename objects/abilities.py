@@ -105,6 +105,8 @@ reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", 
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
+haste = Keyword_Ability(AbilityKeyword.HASTE)
+
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_GRAVECARD]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
