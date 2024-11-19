@@ -37,11 +37,18 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 #                     [cards.aegis_turtle.copy(), cards.ambush_wolf.copy(), cards.apothecary_stomper.copy()])
 # game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
+# player1 = game.players[0]
+# player2 = game.players[1]
+# game.add_cards(player1, [cards.apothecary_stomper.copy()])
+# game.add_cards(player2, [cards.forest.copy()])
+# game.add_permanents(player1, [cards.forest.copy() for i in range(6)]+[cards.axgard_cavalry.copy()])
+# game.add_permanents(player2, [cards.aegis_turtle.copy()])
+
 player1 = game.players[0]
 player2 = game.players[1]
-game.add_cards(player1, [cards.apothecary_stomper.copy()])
+game.add_cards(player1, [cards.bake_into_a_pie.copy()])
 game.add_cards(player2, [cards.forest.copy()])
-game.add_permanents(player1, [cards.forest.copy() for i in range(6)]+[cards.axgard_cavalry.copy()])
+game.add_permanents(player1, [cards.swamp.copy() for i in range(6)])
 game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
 

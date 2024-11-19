@@ -536,6 +536,13 @@ class Game:
         permanent.is_alive = False
         self.put_in_graveyard(permanent.owner, permanent.card)
 
+    def sacrifice(self, player, permanent):
+        if (permanent.controller != player):
+            return False
+        self.battlefield.remove(permanent)
+        permanent.is_alive = False
+        self.put_in_graveyard(permanent.owner, permanent.card)
+
     def exile_from_graveyard(self, card):
         card.owner.graveyard.remove(card)
         exile_card = Exile_Object(card)
@@ -763,6 +770,11 @@ class Game:
         p1_battlefield_y = p1_lands_y+(card_height+1)
         p2_battlefield_y = p2_lands_y-(card_height+1)
 
+        p1_noncreatures_x = 1+card_width*8
+        p2_noncreatures_x = 1+card_width*8
+        p1_noncreatures_y = p1_lands_y
+        p2_noncreatures_y = p2_lands_y
+
         p1_graveyard_y = p1_hand_y
         p2_graveyard_y = p2_hand_y
         graveyard_card_width = 20
@@ -833,10 +845,15 @@ class Game:
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and p.is_land)):
             draw_card(1+i*(card_width+1), p2_lands_y, permanent)
 
-        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and not p.is_land)):
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and p.is_creature)):
             draw_card(1+i*(card_width+1), p1_battlefield_y, permanent)
-        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and not p.is_land)):
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and p.is_creature)):
             draw_card(1+i*(card_width+1), p2_battlefield_y, permanent)
+
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and not (p.is_creature or p.is_land))):
+            draw_card(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y, permanent)
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and not (p.is_creature or p.is_land))):
+            draw_card(p2_noncreatures_x+i*(card_width+1), p2_noncreatures_y, permanent)
 
         # Turn Box
         canvas.draw_rect(turn_card_x, turn_card_y, turn_card_width, turn_card_height, 0)

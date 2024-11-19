@@ -49,3 +49,5 @@ armasaur_guide = Creature_Card("Armasaur Guide (4W)", [ManaCost.GENERIC]*4+[Mana
                                [CardType.CREATURE, CreatureType.DINOSAUR], [vigilance, armasaur_guide_attack], "", 4, 4)
 axgard_cavalry = Creature_Card("Axgard Cavalry (1R)", [ManaCost.GENERIC]+[ManaCost.RED],
                                [CardType.CREATURE, CreatureType.DWARF, CreatureType.BERSERKER], [axgard_cavalry_tap], "", 2, 2)
+bake_into_a_pie = Instant_Card("Bake into a Pie (2BB)", [ManaCost.GENERIC]*2 +
+                               [ManaCost.BLACK]*2, [CardType.INSTANT], [bake_into_a_pie_ability], "")

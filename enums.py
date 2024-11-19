@@ -46,6 +46,10 @@ class BasicLandType(Enum):
     FOREST = 4
 
 
+class ArtifactType(Enum):
+    FOOD = 1
+
+
 class CreatureType(Enum):
     ANGEL = 0
     ARCHER = 1

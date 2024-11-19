@@ -1,8 +1,8 @@
 from action import Action
 from activated_ability import Activated_Ability
-from card import Creature_Token
+from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, CardType, Color, CounterType, EffectDuration, ManaType, TargetType
+from enums import AbilityKeyword, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, TargetType
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -20,11 +20,20 @@ def can_be_tapped(game, _, object):
     return not object.tapped
 
 
-def tap_self(game, _, object):
+def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
     if object.tapped:
         raise UnpayableCostException
     game.tap(object)
     return Permanent_Tapped_Event(object)
+
+
+def tap_sac_pay_2(game, player, object):
+    if object.tapped:
+        raise UnpayableCostException
+    game.player_activate_mana(player, [ManaCost.GENERIC]*2)
+    game.player_pay_cost(player, [ManaCost.GENERIC]*2)
+    game.tap(object)
+    game.sacrifice(player, object)
 
 
 def add_one_white_mana(game, player, object, _):
@@ -45,6 +54,14 @@ def add_one_red_mana(game, player, object, _):
 
 def add_one_green_mana(game, player, object, _):
     return game.add_mana(player, [Mana(ManaType.GREEN, object)])
+
+
+def gain_3(game, controller, modes, targets):
+    game.player_gain_life(controller, 3)
+
+
+food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.", can_be_tapped, tap_sac_pay_2, gain_3, SingleMode(None))
+food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
 
 
 def deal_3(game, controller, modes, targets):
@@ -90,6 +107,12 @@ def give_haste(game, controller, modes, targets):
     game.create_continuous_effect(effect)
 
 
+def destroy_creature_and_make_food(game, controller, modes, targets):
+    target = targets[0].object
+    game.destroy(target)
+    game.create_token(controller, food.copy())
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -117,7 +140,9 @@ reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", 
 
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_GRAVECARD]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
-    1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode([], "You gain 4 life", 1)]), put_2_counters_or_gain_4)
+    1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_be_tapped, tap_self, give_haste, SingleMode([TargetType.CREATURE]))
+bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
+                                        destroy_creature_and_make_food, [TargetType.CREATURE])

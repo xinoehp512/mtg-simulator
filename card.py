@@ -156,3 +156,13 @@ class Creature_Token(Card):
         return Creature_Token(self.name, self.cost, self.types,
                               [ability.copy() for ability in self.abilities],
                               self.text, self.power, self.toughness, color_indicator=self.color_indicator)
+
+
+class Artifact_Token(Card):
+    def __init__(self, name, cost, types, abilities, text, color_indicator=[]):
+        super().__init__(name, cost, color_indicator, types, abilities, text)
+        self.is_token = True
+
+    def copy(self):
+        return Artifact_Token(self.name, self.cost, self.types,
+                              [ability.copy() for ability in self.abilities], self.text)
