@@ -219,9 +219,10 @@ class Game:
         return combat_damage_assignments
 
     def is_combat_damage_legally_assigned(self, creature):
-        for defending_creature in creature.combat_damage_assigned[:-1]:
-            if not self.is_creature_lethaled(defending_creature):
-                return False
+        if creature.attack_target in creature.combat_damage_assigned:
+            for defending_creature in creature.blockers:
+                if not self.is_creature_lethaled(defending_creature):
+                    return False
         return True
 
     def is_creature_lethaled(self, creature):
@@ -504,11 +505,21 @@ class Game:
     def turn_resolve_combat_damage(self):
         for player in self.apnap_order:
             creatures = self.get_all_in_combat_of(player)
-            damage_assignments = player.agent.choose_damage_assignments(
-                self, creatures)
-            for damage_assignment in damage_assignments:
-                damaging_creature, damages = damage_assignment
-                damaging_creature.combat_damage_assignment = damages
+            damage_assignment_legally_assigned = False
+            while not damage_assignment_legally_assigned:
+                damage_assignments = player.agent.choose_damage_assignments(
+                    self, creatures)
+                for damage_assignment in damage_assignments:
+                    damaging_creature, damages = damage_assignment
+                    damaging_creature.combat_damage_assignment = damages
+                damage_assignment_legally_assigned = True
+                for creature in creatures:
+                    if not creature.is_unblocked and not self.is_combat_damage_legally_assigned(creature):
+                        damage_assignment_legally_assigned = False
+                        break
+                if not damage_assignment_legally_assigned:
+                    for creature in creatures:
+                        creature.combat_damage_assignment = []
         for creature in self.get_all_in_combat():
             self.creature_deal_combat_damage(creature)
 
@@ -771,6 +782,7 @@ class Game:
         for permanent in self.get_permanents():
             permanent.remove_marked_damage()
         self.effects = [effect for effect in self.effects if effect.duration != EffectDuration.EOT]
+        self.apply_effects()
 
     def create_continuous_effect(self, effect):
         self.effects.append(effect)

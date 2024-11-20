@@ -51,12 +51,19 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 # game.add_permanents(player1, [cards.swamp.copy() for i in range(6)])
 # game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
+# player1 = game.players[0]
+# player2 = game.players[1]
+# game.add_cards(player1, [cards.banishing_light.copy()])
+# game.add_cards(player2, [cards.forest.copy(), cards.destroy.copy()])
+# game.add_permanents(player1, [cards.plains.copy() for i in range(3)])
+# game.add_permanents(player2, [cards.aegis_turtle.copy()])
+
 player1 = game.players[0]
 player2 = game.players[1]
-game.add_cards(player1, [cards.banishing_light.copy()])
-game.add_cards(player2, [cards.forest.copy(), cards.destroy.copy()])
-game.add_permanents(player1, [cards.plains.copy() for i in range(3)])
-game.add_permanents(player2, [cards.aegis_turtle.copy()])
+game.add_cards(player1, [cards.beast_kin_ranger.copy()]+[cards.aegis_turtle.copy() for i in range(3)])
+game.add_cards(player2, [cards.forest.copy()])
+game.add_permanents(player1, [cards.forest.copy() for i in range(3)]+[cards.island.copy() for i in range(3)])
+game.add_permanents(player2, [cards.ambush_wolf.copy()])
 
 
 game.play_game()

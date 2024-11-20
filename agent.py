@@ -1,4 +1,6 @@
 import os
+
+from enums import AbilityKeyword
 input_file = open("input.txt")
 
 file_size = os.path.getsize("input.txt")
@@ -231,6 +233,8 @@ class Agent:
                     [creature, [[creature.power, creature.attack_target]]])
                 continue
             creatures_to_damage = creature.combat_foes
+            if AbilityKeyword.TRAMPLE in creature.keywords:
+                creatures_to_damage.append(creature.attack_target)
             if len(creatures_to_damage) == 0:
                 continue
             if len(creatures_to_damage) == 1:

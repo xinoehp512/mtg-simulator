@@ -101,6 +101,7 @@ class AbilityKeyword(Enum):
     FLASH = 0
     VIGILANCE = 1
     HASTE = 2
+    TRAMPLE = 3
 
 
 class TargetType(Enum):

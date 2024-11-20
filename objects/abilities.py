@@ -14,6 +14,7 @@ from triggered_ability import Triggered_Ability
 flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 haste = Keyword_Ability(AbilityKeyword.HASTE)
+trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
 
 
 def can_be_tapped(game, _, object):
@@ -123,12 +124,21 @@ def destroy_permanent(game, controller, source, modes, targets):
     game.destroy(target)
 
 
+def pump_self_p1p0(game, controller, source, modes, targets):
+    effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
+    game.create_continuous_effect(effect)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
 def trigger_on_3_creatures_attack(event, object):
     return isinstance(event, Attack_Event) and event.num_attacking >= 3
+
+
+def trigger_on_controlled_creature_enter(event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.controller == object.controller
 
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
@@ -160,3 +170,4 @@ banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([TargetTy
 
 destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
                                 destroy_permanent, [TargetType.NL_PERMANENT_OPP_CONTROL])
+beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)

@@ -55,3 +55,5 @@ bake_into_a_pie = Instant_Card("Bake into a Pie (2BB)", [ManaCost.GENERIC]*2 +
                                [ManaCost.BLACK]*2, [CardType.INSTANT], [bake_into_a_pie_ability], "")
 banishing_light = Enchantment_Card("Banishing Light (2W)", [ManaCost.GENERIC] *
                                    2+[ManaCost.WHITE], [CardType.ENCHANTMENT], [banishing_light_ability], "")
+beast_kin_ranger = Creature_Card("Beast-Kin Ranger (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN],
+                                 [CardType.CREATURE, CreatureType.ELF, CreatureType.RANGER], [trample, beastkin_ranger_pump], "", 3, 3)
