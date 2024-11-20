@@ -8,6 +8,7 @@ from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
+from replacement_effect import Replacement_Effect
 from spell_ability import Spell_Ability
 from triggered_ability import Triggered_Ability
 
@@ -15,14 +16,15 @@ flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 haste = Keyword_Ability(AbilityKeyword.HASTE)
 trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
+none = Keyword_Ability(None)
 
 
-def can_be_tapped(game, _, object):
-    return not object.tapped
+def can_tap_self(game, _, object):
+    return not (object.tapped or (object.is_creature and object.summoning_sick))
 
 
 def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
-    if object.tapped:
+    if object.tapped or (object.is_creature and object.summoning_sick):
         raise UnpayableCostException
     game.tap(object)
     return Permanent_Tapped_Event(object)
@@ -57,11 +59,21 @@ def add_one_green_mana(game, player, object, _):
     return game.add_mana(player, [Mana(ManaType.GREEN, object)])
 
 
-def gain_3(game, controller, source, modes, targets):
-    game.player_gain_life(controller, 3)
+def add_x_or_y_mana(color1, color2):
+    def _(game, player, object, targets):
+        color = player.agent.choose_one([color1, color2])
+        return game.add_mana(player, [Mana(color, object)])
+    return _
 
 
-food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.", can_be_tapped, tap_sac_pay_2, gain_3, SingleMode(None))
+def gain_x(amount):
+    def _(game, controller, source, modes, targets):
+        game.player_gain_life(controller, amount)
+    return _
+
+
+food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.",
+                                 can_tap_self, tap_sac_pay_2, gain_x(3), SingleMode(None))
 food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
 
 
@@ -152,16 +164,26 @@ def trigger_on_controlled_creature_enter(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.controller == object.controller
 
 
-plains_ability = Activated_Ability("{T}: Add {W}", can_be_tapped, tap_self,
-                                   add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.WHITE)
-island_ability = Activated_Ability("{T}: Add {U}", can_be_tapped, tap_self,
-                                   add_one_blue_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.BLUE)
-swamp_ability = Activated_Ability("{T}: Add {B}", can_be_tapped, tap_self,
-                                  add_one_black_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.BLACK)
-mountain_ability = Activated_Ability("{T}: Add {R}", can_be_tapped, tap_self,
-                                     add_one_red_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.RED)
-forest_ability = Activated_Ability("{T}: Add {G}", can_be_tapped, tap_self,
-                                   add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=ManaType.GREEN)
+def replace_enters(event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent == object
+
+
+def enters_tapped(event):
+    new_event = event.copy()
+    new_event.permanent.tapped = True
+    return new_event
+
+
+plains_ability = Activated_Ability("{T}: Add {W}", can_tap_self, tap_self,
+                                   add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
+island_ability = Activated_Ability("{T}: Add {U}", can_tap_self, tap_self,
+                                   add_one_blue_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.BLUE])
+swamp_ability = Activated_Ability("{T}: Add {B}", can_tap_self, tap_self,
+                                  add_one_black_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.BLACK])
+mountain_ability = Activated_Ability("{T}: Add {R}", can_tap_self, tap_self,
+                                     add_one_red_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.RED])
+forest_ability = Activated_Ability("{T}: Add {G}", can_tap_self, tap_self,
+                                   add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.GREEN])
 
 
 lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [TargetType.DAMAGEABLE])
@@ -174,7 +196,7 @@ apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
-                                       can_be_tapped, tap_self, give_haste, SingleMode([TargetType.CREATURE]))
+                                       can_tap_self, tap_self, give_haste, SingleMode([TargetType.CREATURE]))
 bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
                                         destroy_creature_and_make_food, [TargetType.CREATURE])
 banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.NL_PERMANENT_OPP_CONTROL]), exile_until_leaves)
@@ -185,3 +207,9 @@ beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, S
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.CREATURE_OPP_CONTROL]), bounce_permanent)
 bite_down_ability = Spell_Ability("Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
                                   creature_bite, [TargetType.CREATURE_YOU_CONTROL, TargetType.CREATURE_PLANESWALKER_DONT_CONTROL])
+enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
+gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
+rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.RED])
+selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])

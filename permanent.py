@@ -1,6 +1,7 @@
 from activated_ability import Activated_Ability
 from damageable_object import Damageable_Object
 from keyword_ability import Keyword_Ability
+from replacement_effect import Replacement_Effect
 from triggered_ability import Triggered_Ability
 
 
@@ -108,6 +109,10 @@ class Permanent(Damageable_Object):
             if isinstance(ability, Triggered_Ability):
                 abilities.append(ability)
         return abilities
+
+    @property
+    def replacement_effects(self):
+        return [ability for ability in self.abilities if isinstance(ability, Replacement_Effect)]
 
     @property
     def keywords(self):

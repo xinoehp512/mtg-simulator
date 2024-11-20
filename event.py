@@ -1,8 +1,11 @@
 class Event:
     def __init__(self):
-        pass
+        self.occurred = False
 
     def undo(self):
+        raise NotImplementedError
+
+    def copy(self):
         raise NotImplementedError
 
 
@@ -77,9 +80,17 @@ class Mana_Ability_Event(Event):
 
 
 class Permanent_Enter_Event(Event):
-    def __init__(self, permanent):
+    def __init__(self, game, permanent):
         super().__init__()
+        self.game = game
         self.permanent = permanent
+
+    def execute(self):
+        self.game.battlefield.add_objects([self.permanent])
+        self.occurred = True
+
+    def copy(self):
+        return Permanent_Enter_Event(self.game, self.permanent)
 
 
 class Permanent_Exiled_Event(Event):

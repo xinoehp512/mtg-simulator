@@ -183,8 +183,6 @@ class Agent:
         abilities = game.get_mana_abilities_of(player)
         if len(abilities) == 0:
             return False
-        if len(abilities) == 1:
-            return abilities[0]
         user_display(game)
         while True:
             for i, ability in enumerate(abilities):

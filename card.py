@@ -45,7 +45,7 @@ class Card:
             colors.append(color_to_vis(color))
         for ability in self.abilities:
             if isinstance(ability, Activated_Ability) and ability.mana_produced is not None:
-                colors.append(color_to_vis(ability.mana_produced))
+                colors.extend(color_to_vis(color) for color in ability.mana_produced)
 
         if len(colors) == 1:
             return colors[0]

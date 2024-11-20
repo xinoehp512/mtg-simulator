@@ -554,9 +554,12 @@ class Game:
     def create_battlefield_object(self, controller, card):
         permanent = Permanent(card, controller, self.permanent_id)
         self.permanent_id += 1
-        self.battlefield.add_objects([permanent])
         # TODO: Update continuous effects here
-        event = Permanent_Enter_Event(permanent)
+        event = Permanent_Enter_Event(self, permanent)
+        for effect in permanent.replacement_effects:  # TODO: Make replacement effects work right.
+            if effect.replaces(event):
+                event = effect.replace(event)
+        event.execute()
         self.check_event_for_triggers(event)
 
     def create_token(self, controller, token):
