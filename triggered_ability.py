@@ -31,3 +31,7 @@ class Trigger_Instance:
     @property
     def result_function(self):
         return self.ability.result_function
+
+    @property
+    def object(self):
+        return self.ability.object

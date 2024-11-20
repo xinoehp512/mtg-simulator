@@ -107,7 +107,8 @@ class TargetType(Enum):
     DAMAGEABLE = 0
     CREATURE = 1
     CREATURE_YOU_CONTROL = 2
-    OPT_GRAVECARD = 3
+    NL_PERMANENT_OPP_CONTROL = 3
+    OPT_GRAVECARD = 4
 
 
 class EffectDuration(Enum):

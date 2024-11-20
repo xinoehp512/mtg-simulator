@@ -82,6 +82,20 @@ class Permanent_Enter_Event(Event):
         self.permanent = permanent
 
 
+class Permanent_Exiled_Event(Event):
+    def __init__(self, permanent, exile_card):
+        super().__init__()
+        self.permanent = permanent
+        self.exile_card = exile_card
+
+
+class Permanent_Died_Event(Event):
+    def __init__(self, permanent, grave_card):
+        super().__init__()
+        self.permanent = permanent
+        self.grave_card = grave_card
+
+
 class Attack_Event(Event):
     def __init__(self, attacks):
         super().__init__()

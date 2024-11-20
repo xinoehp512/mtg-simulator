@@ -116,6 +116,14 @@ class Creature_Card(Card):
                              self.text, self.power, self.toughness, color_indicator=self.color_indicator)
 
 
+class Enchantment_Card(Card):
+    def __init__(self, name, cost, types, abilities, text, color_indicator=[]):
+        super().__init__(name, cost, color_indicator, types, abilities, text)
+
+    def copy(self):
+        return Enchantment_Card(self.name, self.cost, self.types, [ability.copy() for ability in self.abilities], self.text, color_indicator=self.color_indicator)
+
+
 class Land_Card(Card):
 
     def __init__(self, name, types, abilities, text):

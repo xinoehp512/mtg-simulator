@@ -4,11 +4,12 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Enter_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
 from hand_object import Hand_Object
+from listener import Listener
 from permanent import Permanent
 from player import Player
 from target import Target
@@ -52,6 +53,7 @@ class Game:
 
         self.effects = []
         self.triggers_waiting = []
+        self.listeners = []
     # Properties
 
     @property
@@ -83,6 +85,9 @@ class Game:
 
     def get_alive_players(self):
         return [player for player in self.players if player.is_alive]
+
+    def get_opponents(self, player):
+        return [p for p in self.players if p != player]
 
     def get_priority_actions(self, player):
         actions = []
@@ -128,6 +133,12 @@ class Game:
     def get_permanents_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.controller == player)
 
+    def get_nonland_permanents_of(self, player):
+        return self.battlefield.get_by_criteria(lambda p: p.controller == player and not p.is_land)
+
+    def has_permanent(self, permanent):
+        return permanent in self.battlefield.objects
+
     def get_creatures(self):
         return self.battlefield.get_by_criteria(lambda p: p.is_creature)
 
@@ -171,6 +182,9 @@ class Game:
             return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == player, target) for target in self.get_creatures_of(player)]
         if target_type == TargetType.OPT_GRAVECARD:
             return [Target(lambda t: isinstance(t, Graveyard_Object), target) for target in self.get_gravecards()]+[None]
+        if target_type == TargetType.NL_PERMANENT_OPP_CONTROL:
+            opponent = self.get_opponents(player)[0]
+            return [Target(lambda t: isinstance(t, Permanent) and not t.is_land and t.controller == opponent, target) for target in self.get_nonland_permanents_of(opponent)]
 
     # Combat Query functions
 
@@ -361,7 +375,7 @@ class Game:
                 stack_object.controller, stack_object.card)
         else:
             stack_object.effect_function(
-                self, stack_object.controller, stack_object.modes, stack_object.targets)
+                self, stack_object.controller, stack_object.source, stack_object.modes, stack_object.targets)
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:
@@ -412,6 +426,18 @@ class Game:
             for trigger in self.triggers_waiting:  # TODO: Order by APNAP, allow player choice
                 self.trigger_ability(trigger)
             self.triggers_waiting = []
+
+    def check_event_for_triggers(self, event):
+        triggered_abilities = self.get_triggered_abilities()
+        for ability in triggered_abilities:
+            if ability.is_triggered_by(event):
+                self.triggers_waiting.append(ability.get_trigger())
+        for listener in self.listeners:
+            if listener.dead:
+                continue
+            if listener.condition_met(self):
+                listener.invoke()
+        self.listeners = [listener for listener in self.listeners if not listener.dead]
 
     def apply_effects(self):
         for creature in self.get_creatures():
@@ -519,9 +545,10 @@ class Game:
         token.owner = controller
         self.create_battlefield_object(controller, token)
 
-    def put_in_graveyard(self, player, card):
+    def put_in_graveyard(self, player, card):  # TODO: Refactor to standardize zone changes!
         grave_card = Graveyard_Object(card)
         player.graveyard.add_objects([grave_card])
+        return grave_card
 
     def remove_player(self, player):
         player.is_alive = False
@@ -534,19 +561,42 @@ class Game:
     def destroy(self, permanent):
         self.battlefield.remove(permanent)
         permanent.is_alive = False
-        self.put_in_graveyard(permanent.owner, permanent.card)
+        grave_card = self.put_in_graveyard(permanent.owner, permanent.card)
+        event = Permanent_Died_Event(permanent, grave_card)
+        self.check_event_for_triggers(event)
+
+    def exile_from_battlefield(self, permanent):
+        self.battlefield.remove(permanent)
+        permanent.is_alive = False
+        exile_card = Exile_Object(permanent.card)
+        self.exile.add_objects([exile_card])
+        event = Permanent_Exiled_Event(permanent, exile_card)
+        self.check_event_for_triggers(event)
+        return event
 
     def sacrifice(self, player, permanent):
         if (permanent.controller != player):
             return False
+        # TODO: Refactor so sacrifice, destroy, and other methods all use the same battlefield->graveyard function
         self.battlefield.remove(permanent)
         permanent.is_alive = False
         self.put_in_graveyard(permanent.owner, permanent.card)
 
     def exile_from_graveyard(self, card):
         card.owner.graveyard.remove(card)
+        card.is_alive = False
         exile_card = Exile_Object(card)
         self.exile.add_objects([exile_card])
+
+    def exile_until_leaves(self, permanent_exiled, permanent_key):
+        if not permanent_key.is_alive:
+            return
+        exile_event = self.exile_from_battlefield(permanent_exiled)
+        exile_card = exile_event.exile_card
+
+        return_listener = Listener(lambda game: not game.has_permanent(permanent_key),
+                                   lambda: self.create_battlefield_object(exile_card.owner, exile_card.card))
+        self.listeners.append(return_listener)
 
     def untap(self, permanent):
         permanent.tapped = False
@@ -567,12 +617,6 @@ class Game:
     def add_mana(self, player, mana):
         player.mana_pool.add(mana)
         return Mana_Produced_Event(player, mana)
-
-    def check_event_for_triggers(self, event):
-        triggered_abilities = self.get_triggered_abilities()
-        for ability in triggered_abilities:
-            if ability.is_triggered_by(event):
-                self.triggers_waiting.append(ability.get_trigger())
 
     def player_gain_life(self, player, amount):
         player.life += amount
@@ -623,7 +667,8 @@ class Game:
                     targets.extend(mode_targets)
             if targets == []:
                 targets = None
-            activation_object = Ability_Stack_Object(player, ability.result_function, targets=targets, modes=[mode.id for mode in modes])
+            activation_object = Ability_Stack_Object(player, effect_function=ability.result_function, source=ability.object,
+                                                     targets=targets, modes=[mode.id for mode in modes])
             try:
                 cost_effect = ability.pay_cost(self, player)
             except UnpayableCostException:
@@ -644,7 +689,7 @@ class Game:
             targets = self.player_choose_targets(player, targets_required)
 
         spell_object = Ability_Stack_Object(
-            player, spell.card.spell_effect, targets=targets, card=spell.card)
+            player, effect_function=spell.card.spell_effect, source=spell, targets=targets, card=spell.card)
         cost = spell.cost
         self.player_activate_mana(player, cost)
         try:
@@ -677,7 +722,8 @@ class Game:
                 targets.extend(mode_targets)
         if targets == []:
             targets = None
-        trigger_object = Ability_Stack_Object(controller, ability.result_function, targets=targets, modes=[mode.id for mode in modes])
+        trigger_object = Ability_Stack_Object(controller, effect_function=ability.result_function, source=ability.object,
+                                              targets=targets, modes=[mode.id for mode in modes])
         self.put_on_stack(trigger_object)
 
     def player_activate_mana(self, player, cost):

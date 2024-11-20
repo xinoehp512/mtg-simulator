@@ -56,7 +56,7 @@ def add_one_green_mana(game, player, object, _):
     return game.add_mana(player, [Mana(ManaType.GREEN, object)])
 
 
-def gain_3(game, controller, modes, targets):
+def gain_3(game, controller, source, modes, targets):
     game.player_gain_life(controller, 3)
 
 
@@ -64,30 +64,30 @@ food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.
 food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
 
 
-def deal_3(game, controller, modes, targets):
+def deal_3(game, controller, source, modes, targets):
     game.deal_damage(targets[0].object, 3)
 
 
-def grow_3(game, controller, modes, targets):
+def grow_3(game, controller, source, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
     game.create_continuous_effect(effect)
 
 
-def make_2_tokens(game, controller, modes, targets):
+def make_2_tokens(game, controller, source, modes, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
 
-def exile_gravecard(game, controller, modes, targets):
+def exile_gravecard(game, controller, source, modes, targets):
     if targets == None:
         return
     target = targets[0].object
     game.exile_from_graveyard(target)
 
 
-def put_2_counters_or_gain_4(game, controller, modes, targets):
+def put_2_counters_or_gain_4(game, controller, source, modes, targets):
     mode = modes[0]
     if mode == 0:
         target = targets[0].object
@@ -96,21 +96,31 @@ def put_2_counters_or_gain_4(game, controller, modes, targets):
         game.player_gain_life(controller, 4)
 
 
-def put_counter(game, controller, modes, targets):
+def put_counter(game, controller, source, modes, targets):
     target = targets[0].object
     game.put_counters_on(CounterType.P1P1, 1, target)
 
 
-def give_haste(game, controller, modes, targets):
+def give_haste(game, controller, source, modes, targets):
     target = targets[0].object
     effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
     game.create_continuous_effect(effect)
 
 
-def destroy_creature_and_make_food(game, controller, modes, targets):
+def destroy_creature_and_make_food(game, controller, source, modes, targets):
     target = targets[0].object
     game.destroy(target)
     game.create_token(controller, food.copy())
+
+
+def exile_until_leaves(game, controller, source, modes, targets):
+    target = targets[0].object
+    game.exile_until_leaves(target, source)
+
+
+def destroy_permanent(game, controller, source, modes, targets):
+    target = targets[0].object
+    game.destroy(target)
 
 
 def trigger_on_etb(event, object):
@@ -146,3 +156,7 @@ axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until e
                                        can_be_tapped, tap_self, give_haste, SingleMode([TargetType.CREATURE]))
 bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
                                         destroy_creature_and_make_food, [TargetType.CREATURE])
+banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.NL_PERMANENT_OPP_CONTROL]), exile_until_leaves)
+
+destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
+                                destroy_permanent, [TargetType.NL_PERMANENT_OPP_CONTROL])

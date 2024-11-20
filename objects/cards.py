@@ -1,4 +1,4 @@
-from card import Creature_Card, Instant_Card, Land_Card, Sorcery_Card
+from card import Creature_Card, Enchantment_Card, Instant_Card, Land_Card, Sorcery_Card
 from enums import BasicLandType, CardType, CreatureType, ManaCost
 from objects.abilities import *
 
@@ -40,6 +40,8 @@ giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INST
 rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
                                    CardType.SORCERY], [reinforcements_ability], "")
 
+destroy = Sorcery_Card("Destroy (1)", [ManaCost.GENERIC], [CardType.SORCERY], [destroy_ability], "")
+
 aegis_turtle = Creature_Card("Aegis Turtle (U)", [ManaCost.BLUE], [CardType.CREATURE, CreatureType.TURTLE], [], "", 0, 5)
 ambush_wolf = Creature_Card("Ambush Wolf (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN],
                             [CardType.CREATURE, CreatureType.WOLF], [flash, ambush_wolf_etb], "", 4, 2)
@@ -51,3 +53,5 @@ axgard_cavalry = Creature_Card("Axgard Cavalry (1R)", [ManaCost.GENERIC]+[ManaCo
                                [CardType.CREATURE, CreatureType.DWARF, CreatureType.BERSERKER], [axgard_cavalry_tap], "", 2, 2)
 bake_into_a_pie = Instant_Card("Bake into a Pie (2BB)", [ManaCost.GENERIC]*2 +
                                [ManaCost.BLACK]*2, [CardType.INSTANT], [bake_into_a_pie_ability], "")
+banishing_light = Enchantment_Card("Banishing Light (2W)", [ManaCost.GENERIC] *
+                                   2+[ManaCost.WHITE], [CardType.ENCHANTMENT], [banishing_light_ability], "")
