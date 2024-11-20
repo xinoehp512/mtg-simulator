@@ -173,7 +173,8 @@ class Game:
             gravecards.extend(player.graveyard.objects)
         return gravecards
 
-    def get_targets(self, player, target_type):
+    def get_targets(self, player, target_type):  # TODO: Clean up targeting- only one conditional for each target type.
+        opponent = self.get_opponents(player)[0]
         if target_type == TargetType.DAMAGEABLE:
             return [Target(lambda t: isinstance(t, Player) or (isinstance(t, Permanent) and t.is_damageable), target) for target in self.get_damageable()]
         if target_type == TargetType.CREATURE:
@@ -183,8 +184,11 @@ class Game:
         if target_type == TargetType.OPT_GRAVECARD:
             return [Target(lambda t: isinstance(t, Graveyard_Object), target) for target in self.get_gravecards()]+[None]
         if target_type == TargetType.NL_PERMANENT_OPP_CONTROL:
-            opponent = self.get_opponents(player)[0]
             return [Target(lambda t: isinstance(t, Permanent) and not t.is_land and t.controller == opponent, target) for target in self.get_nonland_permanents_of(opponent)]
+        if target_type == TargetType.CREATURE_OPP_CONTROL:
+            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == opponent, target) for target in self.get_creatures_of(opponent)]
+        if target_type == TargetType.CREATURE_DONT_CONTROL:
+            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller != player, target) for target in self.get_creatures_of(opponent)]
 
     # Combat Query functions
 
@@ -361,7 +365,7 @@ class Game:
 
     def resolve_stack_object(self, stack_object):
         stack_object.is_alive = False
-        if stack_object.targets is not None:
+        if stack_object.targets is not None:  # TODO: Update targeting to work properly (note to turn illegal targets to 'None')
             for target in stack_object.targets:
                 if target.is_legal():
                     break
@@ -608,6 +612,12 @@ class Game:
         return_listener = Listener(lambda game: not game.has_permanent(permanent_key),
                                    lambda: self.create_battlefield_object(exile_card.owner, exile_card.card))
         self.listeners.append(return_listener)
+
+    def return_permanent_to_hand(self, permanent):
+        self.battlefield.remove(permanent)
+        permanent.is_alive = False
+        owner = permanent.owner
+        owner.hand.add_objects([Hand_Object(permanent.card)])
 
     def untap(self, permanent):
         permanent.tapped = False

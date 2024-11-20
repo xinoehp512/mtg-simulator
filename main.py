@@ -58,11 +58,18 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 # game.add_permanents(player1, [cards.plains.copy() for i in range(3)])
 # game.add_permanents(player2, [cards.aegis_turtle.copy()])
 
+# player1 = game.players[0]
+# player2 = game.players[1]
+# game.add_cards(player1, [cards.beast_kin_ranger.copy()]+[cards.aegis_turtle.copy() for i in range(3)])
+# game.add_cards(player2, [cards.forest.copy()])
+# game.add_permanents(player1, [cards.forest.copy() for i in range(3)]+[cards.island.copy() for i in range(3)])
+# game.add_permanents(player2, [cards.ambush_wolf.copy()])
+
 player1 = game.players[0]
 player2 = game.players[1]
-game.add_cards(player1, [cards.beast_kin_ranger.copy()]+[cards.aegis_turtle.copy() for i in range(3)])
+game.add_cards(player1, [cards.bigfin_bouncer.copy()])
 game.add_cards(player2, [cards.forest.copy()])
-game.add_permanents(player1, [cards.forest.copy() for i in range(3)]+[cards.island.copy() for i in range(3)])
+game.add_permanents(player1, [cards.island.copy() for i in range(4)])
 game.add_permanents(player2, [cards.ambush_wolf.copy()])
 
 

@@ -124,6 +124,11 @@ def destroy_permanent(game, controller, source, modes, targets):
     game.destroy(target)
 
 
+def bounce_permanent(game, controller, source, modes, targets):
+    target = targets[0].object
+    game.return_permanent_to_hand(target)
+
+
 def pump_self_p1p0(game, controller, source, modes, targets):
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
     game.create_continuous_effect(effect)
@@ -171,3 +176,4 @@ banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([TargetTy
 destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
                                 destroy_permanent, [TargetType.NL_PERMANENT_OPP_CONTROL])
 beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
+bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.CREATURE_OPP_CONTROL]), bounce_permanent)

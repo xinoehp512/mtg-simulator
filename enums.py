@@ -110,6 +110,8 @@ class TargetType(Enum):
     CREATURE_YOU_CONTROL = 2
     NL_PERMANENT_OPP_CONTROL = 3
     OPT_GRAVECARD = 4
+    CREATURE_OPP_CONTROL = 5
+    CREATURE_DONT_CONTROL = 6  # Are these two the same? Not in team games!
 
 
 class EffectDuration(Enum):
