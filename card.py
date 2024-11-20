@@ -63,6 +63,10 @@ class Card:
         return CardType.LAND in self.types
 
     @property
+    def is_planeswalker(self):
+        return CardType.PLANESWALKER in self.types
+
+    @property
     def is_spell(self):
         return not self.is_land
 

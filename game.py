@@ -145,6 +145,9 @@ class Game:
     def get_creatures_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.is_creature and p.controller == player)
 
+    def get_planeswalkers_of(self, player):
+        return self.battlefield.get_by_criteria(lambda p: p.is_planeswalker and p.controller == player)
+
     def get_activated_abilities_of(self, player):
         permanents_with_ability = self.battlefield.get_by_criteria(
             lambda p: p.controller == player and p.has_activated_ability)
@@ -187,8 +190,8 @@ class Game:
             return [Target(lambda t: isinstance(t, Permanent) and not t.is_land and t.controller == opponent, target) for target in self.get_nonland_permanents_of(opponent)]
         if target_type == TargetType.CREATURE_OPP_CONTROL:
             return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == opponent, target) for target in self.get_creatures_of(opponent)]
-        if target_type == TargetType.CREATURE_DONT_CONTROL:
-            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller != player, target) for target in self.get_creatures_of(opponent)]
+        if target_type == TargetType.CREATURE_PLANESWALKER_DONT_CONTROL:
+            return [Target(lambda t: isinstance(t, Permanent) and (t.is_creature or t.is_planeswalker) and t.controller != player, target) for target in self.get_creatures_of(opponent)+self.get_planeswalkers_of(opponent)]
 
     # Combat Query functions
 

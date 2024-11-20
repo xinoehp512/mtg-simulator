@@ -134,6 +134,12 @@ def pump_self_p1p0(game, controller, source, modes, targets):
     game.create_continuous_effect(effect)
 
 
+def creature_bite(game, controller, source, modes, targets):
+    biter = targets[0].object
+    bitee = targets[1].object
+    game.deal_damage(bitee, biter.power)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -177,3 +183,5 @@ destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent co
                                 destroy_permanent, [TargetType.NL_PERMANENT_OPP_CONTROL])
 beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.CREATURE_OPP_CONTROL]), bounce_permanent)
+bite_down_ability = Spell_Ability("Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
+                                  creature_bite, [TargetType.CREATURE_YOU_CONTROL, TargetType.CREATURE_PLANESWALKER_DONT_CONTROL])

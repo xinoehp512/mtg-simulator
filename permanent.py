@@ -50,6 +50,10 @@ class Permanent(Damageable_Object):
         return self.card.is_land
 
     @property
+    def is_planeswalker(self):
+        return self.card.is_planeswalker
+
+    @property
     def is_token(self):
         return self.card.is_token
 
@@ -126,9 +130,9 @@ class Permanent(Damageable_Object):
     @property
     def combat_foes(self):
         if self.is_blocked:
-            return list(self.blockers)
+            return [blocker for blocker in self.blockers if blocker.is_alive]
         elif self.is_blocking:
-            return list(self.blocking)
+            return [attacker for attacker in self.blocking if attacker.is_alive]
         else:
             raise Exception("Not blocked or blocking")
 

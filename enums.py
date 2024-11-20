@@ -36,6 +36,7 @@ class CardType(Enum):
     ENCHANTMENT = 3
     INSTANT = 4
     SORCERY = 5
+    PLANESWALKER = 6
 
 
 class BasicLandType(Enum):
@@ -104,14 +105,14 @@ class AbilityKeyword(Enum):
     TRAMPLE = 3
 
 
-class TargetType(Enum):
+class TargetType(Enum):  # TODO: Refactor to be more constructive.
     DAMAGEABLE = 0
     CREATURE = 1
     CREATURE_YOU_CONTROL = 2
     NL_PERMANENT_OPP_CONTROL = 3
     OPT_GRAVECARD = 4
     CREATURE_OPP_CONTROL = 5
-    CREATURE_DONT_CONTROL = 6  # Are these two the same? Not in team games!
+    CREATURE_PLANESWALKER_DONT_CONTROL = 6  # Are these two the same? Not in team games!
 
 
 class EffectDuration(Enum):

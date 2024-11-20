@@ -59,3 +59,4 @@ beast_kin_ranger = Creature_Card("Beast-Kin Ranger (2G)", [ManaCost.GENERIC]*2+[
                                  [CardType.CREATURE, CreatureType.ELF, CreatureType.RANGER], [trample, beastkin_ranger_pump], "", 3, 3)
 bigfin_bouncer = Creature_Card("Bigfin Bouncer (3U)", [ManaCost.GENERIC]*3+[ManaCost.BLUE],
                                [CardType.CREATURE, CreatureType.SHARK, CreatureType.PIRATE], [bigfin_bouncer_etb], "", 3, 2)
+bite_down = Instant_Card("Bite Down (1G)", [ManaCost.GENERIC]+[ManaCost.GREEN], [CardType.INSTANT], [bite_down_ability], "")
