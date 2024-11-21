@@ -153,6 +153,12 @@ def creature_bite(game, controller, source, modes, targets):
     game.deal_damage(bitee, biter.power)
 
 
+def opponents_discard(game, controller, source, modes, targets):
+    opponents = game.get_opponents(controller)
+    for opponent in opponents:
+        game.player_discard_x(opponent, 1)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -227,3 +233,4 @@ selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, t
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
 broken_wings_ability = Spell_Ability("Destroy target artifact, enchantment, or creature with flying.",
                                      destroy_permanent, [broken_wings_target])
+burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)

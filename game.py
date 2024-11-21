@@ -638,18 +638,22 @@ class Game:
             return False
         player.hand.add_objects([Hand_Object(player.library.pop())])
 
-    def player_discard(self, player, card):
+    def player_discard_card(self, player, card):
         if card not in player.hand.objects:
             raise Exception("Can't discard a card that isn't there!")
         player.hand.remove(card)
         self.put_in_graveyard(player, card.card)
 
+    def player_discard_x(self, player, num):
+        num = min(num, player.hand.size)
+        cards_to_discard = player.agent.choose_cards_to_discard(
+            self, player.hand.objects, num)
+        for card in cards_to_discard:
+            self.player_discard_card(player, card)
+
     def player_discard_to_hand_size(self, player):
         if player.max_hand_size is not None and player.hand.size > player.max_hand_size:
-            cards_to_discard = player.agent.choose_cards_to_discard(
-                self, player.hand.objects, player.hand.size-player.max_hand_size)
-            for card in cards_to_discard:
-                self.player_discard(player, card)
+            self.player_discard_x(player, player.hand.size-player.max_hand_size)
 
     def player_activate_ability(self, player, ability):
         # Send some sort of signal to the mana manager to provide a backup point.

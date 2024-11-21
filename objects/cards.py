@@ -63,3 +63,5 @@ bite_down = Instant_Card("Bite Down (1G)", [ManaCost.GENERIC]+[ManaCost.GREEN], 
 bloodfell_caves = Land_Card("Bloodfell Caves", [CardType.LAND], [enters_tapped_replacement, gain_1_etb, rakdos_land_ability], "")
 blossoming_sands = Land_Card("Blossoming Sands", [CardType.LAND], [enters_tapped_replacement, gain_1_etb, selesnya_land_ability], "")
 broken_wings = Instant_Card("Broken Wings (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN], [CardType.INSTANT], [broken_wings_ability], "")
+burglar_rat = Creature_Card("Burglar Rat (1B)", [ManaCost.GENERIC]+[ManaCost.BLACK],
+                            [CardType.CREATURE, CreatureType.RAT], [burglar_etb], "", 1, 1)
