@@ -51,6 +51,14 @@ class Permanent(Damageable_Object):
         return self.card.is_land
 
     @property
+    def is_artifact(self):
+        return self.card.is_artifact
+
+    @property
+    def is_enchantment(self):
+        return self.card.is_enchantment
+
+    @property
     def is_planeswalker(self):
         return self.card.is_planeswalker
 

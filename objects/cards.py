@@ -62,3 +62,4 @@ bigfin_bouncer = Creature_Card("Bigfin Bouncer (3U)", [ManaCost.GENERIC]*3+[Mana
 bite_down = Instant_Card("Bite Down (1G)", [ManaCost.GENERIC]+[ManaCost.GREEN], [CardType.INSTANT], [bite_down_ability], "")
 bloodfell_caves = Land_Card("Bloodfell Caves", [CardType.LAND], [enters_tapped_replacement, gain_1_etb, rakdos_land_ability], "")
 blossoming_sands = Land_Card("Blossoming Sands", [CardType.LAND], [enters_tapped_replacement, gain_1_etb, selesnya_land_ability], "")
+broken_wings = Instant_Card("Broken Wings (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN], [CardType.INSTANT], [broken_wings_ability], "")

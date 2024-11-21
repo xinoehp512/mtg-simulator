@@ -2,7 +2,7 @@ from action import Action
 from activated_ability import Activated_Ability
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, TargetType
+from enums import AbilityKeyword, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -10,6 +10,7 @@ from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
 from replacement_effect import Replacement_Effect
 from spell_ability import Spell_Ability
+from target_type import TargetType
 from triggered_ability import Triggered_Ability
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
@@ -174,6 +175,17 @@ def enters_tapped(event):
     return new_event
 
 
+damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
+creature_target = TargetType([(TargetTypeBase.CREATURE,)])
+opt_gravecard_target = TargetType([(TargetTypeBase.GRAVECARD,)], True)
+creature_you_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.YOU_CONTROL)])
+creature_opp_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.OPP_CONTROL)])
+nl_permanent_opp_control_target = TargetType([(TargetTypeBase.NL_PERMANENT, TargetTypeModifier.OPP_CONTROL)])
+creature_planeswalker_dont_control_target = TargetType(
+    [(TargetTypeBase.CREATURE, TargetTypeModifier.DONT_CONTROL), (TargetTypeBase.PLANESWALKER, TargetTypeModifier.DONT_CONTROL)])
+broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
+                                 (TargetTypeBase.CREATURE, TargetTypeModifier.HAS_FLYING)])
+
 plains_ability = Activated_Ability("{T}: Add {W}", can_tap_self, tap_self,
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
 island_ability = Activated_Ability("{T}: Add {U}", can_tap_self, tap_self,
@@ -186,30 +198,32 @@ forest_ability = Activated_Ability("{T}: Add {G}", can_tap_self, tap_self,
                                    add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.GREEN])
 
 
-lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [TargetType.DAMAGEABLE])
-giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [TargetType.CREATURE])
+lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [damageable_target])
+giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [creature_target])
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 
-ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.OPT_GRAVECARD]), exile_gravecard)
+ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_target]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
-    1, [Mode([TargetType.CREATURE_YOU_CONTROL], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
-armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([TargetType.CREATURE_YOU_CONTROL]), put_counter)
+    1, [Mode([creature_you_control_target], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
+armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([creature_you_control_target]), put_counter)
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
-                                       can_tap_self, tap_self, give_haste, SingleMode([TargetType.CREATURE]))
+                                       can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
 bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
-                                        destroy_creature_and_make_food, [TargetType.CREATURE])
-banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.NL_PERMANENT_OPP_CONTROL]), exile_until_leaves)
+                                        destroy_creature_and_make_food, [creature_target])
+banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([nl_permanent_opp_control_target]), exile_until_leaves)
 
 destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
-                                destroy_permanent, [TargetType.NL_PERMANENT_OPP_CONTROL])
+                                destroy_permanent, [nl_permanent_opp_control_target])
 beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
-bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([TargetType.CREATURE_OPP_CONTROL]), bounce_permanent)
+bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_control_target]), bounce_permanent)
 bite_down_ability = Spell_Ability("Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
-                                  creature_bite, [TargetType.CREATURE_YOU_CONTROL, TargetType.CREATURE_PLANESWALKER_DONT_CONTROL])
+                                  creature_bite, [creature_you_control_target, creature_planeswalker_dont_control_target])
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.RED])
 selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
+broken_wings_ability = Spell_Ability("Destroy target artifact, enchantment, or creature with flying.",
+                                     destroy_permanent, [broken_wings_target])

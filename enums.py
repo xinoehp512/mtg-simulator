@@ -103,16 +103,24 @@ class AbilityKeyword(Enum):
     VIGILANCE = 1
     HASTE = 2
     TRAMPLE = 3
+    FLYING = 4
 
 
-class TargetType(Enum):  # TODO: Refactor to be more constructive.
+class TargetTypeBase(Enum):
     DAMAGEABLE = 0
     CREATURE = 1
-    CREATURE_YOU_CONTROL = 2
-    NL_PERMANENT_OPP_CONTROL = 3
-    OPT_GRAVECARD = 4
-    CREATURE_OPP_CONTROL = 5
-    CREATURE_PLANESWALKER_DONT_CONTROL = 6  # Are these two the same? Not in team games!
+    NL_PERMANENT = 2
+    GRAVECARD = 3
+    PLANESWALKER = 4
+    ARTIFACT = 5
+    ENCHANTMENT = 6
+
+
+class TargetTypeModifier(Enum):
+    YOU_CONTROL = 0
+    OPP_CONTROL = 1
+    DONT_CONTROL = 2
+    HAS_FLYING = 3
 
 
 class EffectDuration(Enum):

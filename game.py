@@ -3,7 +3,7 @@ from ability_stack_object import Ability_Stack_Object
 from action import Action
 from agent import Agent
 from canvas import Text_Canvas
-from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step, TargetType
+from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -176,23 +176,8 @@ class Game:
             gravecards.extend(player.graveyard.objects)
         return gravecards
 
-    def get_targets(self, player, target_type):  # TODO: Clean up targeting- only one conditional for each target type.
-        opponent = self.get_opponents(player)[0]
-        if target_type == TargetType.DAMAGEABLE:
-            return [Target(lambda t: isinstance(t, Player) or (isinstance(t, Permanent) and t.is_damageable), target) for target in self.get_damageable()]
-        if target_type == TargetType.CREATURE:
-            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature, target) for target in self.get_creatures()]
-        if target_type == TargetType.CREATURE_YOU_CONTROL:
-            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == player, target) for target in self.get_creatures_of(player)]
-        if target_type == TargetType.OPT_GRAVECARD:
-            return [Target(lambda t: isinstance(t, Graveyard_Object), target) for target in self.get_gravecards()]+[None]
-        if target_type == TargetType.NL_PERMANENT_OPP_CONTROL:
-            return [Target(lambda t: isinstance(t, Permanent) and not t.is_land and t.controller == opponent, target) for target in self.get_nonland_permanents_of(opponent)]
-        if target_type == TargetType.CREATURE_OPP_CONTROL:
-            return [Target(lambda t: isinstance(t, Permanent) and t.is_creature and t.controller == opponent, target) for target in self.get_creatures_of(opponent)]
-        if target_type == TargetType.CREATURE_PLANESWALKER_DONT_CONTROL:
-            return [Target(lambda t: isinstance(t, Permanent) and (t.is_creature or t.is_planeswalker) and t.controller != player, target) for target in self.get_creatures_of(opponent)+self.get_planeswalkers_of(opponent)]
-
+    def get_targets(self, player, target_type):  # TODO: De-function this function.
+        return target_type.get_targets(self, player)
     # Combat Query functions
 
     def get_legal_attackers(self, player):

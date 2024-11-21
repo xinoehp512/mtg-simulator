@@ -63,6 +63,14 @@ class Card:
         return CardType.LAND in self.types
 
     @property
+    def is_artifact(self):
+        return CardType.ARTIFACT in self.types
+
+    @property
+    def is_enchantment(self):
+        return CardType.ENCHANTMENT in self.types
+
+    @property
     def is_planeswalker(self):
         return CardType.PLANESWALKER in self.types
 

@@ -20,6 +20,10 @@ class Card_Object(Targetable_Object):
         return self.card.owner
 
     @property
+    def controller(self):
+        return self.owner
+
+    @property
     def is_creature(self):
         return self.card.is_creature
 
