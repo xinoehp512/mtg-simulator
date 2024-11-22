@@ -29,6 +29,10 @@ class Step(Enum):
     CLEANUP = 10
 
 
+class SuperType(Enum):
+    BASIC = 0
+
+
 class CardType(Enum):
     LAND = 0
     CREATURE = 1

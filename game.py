@@ -623,6 +623,12 @@ class Game:
     def deal_damage(self, target, damage):
         target.take_damage(damage)
 
+    def fight(self, creature1, creature2):
+        if creature1 == creature2:
+            self.deal_damage(creature1, creature1.power*2)
+        self.deal_damage(creature1, creature2.power)
+        self.deal_damage(creature2, creature1.power)
+
     def put_on_stack(self, spell_object):
         self.stack.add_objects([spell_object])
 
@@ -637,6 +643,14 @@ class Game:
         if player.library.is_empty():
             return False
         player.hand.add_objects([Hand_Object(player.library.pop())])
+
+    def player_tutor_to_hand(self, player, search_function):
+        # TODO: Move tutoring to agent.
+        tutor_targets = player.library.get_by_criteria(search_function)
+        card = player.agent.choose_one(tutor_targets)
+        player.library.remove(card)
+        player.library.shuffle()
+        player.hand.add_objects([Hand_Object(card)])
 
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:
@@ -726,7 +740,7 @@ class Game:
                 targets = None
 
         spell_object = Ability_Stack_Object(
-            player, effect_function=spell.card.spell_effect, source=None, modes={ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
+            player, effect_function=spell.card.spell_effect, source=None, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes], ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
         spell_object.source = spell_object
 
         cost = spell.cost+cost_increase
@@ -833,6 +847,11 @@ class Game:
         for card in cards:
             card.set_owner(player)
         player.graveyard.add_objects([Graveyard_Object(card) for card in cards])
+
+    def add_to_library(self, player, cards):
+        for card in cards:
+            card.set_owner(player)
+        player.library.add_objects(cards)
 
     # Display functions
     def display(self):

@@ -1,12 +1,13 @@
 from card import Creature_Card, Enchantment_Card, Instant_Card, Land_Card, Sorcery_Card
-from enums import BasicLandType, CardType, CreatureType, ManaCost
+from enums import BasicLandType, CardType, CreatureType, ManaCost, SuperType
 from objects.abilities import *
 
-plains = Land_Card("Plains", [CardType.LAND, BasicLandType.PLAINS], [plains_ability], "")
-island = Land_Card("Island", [CardType.LAND, BasicLandType.ISLAND], [island_ability], "")
-swamp = Land_Card("Swamp ", [CardType.LAND, BasicLandType.SWAMP], [swamp_ability], "")
-mountain = Land_Card("Mountn", [CardType.LAND, BasicLandType.MOUNTAIN], [mountain_ability], "")
-forest = Land_Card("Forest", [CardType.LAND, BasicLandType.FOREST], [forest_ability], "")
+# TODO: Tie the basic land abilities to the basic land types.
+plains = Land_Card("Plains", [SuperType.BASIC, CardType.LAND, BasicLandType.PLAINS], [plains_ability], "")
+island = Land_Card("Island", [SuperType.BASIC, CardType.LAND, BasicLandType.ISLAND], [island_ability], "")
+swamp = Land_Card("Swamp ", [SuperType.BASIC, CardType.LAND, BasicLandType.SWAMP], [swamp_ability], "")
+mountain = Land_Card("Mountn", [SuperType.BASIC, CardType.LAND, BasicLandType.MOUNTAIN], [mountain_ability], "")
+forest = Land_Card("Forest", [SuperType.BASIC, CardType.LAND, BasicLandType.FOREST], [forest_ability], "")
 everywhere = Land_Card("Everywhere", [CardType.LAND, BasicLandType.PLAINS, BasicLandType.ISLAND, BasicLandType.SWAMP, BasicLandType.MOUNTAIN, BasicLandType.FOREST], [plains_ability,
                        island_ability, swamp_ability, mountain_ability, forest_ability], "")
 
@@ -35,10 +36,10 @@ sphinx = Creature_Card("Sphinx (3U)", [ManaCost.GENERIC]*3+[ManaCost.BLUE], [Car
 dragon = Creature_Card("Dragon (3R)", [ManaCost.GENERIC]*3+[ManaCost.RED], [CardType.CREATURE], [], "", 7, 1)
 dinosaur = Creature_Card("Dinosaur (3G)", [ManaCost.GENERIC]*3+[ManaCost.GREEN], [CardType.CREATURE], [], "", 5, 5)
 
-lightning_bolt = Instant_Card("Lightning Bolt (R)", [ManaCost.RED], [CardType.INSTANT], [lightning_ability], "")
-giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INSTANT], [giant_growth_ability], "")
-rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
-                                   CardType.SORCERY], [reinforcements_ability], "")
+# lightning_bolt = Instant_Card("Lightning Bolt (R)", [ManaCost.RED], [CardType.INSTANT], [lightning_ability], "")
+# giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INSTANT], [giant_growth_ability], "")
+# rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
+#                                    CardType.SORCERY], [reinforcements_ability], "")
 
 destroy = Sorcery_Card("Destroy (1)", [ManaCost.GENERIC], [CardType.SORCERY], [destroy_ability], "")
 
@@ -67,3 +68,4 @@ burglar_rat = Creature_Card("Burglar Rat (1B)", [ManaCost.GENERIC]+[ManaCost.BLA
                             [CardType.CREATURE, CreatureType.RAT], [burglar_etb], "", 1, 1)
 burst_lightning = Instant_Card("Burst Lightning (R)", [ManaCost.RED], [CardType.INSTANT], [
     burst_lightning_ability, kicker([ManaCost.GENERIC]*4)], "")
+bushwhack = Sorcery_Card("Bushwhack (G)", [ManaCost.GREEN], [CardType.SORCERY], [bushwhack_ability], "")

@@ -1,6 +1,6 @@
 from activated_ability import Activated_Ability
 from additional_cost import Additional_Cost
-from enums import CardType, ColorVis, color_to_vis, cost_to_colors, AbilityKeyword
+from enums import CardType, ColorVis, SuperType, color_to_vis, cost_to_colors, AbilityKeyword
 from keyword_ability import Keyword_Ability
 
 
@@ -14,6 +14,7 @@ class Card:
         self.abilities = abilities
         self.text = text
         self.owner = None
+        self.is_alive = True
 
         self.is_token = False
         self.is_copy = False
@@ -54,6 +55,10 @@ class Card:
             return ColorVis.COLORLESS
         else:
             return ColorVis.MULTICOLOR
+
+    @property
+    def is_basic(self):
+        return SuperType.BASIC in self.types
 
     @property
     def is_creature(self):

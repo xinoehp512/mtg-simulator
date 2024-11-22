@@ -169,6 +169,17 @@ def deal_2_kicked_4(game, controller, source, modes, targets):
         game.deal_damage(target, 2)
 
 
+def tutor_land_or_fight(game, controller, source, modes, targets):
+    mode = modes[ModeType.MODES_CHOSEN][0]
+    if mode == 0:
+        # Tutor
+        game.player_tutor_to_hand(controller, lambda c: c.is_land and c.is_basic)
+    if mode == 1:
+        target1 = targets[0].object
+        target2 = targets[1].object
+        game.fight(target1, target2)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -195,6 +206,7 @@ damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
 creature_target = TargetType([(TargetTypeBase.CREATURE,)])
 opt_gravecard_target = TargetType([(TargetTypeBase.GRAVECARD,)], True)
 creature_you_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.YOU_CONTROL)])
+creature_dont_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.DONT_CONTROL)])
 creature_opp_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.OPP_CONTROL)])
 nl_permanent_opp_control_target = TargetType([(TargetTypeBase.NL_PERMANENT, TargetTypeModifier.OPP_CONTROL)])
 creature_planeswalker_dont_control_target = TargetType(
@@ -214,9 +226,9 @@ forest_ability = Activated_Ability("{T}: Add {G}", can_tap_self, tap_self,
                                    add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.GREEN])
 
 
-lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [damageable_target])
-giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [creature_target])
-reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
+# lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [damageable_target])
+# giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [creature_target])
+# reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 
 def kicker(x):
@@ -227,26 +239,26 @@ ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_ta
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([creature_you_control_target], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([creature_you_control_target]), put_counter)
-axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
-                                       can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
-bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
-                                        destroy_creature_and_make_food, SingleMode([creature_target]))
 banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([nl_permanent_opp_control_target]), exile_until_leaves)
-
-destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
-                                destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_control_target]), bounce_permanent)
-bite_down_ability = Spell_Ability("Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
-                                  creature_bite, SingleMode([creature_you_control_target, creature_planeswalker_dont_control_target]))
-enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
+burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
+
+
+axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
+                                       can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
+
+enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.RED])
 selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
-broken_wings_ability = Spell_Ability("Destroy target artifact, enchantment, or creature with flying.",
-                                     destroy_permanent, SingleMode([broken_wings_target]))
-burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
-burst_lightning_ability = Spell_Ability(
-    "Burst Lightning deals 2 damage to any target. If this spell waws kicked, it deals 4 damage instead.", deal_2_kicked_4, SingleMode([damageable_target]))
+
+bake_into_a_pie_ability = Spell_Ability(destroy_creature_and_make_food, SingleMode([creature_target]))
+destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
+bite_down_ability = Spell_Ability(creature_bite, SingleMode([creature_you_control_target, creature_planeswalker_dont_control_target]))
+broken_wings_ability = Spell_Ability(destroy_permanent, SingleMode([broken_wings_target]))
+burst_lightning_ability = Spell_Ability(deal_2_kicked_4, SingleMode([damageable_target]))
+bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
+    1, [Mode(None, "Search for a basic land", 0), Mode([creature_you_control_target, creature_dont_control_target], "Target creature you control fights target creature you don't control.", 1)]))

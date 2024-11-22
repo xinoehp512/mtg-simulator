@@ -24,9 +24,9 @@ deck2 = Deck([cards.mountain] * 8 +
              [cards.dragon] +
              [cards.dinosaur]
              )
-deck3 = Deck([cards.mountain]*10 + [cards.lightning_bolt]*20)
-deck4 = Deck([cards.forest]*10+[cards.druid]*10+[cards.giant_growth]*10)
-deck5 = Deck([cards.mountain]*10+[cards.rals_reinforcements]*10)
+# deck3 = Deck([cards.mountain]*10 + [cards.lightning_bolt]*20)
+# deck4 = Deck([cards.forest]*10+[cards.druid]*10+[cards.giant_growth]*10)
+# deck5 = Deck([cards.mountain]*10+[cards.rals_reinforcements]*10)
 
 decktest = Deck([cards.ambush_wolf]+[cards.everywhere]*10)
 deck_empty = Deck([])
