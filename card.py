@@ -1,4 +1,5 @@
 from activated_ability import Activated_Ability
+from additional_cost import Additional_Cost
 from enums import CardType, ColorVis, color_to_vis, cost_to_colors, AbilityKeyword
 from keyword_ability import Keyword_Ability
 
@@ -94,6 +95,10 @@ class Card:
             if isinstance(ability, Keyword_Ability) and ability.keyword_ability == AbilityKeyword.FLASH:
                 return True
         return False
+
+    @property
+    def additional_costs(self):
+        return [ability for ability in self.abilities if isinstance(ability, Additional_Cost)]
 
     @property
     def spell_ability(self):

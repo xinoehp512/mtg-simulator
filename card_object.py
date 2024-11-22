@@ -52,6 +52,10 @@ class Card_Object(Targetable_Object):
         return self.card.is_permanent
 
     @property
+    def additional_costs(self):
+        return self.card.additional_costs
+
+    @property
     def spell_ability(self):
         return self.card.spell_ability
 

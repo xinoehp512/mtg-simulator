@@ -65,3 +65,5 @@ blossoming_sands = Land_Card("Blossoming Sands", [CardType.LAND], [enters_tapped
 broken_wings = Instant_Card("Broken Wings (2G)", [ManaCost.GENERIC]*2+[ManaCost.GREEN], [CardType.INSTANT], [broken_wings_ability], "")
 burglar_rat = Creature_Card("Burglar Rat (1B)", [ManaCost.GENERIC]+[ManaCost.BLACK],
                             [CardType.CREATURE, CreatureType.RAT], [burglar_etb], "", 1, 1)
+burst_lightning = Instant_Card("Burst Lightning (R)", [ManaCost.RED], [CardType.INSTANT], [
+    burst_lightning_ability, kicker([ManaCost.GENERIC]*4)], "")

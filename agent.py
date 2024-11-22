@@ -50,6 +50,17 @@ class Agent:
             else:
                 print("Invalid Answer.")
 
+    def choose_yes_or_no(self, choice, message="Choose Yes or No:"):
+        while True:
+            print(f"{choice}")
+            choice = user_input(f"{self.name} {message}")
+            if choice[0].lower() == "y":
+                return True
+            elif choice[0].lower() == "n":
+                return False
+            else:
+                print("Invalid Answer.")
+
     def choose_any(self, choices, message="Choose Any Number:"):
         if len(choices) == 0:
             return []

@@ -1,8 +1,9 @@
 from action import Action
 from activated_ability import Activated_Ability
+from additional_cost import Kicker
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -102,7 +103,7 @@ def exile_gravecard(game, controller, source, modes, targets):
 
 
 def put_2_counters_or_gain_4(game, controller, source, modes, targets):
-    mode = modes[0]
+    mode = modes[ModeType.MODES_CHOSEN][0]
     if mode == 0:
         target = targets[0].object
         game.put_counters_on(CounterType.P1P1, 2, target)
@@ -159,6 +160,15 @@ def opponents_discard(game, controller, source, modes, targets):
         game.player_discard_x(opponent, 1)
 
 
+def deal_2_kicked_4(game, controller, source, modes, targets):
+    target = targets[0].object
+    was_kicked = AdditionalCostType.KICKED in modes[ModeType.COSTS_PAID]
+    if was_kicked:
+        game.deal_damage(target, 4)
+    else:
+        game.deal_damage(target, 2)
+
+
 def trigger_on_etb(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -209,6 +219,10 @@ giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of tu
 reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 
+def kicker(x):
+    return Kicker(x)
+
+
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_target]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([creature_you_control_target], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
@@ -234,3 +248,5 @@ selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, t
 broken_wings_ability = Spell_Ability("Destroy target artifact, enchantment, or creature with flying.",
                                      destroy_permanent, [broken_wings_target])
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
+burst_lightning_ability = Spell_Ability(
+    "Burst Lightning deals 2 damage to any target. If this spell waws kicked, it deals 4 damage instead.", deal_2_kicked_4, [damageable_target])

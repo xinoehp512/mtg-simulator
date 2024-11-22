@@ -106,6 +106,15 @@ class AbilityKeyword(Enum):
     FLYING = 4
 
 
+class AdditionalCostType(Enum):
+    KICKED = 0
+
+
+class ModeType(Enum):
+    MODES_CHOSEN = 0
+    COSTS_PAID = 1
+
+
 class TargetTypeBase(Enum):
     DAMAGEABLE = 0
     CREATURE = 1

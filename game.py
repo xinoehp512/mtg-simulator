@@ -3,7 +3,7 @@ from ability_stack_object import Ability_Stack_Object
 from action import Action
 from agent import Agent
 from canvas import Text_Canvas
-from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, Phase, Privacy, Step
+from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -661,7 +661,7 @@ class Game:
         # If the ability is a mana ability, simply test the costs, then carry it out.
         if ability.is_mana_ability:
             try:
-                cost_effect = ability.pay_cost(self, player)
+                cost_effect = ability.pay_cost(self, player)  # TODO: Refactor to use the same cost system as spellcasting.
                 ability_effect = ability.resolve(self, player, None)
                 self.backup_manager.add_event(Mana_Ability_Event(cost_effect, ability_effect))
             except UnpayableCostException:
@@ -684,7 +684,7 @@ class Game:
             if targets == []:
                 targets = None
             activation_object = Ability_Stack_Object(player, effect_function=ability.result_function, source=ability.object,
-                                                     targets=targets, modes=[mode.id for mode in modes])
+                                                     targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]})
             try:
                 cost_effect = ability.pay_cost(self, player)
             except UnpayableCostException:
@@ -699,14 +699,24 @@ class Game:
         if spell not in player.hand.objects:
             raise Exception("Player does not have that spell in hand.")
         player.hand.remove(spell)
+        additional_costs = spell.additional_costs
+        cost_increase = []
+        costs_paid = []
+        if len(additional_costs) > 0:
+            for cost in additional_costs:
+                if not cost.optional or player.agent.choose_yes_or_no(cost, message="Pay additional cost?"):
+                    cost_increase.extend(cost.cost)
+                    costs_paid.append(cost.paid_marker)
         targets = None
         if spell.is_volatile and spell.spell_ability.is_targeted:
             targets_required = spell.spell_ability.target_types
             targets = self.player_choose_targets(player, targets_required)
 
         spell_object = Ability_Stack_Object(
-            player, effect_function=spell.card.spell_effect, source=spell, targets=targets, card=spell.card)
-        cost = spell.cost
+            player, effect_function=spell.card.spell_effect, source=None, modes={ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
+        spell_object.source = spell_object
+
+        cost = spell.cost+cost_increase
         self.player_activate_mana(player, cost)
         try:
             self.player_pay_cost(player, cost)
@@ -739,7 +749,7 @@ class Game:
         if targets == []:
             targets = None
         trigger_object = Ability_Stack_Object(controller, effect_function=ability.result_function, source=ability.object,
-                                              targets=targets, modes=[mode.id for mode in modes])
+                                              targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]})
         self.put_on_stack(trigger_object)
 
     def player_activate_mana(self, player, cost):
