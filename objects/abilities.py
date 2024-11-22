@@ -230,15 +230,15 @@ armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleM
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
 bake_into_a_pie_ability = Spell_Ability("Destroy target creature. Create a Food token.",
-                                        destroy_creature_and_make_food, [creature_target])
+                                        destroy_creature_and_make_food, SingleMode([creature_target]))
 banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([nl_permanent_opp_control_target]), exile_until_leaves)
 
 destroy_ability = Spell_Ability("Destroy target nonland permanent an opponent controls.",
-                                destroy_permanent, [nl_permanent_opp_control_target])
+                                destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_control_target]), bounce_permanent)
 bite_down_ability = Spell_Ability("Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
-                                  creature_bite, [creature_you_control_target, creature_planeswalker_dont_control_target])
+                                  creature_bite, SingleMode([creature_you_control_target, creature_planeswalker_dont_control_target]))
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
@@ -246,7 +246,7 @@ rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap
 selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
 broken_wings_ability = Spell_Ability("Destroy target artifact, enchantment, or creature with flying.",
-                                     destroy_permanent, [broken_wings_target])
+                                     destroy_permanent, SingleMode([broken_wings_target]))
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
 burst_lightning_ability = Spell_Ability(
-    "Burst Lightning deals 2 damage to any target. If this spell waws kicked, it deals 4 damage instead.", deal_2_kicked_4, [damageable_target])
+    "Burst Lightning deals 2 damage to any target. If this spell waws kicked, it deals 4 damage instead.", deal_2_kicked_4, SingleMode([damageable_target]))

@@ -702,15 +702,28 @@ class Game:
         additional_costs = spell.additional_costs
         cost_increase = []
         costs_paid = []
-        if len(additional_costs) > 0:
-            for cost in additional_costs:
-                if not cost.optional or player.agent.choose_yes_or_no(cost, message="Pay additional cost?"):
-                    cost_increase.extend(cost.cost)
-                    costs_paid.append(cost.paid_marker)
+        modes = None  # TODO: Refactor out mode choice and target choice.
         targets = None
-        if spell.is_volatile and spell.spell_ability.is_targeted:
-            targets_required = spell.spell_ability.target_types
-            targets = self.player_choose_targets(player, targets_required)
+        if spell.is_volatile:
+            if spell.spell_ability.is_modal:
+                modes = self.player_choose_modes(player, spell.spell_ability.mode_choice)
+            else:
+                modes = spell.spell_ability.mode_choice.modes
+            if len(additional_costs) > 0:
+                for cost in additional_costs:
+                    if not cost.optional or player.agent.choose_yes_or_no(cost, message="Pay additional cost?"):
+                        cost_increase.extend(cost.cost)
+                        costs_paid.append(cost.paid_marker)
+            targets = []
+            for mode in modes:
+                if mode.is_targeted:
+                    targets_required = mode.target_types
+                    mode_targets = self.player_choose_targets(player, targets_required)
+                    if mode_targets == None:
+                        raise Exception("Illegal Action")
+                    targets.extend(mode_targets)
+            if targets == []:
+                targets = None
 
         spell_object = Ability_Stack_Object(
             player, effect_function=spell.card.spell_effect, source=None, modes={ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
