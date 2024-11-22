@@ -115,3 +115,13 @@ class Attack_Event(Event):
     @property
     def num_attacking(self):
         return len(self.attacks)
+
+
+class Step_Begin_Event(Event):
+    def __init__(self, step, player):
+        super().__init__()
+        self.step = step
+        self.player = player
+
+    def copy(self):
+        return Step_Begin_Event(self.step, self.player)

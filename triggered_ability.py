@@ -5,8 +5,8 @@ class Triggered_Ability:
         self.result_function = result_function
         self.object = None
 
-    def is_triggered_by(self, event):
-        return self.trigger_function(event, self.object)
+    def is_triggered_by(self, game, event):
+        return self.trigger_function(game, event, self.object)
 
     def get_trigger(self):
         return Trigger_Instance(self, self.object.controller)

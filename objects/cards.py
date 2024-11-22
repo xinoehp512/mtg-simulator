@@ -69,3 +69,5 @@ burglar_rat = Creature_Card("Burglar Rat (1B)", [ManaCost.GENERIC]+[ManaCost.BLA
 burst_lightning = Instant_Card("Burst Lightning (R)", [ManaCost.RED], [CardType.INSTANT], [
     burst_lightning_ability, kicker([ManaCost.GENERIC]*4)], "")
 bushwhack = Sorcery_Card("Bushwhack (G)", [ManaCost.GREEN], [CardType.SORCERY], [bushwhack_ability], "")
+cackling_prowler = Creature_Card("Cackling Prowler (3G)", [ManaCost.GENERIC]*3 +
+                                 [ManaCost.GREEN], [CardType.CREATURE, CreatureType.HYENA, CreatureType.ROGUE], [ward([ManaCost.GENERIC]*2), cackling_prowler_morbid], "", 4, 3)

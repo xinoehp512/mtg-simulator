@@ -3,8 +3,8 @@ from activated_ability import Activated_Ability
 from additional_cost import Kicker
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Step_Begin_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -116,6 +116,10 @@ def put_counter(game, controller, source, modes, targets):
     game.put_counters_on(CounterType.P1P1, 1, target)
 
 
+def put_counter_self(game, controller, source, modes, targets):
+    game.put_counters_on(CounterType.P1P1, 1, source)
+
+
 def give_haste(game, controller, source, modes, targets):
     target = targets[0].object
     effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
@@ -180,19 +184,23 @@ def tutor_land_or_fight(game, controller, source, modes, targets):
         game.fight(target1, target2)
 
 
-def trigger_on_etb(event, object):
+def trigger_on_etb(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
-def trigger_on_3_creatures_attack(event, object):
+def trigger_on_3_creatures_attack(game, event, object):
     return isinstance(event, Attack_Event) and event.num_attacking >= 3
 
 
-def trigger_on_controlled_creature_enter(event, object):
+def trigger_on_controlled_creature_enter(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.controller == object.controller
 
 
-def replace_enters(event, object):
+def morbid_end_step(game, event, object):
+    return isinstance(event, Step_Begin_Event) and event.step == Step.END and event.player == object.controller and game.creature_died_this_turn
+
+
+def replace_enters(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
@@ -235,6 +243,10 @@ def kicker(x):
     return Kicker(x)
 
 
+def ward(x):
+    return none
+
+
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_target]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([creature_you_control_target], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
@@ -244,7 +256,7 @@ beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, S
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_control_target]), bounce_permanent)
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
-
+cackling_prowler_morbid = Triggered_Ability(morbid_end_step, SingleMode(None), put_counter_self)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

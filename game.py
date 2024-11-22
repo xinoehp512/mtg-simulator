@@ -4,7 +4,7 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Step_Begin_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -48,6 +48,8 @@ class Game:
         self.turn_number = 0
         self.is_ended = False
         self.winner = None
+
+        self.creature_died_this_turn = False
 
         self.permanent_id = 0
 
@@ -287,6 +289,7 @@ class Game:
             self.active_player_index)
         for player in self.players:
             player.lands_played_this_turn = 0
+        self.creature_died_this_turn = False
         self.add_turn()
 
     def advance_step(self):
@@ -295,6 +298,9 @@ class Game:
         step = self.step_queue.pop(0)
         self.current_phase = step[0]
         self.current_step = step[1]
+
+        advance_event = Step_Begin_Event(self.current_step, self.active_player)
+        self.check_event_for_triggers(advance_event)
 
         if self.current_step == Step.UNTAP:
             self.turn_untap()
@@ -423,7 +429,7 @@ class Game:
     def check_event_for_triggers(self, event):
         triggered_abilities = self.get_triggered_abilities()
         for ability in triggered_abilities:
-            if ability.is_triggered_by(event):
+            if ability.is_triggered_by(self, event):
                 self.triggers_waiting.append(ability.get_trigger())
         for listener in self.listeners:
             if listener.dead:
@@ -569,6 +575,8 @@ class Game:
         permanent.is_alive = False
         grave_card = self.put_in_graveyard(permanent.owner, permanent.card)
         event = Permanent_Died_Event(permanent, grave_card)
+        if permanent.is_creature:
+            self.creature_died_this_turn = True
         self.check_event_for_triggers(event)
 
     def exile_from_battlefield(self, permanent):
@@ -716,7 +724,7 @@ class Game:
         additional_costs = spell.additional_costs
         cost_increase = []
         costs_paid = []
-        modes = None  # TODO: Refactor out mode choice and target choice.
+        modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
         if spell.is_volatile:
             if spell.spell_ability.is_modal:
