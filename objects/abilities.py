@@ -184,6 +184,11 @@ def tutor_land_or_fight(game, controller, source, event, modes, targets):
         game.fight(target1, target2)
 
 
+def tutor_land_top_opt(game, controller, source, event, modes, targets):
+    if controller.agent.choose_yes_or_no("Search for a basic land?"):
+        game.player_tutor_to_top(controller, lambda c: c.is_land and c.is_basic)
+
+
 def trigger_on_etb(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -197,10 +202,6 @@ def trigger_on_controlled_creature_enter(game, event, object):
 
 
 def trigger_on_opponent_target(game, event, object):
-    # if event.contains(Targeting_Event):
-    #     if object in event.targets:
-    #         if event.stack_object.controller in game.get_opponents(object.controller):
-    #             pass
     return event.contains(Targeting_Event) and object in event.targets and event.stack_object.controller in game.get_opponents(object.controller)
 
 
@@ -271,6 +272,7 @@ bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
 cackling_prowler_morbid = Triggered_Ability(morbid_end_step, SingleMode(None), put_counter_self)
+campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_land_top_opt)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

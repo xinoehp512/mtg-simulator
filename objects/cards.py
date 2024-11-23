@@ -71,3 +71,5 @@ burst_lightning = Instant_Card("Burst Lightning (R)", [ManaCost.RED], [CardType.
 bushwhack = Sorcery_Card("Bushwhack (G)", [ManaCost.GREEN], [CardType.SORCERY], [bushwhack_ability], "")
 cackling_prowler = Creature_Card("Cackling Prowler (3G)", [ManaCost.GENERIC]*3 +
                                  [ManaCost.GREEN], [CardType.CREATURE, CreatureType.HYENA, CreatureType.ROGUE], [ward([ManaCost.GENERIC]*2), cackling_prowler_morbid], "", 4, 3)
+campus_guide = Creature_Card("Campus Guide (2)", [ManaCost.GENERIC]*2, [CardType.ARTIFACT,
+                             CardType.CREATURE, CreatureType.GOLEM], [campus_guide_etb], "", 2, 1)

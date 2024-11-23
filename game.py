@@ -667,6 +667,13 @@ class Game:
         player.library.shuffle()
         player.hand.add_objects([Hand_Object(card)])
 
+    def player_tutor_to_top(self, player, search_function):
+        tutor_targets = player.library.get_by_criteria(search_function)
+        card = player.agent.choose_one(tutor_targets)
+        player.library.remove(card)
+        player.library.shuffle()
+        player.library.add_objects([card])
+
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:
             raise Exception("Can't discard a card that isn't there!")
