@@ -25,6 +25,10 @@ def can_tap_self(game, _, object):
     return not (object.tapped or (object.is_creature and object.summoning_sick))
 
 
+def can_sac(game, _, object):
+    return object.is_alive
+
+
 def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
     if object.tapped or (object.is_creature and object.summoning_sick):
         raise UnpayableCostException
@@ -38,6 +42,12 @@ def tap_sac_pay_2(game, player, object):
     game.player_activate_mana(player, [ManaCost.GENERIC]*2)
     game.player_pay_cost(player, [ManaCost.GENERIC]*2)
     game.tap(object)
+    game.sacrifice(player, object)
+
+
+def sac_pay_1(game, player, object):
+    game.player_activate_mana(player, [ManaCost.GENERIC]*2)
+    game.player_pay_cost(player, [ManaCost.GENERIC]*2)
     game.sacrifice(player, object)
 
 
@@ -230,6 +240,7 @@ creature_planeswalker_dont_control_target = TargetType(
     [(TargetTypeBase.CREATURE, TargetTypeModifier.DONT_CONTROL), (TargetTypeBase.PLANESWALKER, TargetTypeModifier.DONT_CONTROL)])
 broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
                                  (TargetTypeBase.CREATURE, TargetTypeModifier.HAS_FLYING)])
+artifact_enchanment_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,)])
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_tap_self, tap_self,
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -276,6 +287,8 @@ campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_lan
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
+cathar_sac = Activated_Ability("{1}, Sacrifice this creature: Destroy target artifact or enchantment.",
+                               can_sac, sac_pay_1, destroy_permanent, SingleMode([artifact_enchanment_target]))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
