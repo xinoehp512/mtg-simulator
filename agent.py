@@ -242,7 +242,7 @@ class Agent:
                     [creature, [[creature.power, creature.attack_target]]])
                 continue
             creatures_to_damage = creature.combat_foes
-            if AbilityKeyword.TRAMPLE in creature.keywords:
+            if AbilityKeyword.TRAMPLE in creature.keywords and creature.is_attacking:
                 creatures_to_damage.append(creature.attack_target)
             if len(creatures_to_damage) == 0:
                 continue

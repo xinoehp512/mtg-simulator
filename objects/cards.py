@@ -75,3 +75,5 @@ campus_guide = Creature_Card("Campus Guide (2)", [ManaCost.GENERIC]*2, [CardType
                              CardType.CREATURE, CreatureType.GOLEM], [campus_guide_etb], "", 2, 1)
 cathar_commando = Creature_Card("Cathar Commando (1W)", [ManaCost.GENERIC]+[ManaCost.WHITE],
                                 [CardType.CREATURE, CreatureType.HUMAN, CreatureType.SOLDIER], [flash, cathar_sac], "", 3, 1)
+courageous_goblin = Creature_Card("Courageous Goblin (1R)", [ManaCost.GENERIC] +
+                                  [ManaCost.RED], [CardType.CREATURE, CreatureType.GOBLIN], [courageous_goblin_attack], "", 2, 2)

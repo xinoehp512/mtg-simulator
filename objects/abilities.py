@@ -18,6 +18,7 @@ flash = Keyword_Ability(AbilityKeyword.FLASH)
 vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 haste = Keyword_Ability(AbilityKeyword.HASTE)
 trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
+menace = Keyword_Ability(AbilityKeyword.MENACE)
 none = Keyword_Ability(None)
 
 
@@ -162,6 +163,13 @@ def pump_self_p1p0(game, controller, source, event, modes, targets):
     game.create_continuous_effect(effect)
 
 
+def pump_self_p1p0_and_menace(game, controller, source, event, modes, targets):
+    effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
+    menace_effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == source, [menace])
+    game.create_continuous_effect(effect)
+    game.create_continuous_effect(menace_effect)
+
+
 def creature_bite(game, controller, source, event, modes, targets):
     biter = targets[0].object
     bitee = targets[1].object
@@ -217,6 +225,10 @@ def trigger_on_opponent_target(game, event, object):
 
 def morbid_end_step(game, event, object):
     return isinstance(event, Step_Begin_Event) and event.step == Step.END and event.player == object.controller and game.creature_died_this_turn
+
+
+def trigger_on_attack_with_ferocious(game, event, object):
+    return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_ferocious(object.controller)
 
 
 def replace_enters(game, event, object):
@@ -284,6 +296,7 @@ gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
 cackling_prowler_morbid = Triggered_Ability(morbid_end_step, SingleMode(None), put_counter_self)
 campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_land_top_opt)
+courageous_goblin_attack = Triggered_Ability(trigger_on_attack_with_ferocious, SingleMode(None), pump_self_p1p0_and_menace)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

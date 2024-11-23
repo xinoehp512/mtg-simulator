@@ -85,6 +85,12 @@ class Game:
     def player_can_sorcery(self, player):
         return player == self.active_player and self.current_phase == Phase.MAIN and self.stack.is_empty()
 
+    def player_has_ferocious(self, player):
+        for creature in self.get_creatures_of(player):
+            if creature.power >= 4:
+                return True
+        return False
+
     def get_alive_players(self):
         return [player for player in self.players if player.is_alive]
 
@@ -211,6 +217,11 @@ class Game:
         for creature in self.get_all_in_combat():
             combat_damage_assignments.extend(creature.combat_damage_assignment)
         return combat_damage_assignments
+
+    def is_blocked_legally(self, creature):
+        if AbilityKeyword.MENACE in creature.keywords and len(creature.blockers) < 2:
+            return False
+        return True
 
     def is_combat_damage_legally_assigned(self, creature):
         if creature.attack_target in creature.combat_damage_assigned:
@@ -484,18 +495,29 @@ class Game:
         if len(attacks) > 0:
             self.add_step([Phase.COMBAT, Step.COMBAT_DAMAGE])
             self.add_step([Phase.COMBAT, Step.DECLARE_BLOCKERS])
-        event = Attack_Event(attacks)
-        self.check_event_for_triggers(event)
+            event = Attack_Event(attacks)
+            self.check_event_for_triggers(event)
 
     def turn_declare_blockers(self):
         for defending_player in self.inactive_players:
             legal_blockers = self.get_legal_blockers(defending_player)
             attackers = self.get_legal_block_targets(defending_player)
-            blocks = defending_player.agent.choose_blocks(
-                self, legal_blockers, attackers)
-            for block in blocks:
-                blocker, attacker = block
-                self.creature_block(blocker, attacker)
+            blocks_legally_declared = False
+            while not blocks_legally_declared:
+                blocks = defending_player.agent.choose_blocks(
+                    self, legal_blockers, attackers)
+                for block in blocks:
+                    blocker, attacker = block
+                    self.creature_block(blocker, attacker)
+                blocks_legally_declared = True
+                for attacker in attackers:
+                    if not self.is_blocked_legally(attacker):
+                        blocks_legally_declared = False
+                        break
+                if not blocks_legally_declared:
+                    for block in blocks:
+                        blocker, attacker = block
+                        self.reverse_block(blocker, attacker)
 
         for attacker in self.get_all_attackers():
             if not attacker.is_blocked:
@@ -843,6 +865,12 @@ class Game:
         blocker.blocking.append(attacker)
         attacker.is_blocked = True
         attacker.blockers.append(blocker)
+
+    def reverse_block(self, blocker, attacker):
+        blocker.is_blocking = False
+        blocker.blocking.remove(attacker)
+        attacker.is_blocked = False
+        attacker.blockers.remove(blocker)
 
     def creature_become_unblocked(self, creature):
         creature.is_unblocked = True

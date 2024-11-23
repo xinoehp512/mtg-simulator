@@ -120,6 +120,10 @@ class Attack_Event(Event):
     def num_attacking(self):
         return len(self.attacks)
 
+    @property
+    def attackers(self):
+        return [attacker for attacker, target in self.attacks]
+
 
 class Step_Begin_Event(Event):
     def __init__(self, step, player):

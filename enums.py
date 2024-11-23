@@ -108,6 +108,7 @@ class AbilityKeyword(Enum):
     HASTE = 2
     TRAMPLE = 3
     FLYING = 4
+    MENACE = 5
 
 
 class AdditionalCostType(Enum):
