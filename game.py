@@ -4,7 +4,7 @@ from action import Action
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Step_Begin_Event
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -335,13 +335,14 @@ class Game:
     # Gameplay Functions
     def resolve_priority(self):
         while True:
-            self.check_state_based_actions_and_triggered_abilities()
-            if self.is_ended:
-                return
+
             priority_player_index = self.active_player_index
             num_players_passing = 0
             while num_players_passing < self.num_players:
                 priority_player = self.players[priority_player_index]
+                self.check_state_based_actions_and_triggered_abilities()
+                if self.is_ended:
+                    return
                 action = priority_player.agent.act(
                     game=self, player=priority_player)
                 if action:
@@ -355,7 +356,7 @@ class Game:
                     num_players_passing += 1
             if self.stack.is_empty():
                 return
-            self.resolve_stack_object(self.stack.pop())
+            self.resolve_stack_object(self.stack.pop())  # TODO: Objects don't leave the stack until they've resolved.
 
     def resolve_stack_object(self, stack_object):
         stack_object.is_alive = False
@@ -374,7 +375,7 @@ class Game:
                 stack_object.controller, stack_object.card)
         else:
             stack_object.effect_function(
-                self, stack_object.controller, stack_object.source, stack_object.modes, stack_object.targets)
+                self, stack_object.controller, stack_object.source, stack_object.event, stack_object.modes, stack_object.targets)
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:
@@ -430,7 +431,7 @@ class Game:
         triggered_abilities = self.get_triggered_abilities()
         for ability in triggered_abilities:
             if ability.is_triggered_by(self, event):
-                self.triggers_waiting.append(ability.get_trigger())
+                self.triggers_waiting.append(ability.get_trigger(event))
         for listener in self.listeners:
             if listener.dead:
                 continue
@@ -618,6 +619,12 @@ class Game:
         owner = permanent.owner
         owner.hand.add_objects([Hand_Object(permanent.card)])
 
+    def counter_stack_object(self, stack_object):
+        self.stack.remove(stack_object)
+        stack_object.is_alive = False
+        if stack_object.card is not None:
+            self.put_in_graveyard(stack_object.card.owner, stack_object.card)
+
     def untap(self, permanent):
         permanent.tapped = False
 
@@ -713,7 +720,10 @@ class Game:
                 # This exception indicates a rollback needs to take place.
                 raise Exception("Illegal Action")
             self.put_on_stack(activation_object)
+            event = Activation_Event(activation_object)
+            self.check_event_for_triggers(event)
         self.backup_manager.add_event(Ability_Activate_End_Marker(player, ability))
+
         return True
 
     def player_cast_spell(self, player, spell):
@@ -754,7 +764,8 @@ class Game:
         cost = spell.cost+cost_increase
         self.player_activate_mana(player, cost)
         try:
-            self.player_pay_cost(player, cost)
+            if not self.player_pay_cost(player, cost):
+                raise IllegalActionException("Illegal Action")  # TODO: Tidy up
         except IllegalActionException:
             while not isinstance(self.backup_manager.last_event, Spellcast_Begin_Marker):
                 self.backup_manager.reverse_last_event()
@@ -763,6 +774,8 @@ class Game:
             return False
         self.put_on_stack(spell_object)
         self.backup_manager.add_event(Spellcast_End_Marker(player, spell))
+        event = Spellcast_Event(spell_object)
+        self.check_event_for_triggers(event)
         return True
 
     def trigger_ability(self, ability):
@@ -784,8 +797,10 @@ class Game:
         if targets == []:
             targets = None
         trigger_object = Ability_Stack_Object(controller, effect_function=ability.result_function, source=ability.object,
-                                              targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]})
+                                              targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]}, event=ability.event)
         self.put_on_stack(trigger_object)
+        event = Trigger_Stack_Event(trigger_object)
+        self.check_event_for_triggers(event)
 
     def player_activate_mana(self, player, cost):
         while True:
@@ -798,8 +813,9 @@ class Game:
         mana_to_pay = player.agent.choose_mana_to_pay(
             self, player.mana_pool, cost)
         if mana_to_pay is None:
-            raise IllegalActionException("Illegal Action")
+            return False
         player.mana_pool.remove(mana_to_pay)
+        return True
 
     def player_choose_targets(self, player, targets_required):
         targets = player.agent.choose_targets(self, player, targets_required)

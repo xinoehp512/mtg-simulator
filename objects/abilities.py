@@ -4,7 +4,7 @@ from additional_cost import Kicker
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
 from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Step_Begin_Event
+from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -69,7 +69,7 @@ def add_x_or_y_mana(color1, color2):
 
 
 def gain_x(amount):
-    def _(game, controller, source, modes, targets):
+    def _(game, controller, source, event, modes, targets):
         game.player_gain_life(controller, amount)
     return _
 
@@ -79,30 +79,30 @@ food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.
 food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
 
 
-def deal_3(game, controller, source, modes, targets):
+def deal_3(game, controller, source, event, modes, targets):
     game.deal_damage(targets[0].object, 3)
 
 
-def grow_3(game, controller, source, modes, targets):
+def grow_3(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
     game.create_continuous_effect(effect)
 
 
-def make_2_tokens(game, controller, source, modes, targets):
+def make_2_tokens(game, controller, source, event, modes, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
 
-def exile_gravecard(game, controller, source, modes, targets):
+def exile_gravecard(game, controller, source, event, modes, targets):
     if targets == None:
         return
     target = targets[0].object
     game.exile_from_graveyard(target)
 
 
-def put_2_counters_or_gain_4(game, controller, source, modes, targets):
+def put_2_counters_or_gain_4(game, controller, source, event, modes, targets):
     mode = modes[ModeType.MODES_CHOSEN][0]
     if mode == 0:
         target = targets[0].object
@@ -111,60 +111,60 @@ def put_2_counters_or_gain_4(game, controller, source, modes, targets):
         game.player_gain_life(controller, 4)
 
 
-def put_counter(game, controller, source, modes, targets):
+def put_counter(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.put_counters_on(CounterType.P1P1, 1, target)
 
 
-def put_counter_self(game, controller, source, modes, targets):
+def put_counter_self(game, controller, source, event, modes, targets):
     game.put_counters_on(CounterType.P1P1, 1, source)
 
 
-def give_haste(game, controller, source, modes, targets):
+def give_haste(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
     game.create_continuous_effect(effect)
 
 
-def destroy_creature_and_make_food(game, controller, source, modes, targets):
+def destroy_creature_and_make_food(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.destroy(target)
     game.create_token(controller, food.copy())
 
 
-def exile_until_leaves(game, controller, source, modes, targets):
+def exile_until_leaves(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.exile_until_leaves(target, source)
 
 
-def destroy_permanent(game, controller, source, modes, targets):
+def destroy_permanent(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.destroy(target)
 
 
-def bounce_permanent(game, controller, source, modes, targets):
+def bounce_permanent(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.return_permanent_to_hand(target)
 
 
-def pump_self_p1p0(game, controller, source, modes, targets):
+def pump_self_p1p0(game, controller, source, event, modes, targets):
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
     game.create_continuous_effect(effect)
 
 
-def creature_bite(game, controller, source, modes, targets):
+def creature_bite(game, controller, source, event, modes, targets):
     biter = targets[0].object
     bitee = targets[1].object
     game.deal_damage(bitee, biter.power)
 
 
-def opponents_discard(game, controller, source, modes, targets):
+def opponents_discard(game, controller, source, event, modes, targets):
     opponents = game.get_opponents(controller)
     for opponent in opponents:
         game.player_discard_x(opponent, 1)
 
 
-def deal_2_kicked_4(game, controller, source, modes, targets):
+def deal_2_kicked_4(game, controller, source, event, modes, targets):
     target = targets[0].object
     was_kicked = AdditionalCostType.KICKED in modes[ModeType.COSTS_PAID]
     if was_kicked:
@@ -173,7 +173,7 @@ def deal_2_kicked_4(game, controller, source, modes, targets):
         game.deal_damage(target, 2)
 
 
-def tutor_land_or_fight(game, controller, source, modes, targets):
+def tutor_land_or_fight(game, controller, source, event, modes, targets):
     mode = modes[ModeType.MODES_CHOSEN][0]
     if mode == 0:
         # Tutor
@@ -193,7 +193,15 @@ def trigger_on_3_creatures_attack(game, event, object):
 
 
 def trigger_on_controlled_creature_enter(game, event, object):
-    return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.controller == object.controller
+    return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.is_creature and event.permanent.controller == object.controller
+
+
+def trigger_on_opponent_target(game, event, object):
+    # if event.contains(Targeting_Event):
+    #     if object in event.targets:
+    #         if event.stack_object.controller in game.get_opponents(object.controller):
+    #             pass
+    return event.contains(Targeting_Event) and object in event.targets and event.stack_object.controller in game.get_opponents(object.controller)
 
 
 def morbid_end_step(game, event, object):
@@ -244,7 +252,13 @@ def kicker(x):
 
 
 def ward(x):
-    return none
+    def rhystic_counter(game, controller, source, event, modes, targets):
+        ability_stack_object = event.stack_object
+        game.player_activate_mana(ability_stack_object.controller, x)
+        if game.player_pay_cost(ability_stack_object.controller, x):
+            return
+        game.counter_stack_object(ability_stack_object)
+    return Triggered_Ability(trigger_on_opponent_target, SingleMode(None), rhystic_counter)
 
 
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_target]), exile_gravecard)

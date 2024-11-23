@@ -3,11 +3,12 @@ from targetable_object import Targetable_Object
 
 class Ability_Stack_Object(Targetable_Object):
 
-    def __init__(self, controller, source=None, effect_function=None, targets=None, modes=None, card=None):
+    def __init__(self, controller, source=None, event=None, effect_function=None, targets=None, modes=None, card=None):
         super().__init__()
         self.effect_function = effect_function
         self.controller = controller
         self.source = source
+        self.event = event
         self.targets = targets
         self.modes = modes
         self.card = card

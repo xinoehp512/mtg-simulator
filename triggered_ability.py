@@ -8,17 +8,18 @@ class Triggered_Ability:
     def is_triggered_by(self, game, event):
         return self.trigger_function(game, event, self.object)
 
-    def get_trigger(self):
-        return Trigger_Instance(self, self.object.controller)
+    def get_trigger(self, event):
+        return Trigger_Instance(self, self.object.controller, event)
 
     def copy(self):
         return Triggered_Ability(self.trigger_function, self.mode_choice, self.result_function)
 
 
 class Trigger_Instance:
-    def __init__(self, ability, controller):
+    def __init__(self, ability, controller, event):
         self.ability = ability
         self.controller = controller
+        self.event = event
 
     @property
     def mode_choice(self):

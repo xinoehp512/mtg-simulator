@@ -1,6 +1,10 @@
 class Event:
     def __init__(self):
         self.occurred = False
+        self.child_events = []
+
+    def contains(self, event):
+        return event in self.child_events
 
     def undo(self):
         raise NotImplementedError
@@ -125,3 +129,59 @@ class Step_Begin_Event(Event):
 
     def copy(self):
         return Step_Begin_Event(self.step, self.player)
+
+
+class Targeting_Event(Event):
+    def __init__(self):
+        super().__init__()
+
+
+class Spellcast_Event(Event):
+    def __init__(self, spell_object):
+        super().__init__()
+        self.spell_object = spell_object
+        self.child_events = []
+        if spell_object.targets is not None:
+            self.child_events.append(Targeting_Event)
+
+    @property
+    def targets(self):
+        return [target.object for target in self.stack_object.targets]
+
+    @property
+    def stack_object(self):
+        return self.spell_object
+
+
+class Activation_Event(Event):
+    def __init__(self, activation_object):
+        super().__init__()
+        self.activation_object = activation_object
+        self.child_events = []
+        if activation_object.targets is not None:
+            self.child_events.append(Targeting_Event)
+
+    @property
+    def targets(self):
+        return [target.object for target in self.stack_object.targets]
+
+    @property
+    def stack_object(self):
+        return self.activation_object
+
+
+class Trigger_Stack_Event(Event):
+    def __init__(self, trigger_object):
+        super().__init__()
+        self.trigger_object = trigger_object
+        self.child_events = []
+        if trigger_object.targets is not None:
+            self.child_events.append(Targeting_Event)
+
+    @property
+    def targets(self):
+        return [target.object for target in self.stack_object.targets]
+
+    @property
+    def stack_object(self):
+        return self.trigger_object
