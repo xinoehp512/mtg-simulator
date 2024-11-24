@@ -16,7 +16,7 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 player1 = game.players[0]
 player2 = game.players[1]
 player1.starting_hand_size = 0
-game.add_cards(player1, [cards.aegis_turtle.copy() for i in range(5)])
+game.add_cards(player1, [cards.dismal_backwater.copy() for i in range(5)])
 game.add_cards(player2, [cards.forest.copy() for i in range(1)])
 game.add_permanents(player1, [cards.island.copy() for i in range(5)]+[cards.dazzling_angel.copy()])
 game.add_permanents(player2, [cards.beast_kin_ranger.copy(), cards.campus_guide.copy(), cards.dazzling_angel.copy()])

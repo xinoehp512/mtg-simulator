@@ -242,7 +242,7 @@ def trigger_on_attack_with_threshold(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_threshold(object.controller)
 
 
-def replace_enters(game, event, object):
+def replace_enters(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
@@ -322,6 +322,8 @@ rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.RED])
 selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
+dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLUE, ManaType.BLACK), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.BLACK])
 
 bake_into_a_pie_ability = Spell_Ability(destroy_creature_and_make_food, SingleMode([creature_target]))
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
