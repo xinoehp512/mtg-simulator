@@ -3,7 +3,7 @@ from ability_stack_object import Ability_Stack_Object
 from action import Action
 from agent import Agent
 from canvas import Text_Canvas
-from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, Step
+from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -149,6 +149,12 @@ class Game:
 
     def has_permanent(self, permanent):
         return permanent in self.battlefield.objects
+
+    def player_controls_permanent_that(self, player, conditional):
+        for permanent in self.get_permanents_of(player):
+            if conditional(permanent):
+                return True
+        return False
 
     def get_creatures(self):
         return self.battlefield.get_by_criteria(lambda p: p.is_creature)
@@ -750,7 +756,7 @@ class Game:
                     targets.extend(mode_targets)
             if targets == []:
                 targets = None
-            activation_object = Ability_Stack_Object(player, effect_function=ability.result_function, source=ability.object,
+            activation_object = Ability_Stack_Object(player, StackObjectType.ACTIVATED, effect_function=ability.result_function, source=ability.object,
                                                      targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]})
             try:
                 cost_effect = ability.pay_cost(self, player)
@@ -796,7 +802,7 @@ class Game:
                 targets = None
 
         spell_object = Ability_Stack_Object(
-            player, effect_function=spell.card.spell_effect, source=None, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes], ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
+            player, StackObjectType.SPELL, effect_function=spell.card.spell_effect, source=None, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes], ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
         spell_object.source = spell_object
 
         cost = spell.cost+cost_increase
@@ -834,7 +840,14 @@ class Game:
                 targets.extend(mode_targets)
         if targets == []:
             targets = None
-        trigger_object = Ability_Stack_Object(controller, effect_function=ability.result_function, source=ability.object,
+        result_function = ability.result_function
+        if ability.intervening_if_conditional is not None:
+            def new_result_function(game, controller, source, event, modes, targets):
+                if ability.intervening_if_conditional(game, event, source):
+                    return ability.result_function(game, controller, source, event, modes, targets)
+            result_function = new_result_function
+
+        trigger_object = Ability_Stack_Object(controller, StackObjectType.TRIGGERED, effect_function=result_function, source=ability.object,
                                               targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]}, event=ability.event)
         self.put_on_stack(trigger_object)
         event = Trigger_Stack_Event(trigger_object)

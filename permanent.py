@@ -43,6 +43,10 @@ class Permanent(Damageable_Object):
         return self.card.name
 
     @property
+    def types(self):
+        return self.card.types
+
+    @property
     def is_creature(self):
         return self.card.is_creature
 

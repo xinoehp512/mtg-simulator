@@ -102,6 +102,12 @@ class CreatureType(Enum):
     ZOMBIE = 43
 
 
+class StackObjectType(Enum):
+    SPELL = 0
+    ACTIVATED = 1
+    TRIGGERED = 2
+
+
 class AbilityKeyword(Enum):
     FLASH = 0
     VIGILANCE = 1

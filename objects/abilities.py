@@ -3,7 +3,7 @@ from activated_ability import Activated_Ability
 from additional_cost import Kicker
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -104,6 +104,12 @@ def grow_3(game, controller, source, event, modes, targets):
 def make_2_tokens(game, controller, source, event, modes, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
+    game.create_token(controller, token.copy())
+
+
+def make_elf_warrior(game, controller, source, event, modes, targets):
+    token = Creature_Token("Elf Warrior Token", None, [CardType.CREATURE, CreatureType.ELF,
+                           CreatureType.WARRIOR], [], "", 1, 1, color_indicator=[Color.GREEN])
     game.create_token(controller, token.copy())
 
 
@@ -241,6 +247,8 @@ def trigger_on_attack_with_ferocious(game, event, object):
 def trigger_on_attack_with_threshold(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_threshold(object.controller)
 
+# Replacement Effects
+
 
 def replace_enters(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
@@ -250,6 +258,12 @@ def enters_tapped(event):
     new_event = event.copy()
     new_event.permanent.tapped = True
     return new_event
+
+# Conditionals
+
+
+def control_other_elf(game, event, object):
+    return game.player_controls_permanent_that(object.controller, lambda p: p.is_creature and p != object and CreatureType.ELF in p.types)
 
 
 damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
@@ -311,6 +325,7 @@ courageous_goblin_attack = Triggered_Ability(trigger_on_attack_with_ferocious, S
 crackling_cyclops_pump = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(3, 0))
 crypt_feaster_threshold = Triggered_Ability(trigger_on_attack_with_threshold, SingleMode(None), pump_self_pxpy(2, 0))
 dazzling_angel_gain = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), gain_x(1))
+dwynens_elite_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_elf_warrior, intervening_if_conditional=control_other_elf)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
