@@ -91,6 +91,9 @@ class Game:
                 return True
         return False
 
+    def player_has_threshold(self, player):
+        return player.graveyard.size >= 7
+
     def get_alive_players(self):
         return [player for player in self.players if player.is_alive]
 
@@ -219,7 +222,7 @@ class Game:
         return combat_damage_assignments
 
     def is_blocked_legally(self, creature):
-        if AbilityKeyword.MENACE in creature.keywords and len(creature.blockers) < 2:
+        if creature.is_blocked and AbilityKeyword.MENACE in creature.keywords and len(creature.blockers) < 2:
             return False
         return True
 
@@ -377,16 +380,16 @@ class Game:
                     break
                 else:
                     if stack_object.card is not None:
-                        self.put_in_graveyard(
-                            stack_object.card.owner, stack_object.card)
+                        self.put_in_graveyard(stack_object.card.owner, stack_object.card)
                     return
         # Note: a copy of a permanent spell becomes a token as it resolves.
         if stack_object.is_permanent_spell:
-            self.create_battlefield_object(
-                stack_object.controller, stack_object.card)
+            self.create_battlefield_object(stack_object.controller, stack_object.card)
         else:
             stack_object.effect_function(
                 self, stack_object.controller, stack_object.source, stack_object.event, stack_object.modes, stack_object.targets)
+            if stack_object.card is not None:
+                self.put_in_graveyard(stack_object.card.owner, stack_object.card)
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:

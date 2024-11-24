@@ -237,6 +237,10 @@ def trigger_on_attack_with_ferocious(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_ferocious(object.controller)
 
 
+def trigger_on_attack_with_threshold(game, event, object):
+    return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_threshold(object.controller)
+
+
 def replace_enters(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -304,6 +308,7 @@ cackling_prowler_morbid = Triggered_Ability(morbid_end_step, SingleMode(None), p
 campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_land_top_opt)
 courageous_goblin_attack = Triggered_Ability(trigger_on_attack_with_ferocious, SingleMode(None), pump_self_p1p0_and_menace)
 crackling_cyclops_pump = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(3, 0))
+crypt_feaster_threshold = Triggered_Ability(trigger_on_attack_with_threshold, SingleMode(None), pump_self_pxpy(2, 0))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

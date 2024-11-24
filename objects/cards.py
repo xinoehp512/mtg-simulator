@@ -79,3 +79,5 @@ courageous_goblin = Creature_Card("Courageous Goblin (1R)", [ManaCost.GENERIC] +
                                   [ManaCost.RED], [CardType.CREATURE, CreatureType.GOBLIN], [courageous_goblin_attack], "", 2, 2)
 crackling_cyclops = Creature_Card("Crackling Cyclops (2R)", [
                                   ManaCost.GENERIC]*2+[ManaCost.RED], [CardType.CREATURE, CreatureType.CYCLOPS, CreatureType.WIZARD], [crackling_cyclops_pump], "", 0, 4)
+crypt_feaster = Creature_Card("Crypt Feaster (3B)", [ManaCost.GENERIC]*3+[ManaCost.BLACK],
+                              [CardType.CREATURE, CreatureType.ZOMBIE], [menace, crypt_feaster_threshold], "", 3, 4)
