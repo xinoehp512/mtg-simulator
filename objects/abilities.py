@@ -19,6 +19,7 @@ vigilance = Keyword_Ability(AbilityKeyword.VIGILANCE)
 haste = Keyword_Ability(AbilityKeyword.HASTE)
 trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
 menace = Keyword_Ability(AbilityKeyword.MENACE)
+flying = Keyword_Ability(AbilityKeyword.FLYING)
 none = Keyword_Ability(None)
 
 
@@ -309,6 +310,7 @@ campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_lan
 courageous_goblin_attack = Triggered_Ability(trigger_on_attack_with_ferocious, SingleMode(None), pump_self_p1p0_and_menace)
 crackling_cyclops_pump = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(3, 0))
 crypt_feaster_threshold = Triggered_Ability(trigger_on_attack_with_threshold, SingleMode(None), pump_self_pxpy(2, 0))
+dazzling_angel_gain = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), gain_x(1))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

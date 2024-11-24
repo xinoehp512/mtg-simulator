@@ -222,8 +222,14 @@ class Game:
         return combat_damage_assignments
 
     def is_blocked_legally(self, creature):
-        if creature.is_blocked and AbilityKeyword.MENACE in creature.keywords and len(creature.blockers) < 2:
-            return False
+        if creature.is_blocked:
+            if AbilityKeyword.MENACE in creature.keywords and len(creature.blockers) < 2:
+                return False
+            if AbilityKeyword.FLYING in creature.keywords:
+                for blocker in creature.blockers:
+                    if AbilityKeyword.FLYING not in blocker.keywords:
+                        return False
+
         return True
 
     def is_combat_damage_legally_assigned(self, creature):

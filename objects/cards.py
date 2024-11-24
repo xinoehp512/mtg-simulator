@@ -81,3 +81,5 @@ crackling_cyclops = Creature_Card("Crackling Cyclops (2R)", [
                                   ManaCost.GENERIC]*2+[ManaCost.RED], [CardType.CREATURE, CreatureType.CYCLOPS, CreatureType.WIZARD], [crackling_cyclops_pump], "", 0, 4)
 crypt_feaster = Creature_Card("Crypt Feaster (3B)", [ManaCost.GENERIC]*3+[ManaCost.BLACK],
                               [CardType.CREATURE, CreatureType.ZOMBIE], [menace, crypt_feaster_threshold], "", 3, 4)
+dazzling_angel = Creature_Card("Dazzling Angel (2W)", [ManaCost.GENERIC]*2+[ManaCost.WHITE],
+                               [CardType.CREATURE, CreatureType.ANGEL], [flying, dazzling_angel_gain], "", 2, 3)
