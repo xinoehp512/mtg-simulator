@@ -77,3 +77,5 @@ cathar_commando = Creature_Card("Cathar Commando (1W)", [ManaCost.GENERIC]+[Mana
                                 [CardType.CREATURE, CreatureType.HUMAN, CreatureType.SOLDIER], [flash, cathar_sac], "", 3, 1)
 courageous_goblin = Creature_Card("Courageous Goblin (1R)", [ManaCost.GENERIC] +
                                   [ManaCost.RED], [CardType.CREATURE, CreatureType.GOBLIN], [courageous_goblin_attack], "", 2, 2)
+crackling_cyclops = Creature_Card("Crackling Cyclops (2R)", [
+                                  ManaCost.GENERIC]*2+[ManaCost.RED], [CardType.CREATURE, CreatureType.CYCLOPS, CreatureType.WIZARD], [crackling_cyclops_pump], "", 0, 4)

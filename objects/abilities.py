@@ -4,7 +4,7 @@ from additional_cost import Kicker
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
 from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Step_Begin_Event, Targeting_Event
+from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -158,9 +158,11 @@ def bounce_permanent(game, controller, source, event, modes, targets):
     game.return_permanent_to_hand(target)
 
 
-def pump_self_p1p0(game, controller, source, event, modes, targets):
-    effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
-    game.create_continuous_effect(effect)
+def pump_self_pxpy(x, y):
+    def pump(game, controller, source, event, modes, targets):
+        effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, x, y)
+        game.create_continuous_effect(effect)
+    return pump
 
 
 def pump_self_p1p0_and_menace(game, controller, source, event, modes, targets):
@@ -221,6 +223,10 @@ def trigger_on_controlled_creature_enter(game, event, object):
 
 def trigger_on_opponent_target(game, event, object):
     return event.contains(Targeting_Event) and object in event.targets and event.stack_object.controller in game.get_opponents(object.controller)
+
+
+def trigger_on_noncreature_cast(game, event, object):
+    return isinstance(event, Spellcast_Event) and not event.spell_object.card.is_creature
 
 
 def morbid_end_step(game, event, object):
@@ -290,13 +296,14 @@ apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
     1, [Mode([creature_you_control_target], "Put two +1/+1 counters on target creature you control", 0), Mode(None, "You gain 4 life", 1)]), put_2_counters_or_gain_4)
 armasaur_guide_attack = Triggered_Ability(trigger_on_3_creatures_attack, SingleMode([creature_you_control_target]), put_counter)
 banishing_light_ability = Triggered_Ability(trigger_on_etb, SingleMode([nl_permanent_opp_control_target]), exile_until_leaves)
-beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_p1p0)
+beastkin_ranger_pump = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), pump_self_pxpy(1, 0))
 bigfin_bouncer_etb = Triggered_Ability(trigger_on_etb, SingleMode([creature_opp_control_target]), bounce_permanent)
 gain_1_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), gain_x(1))
 burglar_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), opponents_discard)
 cackling_prowler_morbid = Triggered_Ability(morbid_end_step, SingleMode(None), put_counter_self)
 campus_guide_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), tutor_land_top_opt)
 courageous_goblin_attack = Triggered_Ability(trigger_on_attack_with_ferocious, SingleMode(None), pump_self_p1p0_and_menace)
+crackling_cyclops_pump = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(3, 0))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
