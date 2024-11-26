@@ -234,7 +234,7 @@ class Game:
                 return False
             if AbilityKeyword.FLYING in creature.keywords:
                 for blocker in creature.blockers:
-                    if AbilityKeyword.FLYING not in blocker.keywords:
+                    if AbilityKeyword.FLYING not in blocker.keywords and AbilityKeyword.REACH not in blocker.keywords:
                         return False
 
         return True

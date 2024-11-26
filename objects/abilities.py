@@ -20,6 +20,7 @@ haste = Keyword_Ability(AbilityKeyword.HASTE)
 trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
 menace = Keyword_Ability(AbilityKeyword.MENACE)
 flying = Keyword_Ability(AbilityKeyword.FLYING)
+reach = Keyword_Ability(AbilityKeyword.REACH)
 none = Keyword_Ability(None)
 
 
@@ -229,6 +230,10 @@ def trigger_on_etb(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
+def trigger_on_landfall(game, event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent.is_land and event.permanent.controller == object.controller
+
+
 def trigger_on_3_creatures_attack(game, event, object):
     return isinstance(event, Attack_Event) and event.num_attacking >= 3
 
@@ -338,6 +343,7 @@ crackling_cyclops_pump = Triggered_Ability(trigger_on_noncreature_cast, SingleMo
 crypt_feaster_threshold = Triggered_Ability(trigger_on_attack_with_threshold, SingleMode(None), pump_self_pxpy(2, 0))
 dazzling_angel_gain = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), gain_x(1))
 dwynens_elite_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_elf_warrior, intervening_if_conditional=control_other_elf)
+elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), make_elf_warrior)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))

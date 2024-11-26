@@ -86,3 +86,5 @@ dwynens_elite = Creature_Card("Dwynen's Elite (1G)", Cost.from_string(
 eaten_alive = Sorcery_Card("Eaten Alive (B)", Cost.from_string("B"), [CardType.SORCERY], [eaten_alive_ability, eaten_alive_extra_cost], "")
 elementalist_adept = Creature_Card("Elementalist Adept (1U)", Cost.from_string(
     "1U"), [CardType.CREATURE, CreatureType.HUMAN, CreatureType.WIZARD], [flash, prowess], "", 2, 1)
+elfsworn_giant = Creature_Card("Elfsworn Giant (3GG)", Cost.from_string(
+    "3GG"), [CardType.CREATURE, CreatureType.GIANT], [reach, elfsworn_giant_landfall], "", 5, 3)
