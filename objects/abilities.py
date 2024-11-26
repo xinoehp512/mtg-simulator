@@ -1,9 +1,9 @@
 from action import Action
 from activated_ability import Activated_Ability
-from additional_cost import Kicker
+from cost import Additional_Cost, Cost
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CostType, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -41,15 +41,17 @@ def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
 def tap_sac_pay_2(game, player, object):
     if object.tapped:
         raise UnpayableCostException
-    game.player_activate_mana(player, [ManaCost.GENERIC]*2)
-    game.player_pay_cost(player, [ManaCost.GENERIC]*2)
+    cost = Cost.from_string("2")
+    game.player_activate_mana(player, cost)
+    game.player_pay_cost(player, cost)
     game.tap(object)
     game.sacrifice(player, object)
 
 
 def sac_pay_1(game, player, object):
-    game.player_activate_mana(player, [ManaCost.GENERIC]*2)
-    game.player_pay_cost(player, [ManaCost.GENERIC]*2)
+    cost = Cost.from_string("1")
+    game.player_activate_mana(player, cost)
+    game.player_pay_cost(player, cost)
     game.sacrifice(player, object)
 
 
@@ -160,6 +162,11 @@ def destroy_permanent(game, controller, source, event, modes, targets):
     game.destroy(target)
 
 
+def exile_permanent(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.exile_from_battlefield(target)
+
+
 def bounce_permanent(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.return_permanent_to_hand(target)
@@ -193,7 +200,7 @@ def opponents_discard(game, controller, source, event, modes, targets):
 
 def deal_2_kicked_4(game, controller, source, event, modes, targets):
     target = targets[0].object
-    was_kicked = AdditionalCostType.KICKED in modes[ModeType.COSTS_PAID]
+    was_kicked = AdditionalCostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
     if was_kicked:
         game.deal_damage(target, 4)
     else:
@@ -214,6 +221,8 @@ def tutor_land_or_fight(game, controller, source, event, modes, targets):
 def tutor_land_top_opt(game, controller, source, event, modes, targets):
     if controller.agent.choose_yes_or_no("Search for a basic land?"):
         game.player_tutor_to_top(controller, lambda c: c.is_land and c.is_basic)
+
+# Triggers
 
 
 def trigger_on_etb(game, event, object):
@@ -278,6 +287,7 @@ creature_planeswalker_dont_control_target = TargetType(
 broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
                                  (TargetTypeBase.CREATURE, TargetTypeModifier.HAS_FLYING)])
 artifact_enchanment_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,)])
+creature_planeswalker_target = TargetType([(TargetTypeBase.CREATURE,), (TargetTypeBase.PLANESWALKER,)])
 
 plains_ability = Activated_Ability("{T}: Add {W}", can_tap_self, tap_self,
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -297,7 +307,7 @@ forest_ability = Activated_Ability("{T}: Add {G}", can_tap_self, tap_self,
 
 
 def kicker(x):
-    return Kicker(x)
+    return Additional_Cost([x, None])
 
 
 def ward(x):
@@ -347,3 +357,6 @@ broken_wings_ability = Spell_Ability(destroy_permanent, SingleMode([broken_wings
 burst_lightning_ability = Spell_Ability(deal_2_kicked_4, SingleMode([damageable_target]))
 bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
     1, [Mode(None, "Search for a basic land", 0), Mode([creature_you_control_target, creature_dont_control_target], "Target creature you control fights target creature you don't control.", 1)]))
+eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planeswalker_target]))
+
+eaten_alive_extra_cost = Additional_Cost([Cost.from_string("3B"), Cost([CostType.SAC_CREATURE])])

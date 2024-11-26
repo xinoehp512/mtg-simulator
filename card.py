@@ -1,5 +1,5 @@
 from activated_ability import Activated_Ability
-from additional_cost import Additional_Cost
+from cost import Additional_Cost
 from enums import CardType, ColorVis, SuperType, color_to_vis, cost_to_colors, AbilityKeyword
 from keyword_ability import Keyword_Ability
 
@@ -35,7 +35,7 @@ class Card:
         if self.cost is None:
             return self.color_indicator
         colors = set(self.color_indicator)
-        for cost_sym in self.cost:
+        for cost_sym in self.cost.mana_cost:
             for color in cost_to_colors(cost_sym):
                 colors.add(color)
         return list(colors)

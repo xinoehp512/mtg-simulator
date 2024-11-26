@@ -121,6 +121,10 @@ class AdditionalCostType(Enum):
     KICKED = 0
 
 
+class CostType(Enum):
+    SAC_CREATURE = 0
+
+
 class ModeType(Enum):
     MODES_CHOSEN = 0
     COSTS_PAID = 1

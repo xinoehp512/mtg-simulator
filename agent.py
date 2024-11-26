@@ -1,6 +1,6 @@
 import os
 
-from enums import AbilityKeyword
+from enums import AbilityKeyword, CostType
 input_file = open("input.txt")
 
 file_size = os.path.getsize("input.txt")
@@ -275,6 +275,17 @@ class Agent:
                     break
             else:
                 return None
+        return payment
+
+    def choose_permanents_to_sacrifice(self, game, permanents, cost):
+        payment = []
+        for sac_cost in cost:
+            if sac_cost == CostType.SAC_CREATURE:
+                options = [permanent for permanent in permanents if permanent.is_creature and permanent not in payment]
+            if len(options) == 0:
+                return None
+            permanent_to_sac = self.choose_one(options)
+            payment.append(permanent_to_sac)
         return payment
 
     def choose_targets(self, game, player, targets_required):

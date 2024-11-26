@@ -1,6 +1,7 @@
 
 from ability_stack_object import Ability_Stack_Object
 from action import Action
+from cost import Cost
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
@@ -776,7 +777,7 @@ class Game:
             raise Exception("Player does not have that spell in hand.")
         player.hand.remove(spell)
         additional_costs = spell.additional_costs
-        cost_increase = []
+        cost_increase = Cost([])
         costs_paid = []
         modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
@@ -786,10 +787,12 @@ class Game:
             else:
                 modes = spell.spell_ability.mode_choice.modes
             if len(additional_costs) > 0:
-                for cost in additional_costs:
-                    if not cost.optional or player.agent.choose_yes_or_no(cost, message="Pay additional cost?"):
-                        cost_increase.extend(cost.cost)
-                        costs_paid.append(cost.paid_marker)
+                for additional_cost in additional_costs:
+                    cost = player.agent.choose_one(additional_cost.cost_options, message="Choose additional cost:")
+                    if cost is None:
+                        continue
+                    cost_increase += cost
+                    costs_paid.append(cost)
             targets = []
             for mode in modes:
                 if mode.is_targeted:
@@ -861,11 +864,19 @@ class Game:
             self.player_activate_ability(player, ability)
 
     def player_pay_cost(self, player, cost):
+        mana_cost = cost.mana_cost
         mana_to_pay = player.agent.choose_mana_to_pay(
-            self, player.mana_pool, cost)
+            self, player.mana_pool, mana_cost)
         if mana_to_pay is None:
             return False
+        sacrifice_cost = cost.sacrifice_cost
+        permanents_to_sacrifice = player.agent.choose_permanents_to_sacrifice(self, self.get_permanents_of(player), sacrifice_cost)
+        if permanents_to_sacrifice is None:
+            return False
+
         player.mana_pool.remove(mana_to_pay)
+        for permanent in permanents_to_sacrifice:
+            self.sacrifice(player, permanent)
         return True
 
     def player_choose_targets(self, player, targets_required):
