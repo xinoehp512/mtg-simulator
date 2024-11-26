@@ -242,7 +242,7 @@ def trigger_on_opponent_target(game, event, object):
 
 
 def trigger_on_noncreature_cast(game, event, object):
-    return isinstance(event, Spellcast_Event) and not event.spell_object.card.is_creature
+    return isinstance(event, Spellcast_Event) and event.spell_object.controller == object.controller and not event.spell_object.card.is_creature
 
 
 def morbid_end_step(game, event, object):
@@ -319,6 +319,8 @@ def ward(x):
         game.counter_stack_object(ability_stack_object)
     return Triggered_Ability(trigger_on_opponent_target, SingleMode(None), rhystic_counter)
 
+
+prowess = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(1, 1))
 
 ambush_wolf_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_gravecard_target]), exile_gravecard)
 apothecary_stomper_etb = Triggered_Ability(trigger_on_etb, ModeChoice(
