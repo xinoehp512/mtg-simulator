@@ -994,6 +994,11 @@ class Game:
         turn_card_x = canvas_width-turn_card_width
         turn_card_y = p2_hand_y-turn_card_height
 
+        stack_card_width = 20
+        stack_card_height = 10
+        stack_card_x = canvas_width-stack_card_width
+        stack_card_y = p1_lands_y
+
         end_card_width = 20
         end_card_height = 5
         end_card_x = canvas_width//2-end_card_width//2
@@ -1056,6 +1061,13 @@ class Game:
             draw_card(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y, permanent)
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and not (p.is_creature or p.is_land))):
             draw_card(p2_noncreatures_x+i*(card_width+1), p2_noncreatures_y, permanent)
+
+        # Stack
+        canvas.draw_rect(stack_card_x, stack_card_y, stack_card_width, stack_card_height, 0)
+        canvas.draw_rect(stack_card_x+1, stack_card_y+1, stack_card_width-2, stack_card_height-2, 255)
+        canvas.draw_text(stack_card_x+1, stack_card_y+1, "Stack", 0, 255)
+        for i, stack_object in enumerate(self.stack.objects):
+            canvas.draw_text(stack_card_x+1, stack_card_y+1+(i+1), stack_object.name, 0, 255)
 
         # Turn Box
         canvas.draw_rect(turn_card_x, turn_card_y, turn_card_width, turn_card_height, 0)
