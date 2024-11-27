@@ -73,8 +73,10 @@ treasure_ability = Activated_Ability("{T}, Sacrifice this artifact: Add one mana
 treasure = Artifact_Token("Treasure Token", None, [CardType.ARTIFACT, ArtifactType.TREASURE], [treasure_ability])
 
 
-def deal_3(game, controller, source, event, modes, targets):
-    game.deal_damage(targets[0].object, 3)
+def deal_x(amount):
+    def _(game, controller, source, event, modes, targets):
+        game.deal_damage(targets[0].object, amount)
+    return _
 
 
 def grow_3(game, controller, source, event, modes, targets):
@@ -365,6 +367,8 @@ cathar_sac = Activated_Ability("{1}, Sacrifice this creature: Destroy target art
                                Total_Cost([Mana_Cost.from_string("1"), sac_self]), destroy_permanent, SingleMode([artifact_enchanment_target]))
 evolving_wilds_sac = Activated_Ability(
     "{T}, Sacrifice this land: Tutor a basic land card to the battlefield tapped.", Total_Cost([tap_self, sac_self]), tutor_tapped_basic, SingleMode(None))
+fanatical_firebrand_sac = Activated_Ability(
+    "{T}, Sacrifice this creature: It deals 1 damage to any target.", Total_Cost([tap_self, sac_self]), deal_x(1), SingleMode([damageable_target]))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(

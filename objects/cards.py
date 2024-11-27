@@ -99,3 +99,5 @@ erudite_wizard = Creature_Card("Erudite Wizard (2U)", Mana_Cost.from_string(
 evolving_wilds = Land_Card("Evolving Wilds", [CardType.LAND], [evolving_wilds_sac])
 fake_your_own_death = Instant_Card("Fake Your Own Death (1B)", Mana_Cost.from_string("1B"),
                                    [CardType.INSTANT], [fake_your_own_death_ability])
+fanatical_firebrand = Creature_Card("Fanatical Firebrand (R)", Mana_Cost.from_string(
+    "R"), [CardType.CREATURE, CreatureType.GOBLIN, CreatureType.PIRATE], [haste, fanatical_firebrand_sac], 1, 1)

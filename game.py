@@ -146,7 +146,7 @@ class Game:
         return self.battlefield.get_by_criteria(lambda p: p.controller == player)
 
     def get_tappable_permanents_of(self, player):
-        return self.battlefield.get_by_criteria(lambda p: p.controller == player and p.tapped == False and not (p.is_creature and p.summoning_sick))
+        return self.battlefield.get_by_criteria(lambda p: p.controller == player and p.tapped == False and not (p.is_creature and p.summoning_sick and not AbilityKeyword.HASTE in p.keywords))
 
     def get_nonland_permanents_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.controller == player and not p.is_land)
