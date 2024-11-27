@@ -4,7 +4,7 @@ from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cos
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
 from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Card_Draw_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from event import Attack_Event, Card_Draw_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -67,10 +67,10 @@ sac_self = Sacrifice_Cost(lambda p, o: p == o)
 
 food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.",
                                  Total_Cost([Mana_Cost.from_string("2"), tap_self, sac_self]), gain_x(3), SingleMode(None))
-food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
+food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability])
 treasure_ability = Activated_Ability("{T}, Sacrifice this artifact: Add one mana of any color.", Total_Cost([tap_self, sac_self]), add_any_color_mana, SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN])
-treasure = Artifact_Token("Treasure Token", None, [CardType.ARTIFACT, ArtifactType.TREASURE], [treasure_ability], "")
+treasure = Artifact_Token("Treasure Token", None, [CardType.ARTIFACT, ArtifactType.TREASURE], [treasure_ability])
 
 
 def deal_3(game, controller, source, event, modes, targets):
@@ -84,14 +84,14 @@ def grow_3(game, controller, source, event, modes, targets):
 
 
 def make_2_tokens(game, controller, source, event, modes, targets):
-    token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], "", 1, 1, color_indicator=[Color.RED, Color.BLUE])
+    token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
     game.create_token(controller, token.copy())
 
 
 def make_elf_warrior(game, controller, source, event, modes, targets):
     token = Creature_Token("Elf Warrior Token", None, [CardType.CREATURE, CreatureType.ELF,
-                           CreatureType.WARRIOR], [], "", 1, 1, color_indicator=[Color.GREEN])
+                           CreatureType.WARRIOR], [], 1, 1, color_indicator=[Color.GREEN])
     game.create_token(controller, token.copy())
 
 
@@ -123,6 +123,15 @@ def put_counter_self(game, controller, source, event, modes, targets):
 def give_haste(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
+    game.create_continuous_effect(effect)
+
+
+def give_fake_death_ability(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    ability = Triggered_Ability(trigger_on_death, SingleMode(None), return_tapped_with_treasure)
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [ability])
+    game.create_continuous_effect(effect)
+    effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 2, 0)
     game.create_continuous_effect(effect)
 
 
@@ -212,6 +221,13 @@ def tutor_tapped_basic(game, controller, source, event, modes, targets):
 def draw_card(game, controller, source, event, modes, targets):
     game.player_draw(controller)
 
+
+def return_tapped_with_treasure(game, controller, source, event, modes, targets):
+    def tap(permanent):
+        permanent.tapped = True
+    game.return_gravecard_to_battlefield(event.grave_card.owner, event.grave_card, modify_function=tap)
+    game.create_token(controller, treasure.copy())
+
 # Triggers
 
 
@@ -225,6 +241,10 @@ def trigger_on_landfall(game, event, object):
 
 def trigger_on_controlled_creature_enter(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent != object and event.permanent.is_creature and event.permanent.controller == object.controller
+
+
+def trigger_on_death(game, event, object):
+    return isinstance(event, Permanent_Died_Event) and event.permanent == object
 
 
 def trigger_on_opponent_target(game, event, object):
@@ -364,6 +384,7 @@ burst_lightning_ability = Spell_Ability(deal_2_kicked_4, SingleMode([damageable_
 bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
     1, [Mode(None, "Search for a basic land", 0), Mode([creature_you_control_target, creature_dont_control_target], "Target creature you control fights target creature you don't control.", 1)]))
 eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planeswalker_target]))
+fake_your_own_death_ability = Spell_Ability(give_fake_death_ability, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
-                                         Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature)])])
+                                         Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

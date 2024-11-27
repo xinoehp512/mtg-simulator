@@ -16,15 +16,30 @@ class Mana_Cost:
                 mana_cost += [mana_key[symbol]]
         return cls(mana_cost)
 
+    def __str__(self):
+        return "Pay "+str(self.mana_cost.count(ManaCost.GENERIC))+"W"*self.mana_cost.count(ManaCost.WHITE)+"U"*self.mana_cost.count(ManaCost.BLUE)+"B"*self.mana_cost.count(ManaCost.BLACK)+"R"*self.mana_cost.count(ManaCost.RED)+"G"*self.mana_cost.count(ManaCost.GREEN)
+
+    __repr__ = __str__
+
 
 class Sacrifice_Cost:
-    def __init__(self, acceptance_function):
+    def __init__(self, acceptance_function, name=""):
         self.acceptance_function = acceptance_function
+        self.name = name
+
+    def __str__(self):
+        return self.name
+    __repr__ = __str__
 
 
 class Tap_Cost:
-    def __init__(self, acceptance_function):
+    def __init__(self, acceptance_function, name=""):
         self.acceptance_function = acceptance_function
+        self.name = name
+
+    def __str__(self):
+        return self.name
+    __repr__ = __str__
 
 
 class Total_Cost:

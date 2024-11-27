@@ -127,7 +127,7 @@ class Card:
 
 class Creature_Card(Card):
 
-    def __init__(self, name, cost, types, abilities, text, power, toughness, color_indicator=[]):
+    def __init__(self, name, cost, types, abilities,  power, toughness, text="", color_indicator=[]):
         super().__init__(name, cost, color_indicator, types, abilities, text)
         self.power = power
         self.toughness = toughness
@@ -135,48 +135,48 @@ class Creature_Card(Card):
     def copy(self):
         return Creature_Card(self.name, self.cost, self.types,
                              [ability.copy() for ability in self.abilities],
-                             self.text, self.power, self.toughness, color_indicator=self.color_indicator)
+                             self.power, self.toughness, text=self.text, color_indicator=self.color_indicator)
 
 
 class Enchantment_Card(Card):
-    def __init__(self, name, cost, types, abilities, text, color_indicator=[]):
+    def __init__(self, name, cost, types, abilities, text="", color_indicator=[]):
         super().__init__(name, cost, color_indicator, types, abilities, text)
 
     def copy(self):
-        return Enchantment_Card(self.name, self.cost, self.types, [ability.copy() for ability in self.abilities], self.text, color_indicator=self.color_indicator)
+        return Enchantment_Card(self.name, self.cost, self.types, [ability.copy() for ability in self.abilities], text=self.text, color_indicator=self.color_indicator)
 
 
 class Land_Card(Card):
 
-    def __init__(self, name, types, abilities, text):
+    def __init__(self, name, types, abilities, text=""):
         super().__init__(name, None, [], types, abilities, text)
 
     def copy(self):
         return Land_Card(self.name, self.types,
-                         [ability.copy() for ability in self.abilities], self.text)
+                         [ability.copy() for ability in self.abilities], text=self.text)
 
 
 class Instant_Card(Card):
 
-    def __init__(self, name, cost, types, abilities, text):
+    def __init__(self, name, cost, types, abilities, text=""):
         super().__init__(name, cost, [], types, abilities, text)
 
     def copy(self):
         return Instant_Card(self.name, self.cost, self.types,
-                            [ability.copy() for ability in self.abilities], self.text)
+                            [ability.copy() for ability in self.abilities], text=self.text)
 
 
 class Sorcery_Card(Card):
-    def __init__(self, name, cost, types, abilities, text):
+    def __init__(self, name, cost, types, abilities, text=""):
         super().__init__(name, cost, [], types, abilities, text)
 
     def copy(self):
         return Sorcery_Card(self.name, self.cost, self.types,
-                            [ability.copy() for ability in self.abilities], self.text)
+                            [ability.copy() for ability in self.abilities], text=self.text)
 
 
 class Creature_Token(Card):
-    def __init__(self, name, cost, types, abilities, text, power, toughness, color_indicator=[]):
+    def __init__(self, name, cost, types, abilities, power, toughness, text="", color_indicator=[]):
         super().__init__(name, cost, color_indicator, types, abilities, text)
         self.power = power
         self.toughness = toughness
@@ -185,14 +185,14 @@ class Creature_Token(Card):
     def copy(self):
         return Creature_Token(self.name, self.cost, self.types,
                               [ability.copy() for ability in self.abilities],
-                              self.text, self.power, self.toughness, color_indicator=self.color_indicator)
+                              self.power, self.toughness, text=self.text, color_indicator=self.color_indicator)
 
 
 class Artifact_Token(Card):
-    def __init__(self, name, cost, types, abilities, text, color_indicator=[]):
+    def __init__(self, name, cost, types, abilities, text="", color_indicator=[]):
         super().__init__(name, cost, color_indicator, types, abilities, text)
         self.is_token = True
 
     def copy(self):
         return Artifact_Token(self.name, self.cost, self.types,
-                              [ability.copy() for ability in self.abilities], self.text)
+                              [ability.copy() for ability in self.abilities], text=self.text)

@@ -460,7 +460,7 @@ class Game:
             # If a creature has toughness 0 or less, it's put into its owner's graveyard.
             for permanent in self.get_permanents():
                 if permanent.is_creature and permanent.toughness <= 0:
-                    self.put_in_graveyard(permanent.owner, permanent)
+                    self.permanent_to_graveyard(permanent)
                     state_based_action_performed = True
             # If a creature has toughness greater than 0, it has damage marked on it, and the
             # total damage marked on it is greater than or equal to its toughness, that
@@ -478,6 +478,8 @@ class Game:
 
     def check_event_for_triggers(self, event):
         triggered_abilities = self.get_triggered_abilities()
+        if isinstance(event, Permanent_Died_Event):
+            triggered_abilities.extend(event.permanent.triggered_abilities)
         for ability in triggered_abilities:
             if ability.is_triggered_by(self, event):
                 self.triggers_waiting.append(ability.get_trigger(event))
@@ -502,8 +504,10 @@ class Game:
             if effect.type == EffectType.ABILITY:
                 for creature in self.get_creatures():
                     if effect.applies_to(creature):
-                        creature.added_abilities.extend(effect.abilities)
-
+                        for ability in effect.abilities:
+                            creature_ability = ability.copy()  # TODO: This won't work with effects that give abilities with state
+                            creature.added_abilities.append(creature_ability)
+                            creature_ability.object = creature
         for creature in self.get_creatures():
             if CounterType.P1P1 in creature.counters:
                 creature.power_modification += creature.counters[CounterType.P1P1]
@@ -595,6 +599,14 @@ class Game:
             player.mana_pool.empty()
 
     # Events
+    def remove_player(self, player):
+        player.is_alive = False
+        if len(self.get_alive_players()) == 1:
+            self.is_ended = True
+            self.winner = self.get_alive_players()[0]
+        if len(self.get_alive_players()) == 0:
+            self.is_ended = True
+
     def make_land_drop(self, player, land):
         if land not in player.hand.objects:
             raise Exception("Player does not have land in hand.")
@@ -625,15 +637,7 @@ class Game:
         player.graveyard.add_objects([grave_card])
         return grave_card
 
-    def remove_player(self, player):
-        player.is_alive = False
-        if len(self.get_alive_players()) == 1:
-            self.is_ended = True
-            self.winner = self.get_alive_players()[0]
-        if len(self.get_alive_players()) == 0:
-            self.is_ended = True
-
-    def destroy(self, permanent):
+    def permanent_to_graveyard(self, permanent):
         self.battlefield.remove(permanent)
         permanent.is_alive = False
         grave_card = self.put_in_graveyard(permanent.owner, permanent.card)
@@ -641,6 +645,14 @@ class Game:
         if permanent.is_creature:
             self.creature_died_this_turn = True
         self.check_event_for_triggers(event)
+
+    def destroy(self, permanent):
+        self.permanent_to_graveyard(permanent)
+
+    def sacrifice(self, player, permanent):
+        if (permanent.controller != player):
+            return False
+        self.permanent_to_graveyard(permanent)
 
     def exile_from_battlefield(self, permanent):
         self.battlefield.remove(permanent)
@@ -650,14 +662,6 @@ class Game:
         event = Permanent_Exiled_Event(permanent, exile_card)
         self.check_event_for_triggers(event)
         return event
-
-    def sacrifice(self, player, permanent):
-        if (permanent.controller != player):
-            return False
-        # TODO: Refactor so sacrifice, destroy, and other methods all use the same battlefield->graveyard function
-        self.battlefield.remove(permanent)
-        permanent.is_alive = False
-        self.put_in_graveyard(permanent.owner, permanent.card)
 
     def exile_from_graveyard(self, card):
         card.owner.graveyard.remove(card)
@@ -680,6 +684,10 @@ class Game:
         permanent.is_alive = False
         owner = permanent.owner
         owner.hand.add_objects([Hand_Object(permanent.card)])
+
+    def return_gravecard_to_battlefield(self, controller, grave_card, modify_function=None):
+        grave_card.owner.graveyard.remove(grave_card)
+        self.create_battlefield_object(controller, grave_card.card, modify_function=modify_function)
 
     def counter_stack_object(self, stack_object):
         self.stack.remove(stack_object)
