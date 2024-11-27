@@ -91,3 +91,4 @@ elfsworn_giant = Creature_Card("Elfsworn Giant (3GG)", Cost.from_string(
     "3GG"), [CardType.CREATURE, CreatureType.GIANT], [reach, elfsworn_giant_landfall], "", 5, 3)
 erudite_wizard = Creature_Card("Erudite Wizard (2U)", Cost.from_string(
     "2U"), [CardType.CREATURE, CreatureType.HUMAN, CreatureType.WIZARD], [erudite_wizard_2card], "", 2, 3)
+evolving_wilds = Land_Card("Evolving Wilds", [CardType.LAND], [evolving_wilds_sac], "")

@@ -582,8 +582,10 @@ class Game:
         player.lands_played_this_turn += 1
         return True
 
-    def create_battlefield_object(self, controller, card):
+    def create_battlefield_object(self, controller, card, modify_function=None):
         permanent = Permanent(card, controller, self.permanent_id)
+        if modify_function is not None:
+            modify_function(permanent)
         self.permanent_id += 1
         # TODO: Update continuous effects here
         event = Permanent_Enter_Event(self, permanent)
@@ -716,6 +718,13 @@ class Game:
         player.library.remove(card)
         player.library.shuffle()
         player.library.add_objects([card])
+
+    def player_tutor_to_battlefield(self, player, search_function, modify_function=None):
+        tutor_targets = player.library.get_by_criteria(search_function)
+        card = player.agent.choose_one(tutor_targets)
+        player.library.remove(card)
+        player.library.shuffle()
+        self.create_battlefield_object(player, card, modify_function=modify_function)
 
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:

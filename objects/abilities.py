@@ -39,6 +39,13 @@ def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
     return Permanent_Tapped_Event(object)
 
 
+def tap_sac(game, player, object):
+    if object.tapped or (object.is_creature and object.summoning_sick):
+        raise UnpayableCostException
+    game.tap(object)
+    game.sacrifice(player, object)
+
+
 def tap_sac_pay_2(game, player, object):
     if object.tapped:
         raise UnpayableCostException
@@ -224,6 +231,12 @@ def tutor_land_top_opt(game, controller, source, event, modes, targets):
         game.player_tutor_to_top(controller, lambda c: c.is_land and c.is_basic)
 
 
+def tutor_tapped_basic(game, controller, source, event, modes, targets):
+    def tap(permanent):
+        permanent.tapped = True
+    game.player_tutor_to_battlefield(controller, lambda c: c.is_land and c.is_basic, modify_function=tap)
+
+
 def draw_card(game, controller, source, event, modes, targets):
     game.player_draw(controller)
 
@@ -358,6 +371,8 @@ axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until e
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
 cathar_sac = Activated_Ability("{1}, Sacrifice this creature: Destroy target artifact or enchantment.",
                                can_sac, sac_pay_1, destroy_permanent, SingleMode([artifact_enchanment_target]))
+evolving_wilds_sac = Activated_Ability(
+    "{T}, Sacrifice this land: Tutor a basic land card to the battlefield tapped.", can_tap_self, tap_sac, tutor_tapped_basic, SingleMode(None))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
