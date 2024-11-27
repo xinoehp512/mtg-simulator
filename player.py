@@ -21,7 +21,9 @@ class Player(Damageable_Object):
         self.starting_hand_size = 7
         self.max_hand_size = 7
         self.land_drops_per_turn = 1
+
         self.lands_played_this_turn = 0
+        self.cards_drawn_this_turn = 0
         self.decked = False
 
         self.agent = agent

@@ -5,7 +5,7 @@ from cost import Cost
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -316,6 +316,7 @@ class Game:
             self.active_player_index)
         for player in self.players:
             player.lands_played_this_turn = 0
+            player.cards_drawn_this_turn = 0
         self.creature_died_this_turn = False
         self.add_turn()
 
@@ -695,7 +696,11 @@ class Game:
     def player_draw(self, player):
         if player.library.is_empty():
             return False
-        player.hand.add_objects([Hand_Object(player.library.pop())])
+        card = Hand_Object(player.library.pop())
+        player.hand.add_objects([card])
+        player.cards_drawn_this_turn += 1
+        event = Card_Draw_Event(card, player.cards_drawn_this_turn)
+        self.check_event_for_triggers(event)
 
     def player_tutor_to_hand(self, player, search_function):
         # TODO: Move tutoring to agent.

@@ -42,6 +42,7 @@ dinosaur = Creature_Card("Dinosaur (3G)", Cost.from_string("3G"), [CardType.CREA
 #                                    CardType.SORCERY], [reinforcements_ability], "")
 
 destroy = Sorcery_Card("Destroy (1)", Cost.from_string("1"), [CardType.SORCERY], [destroy_ability], "")
+draw = Instant_Card("Draw (1)", Cost.from_string("1"), [CardType.INSTANT], [draw_card_ability], "")
 
 aegis_turtle = Creature_Card("Aegis Turtle (U)", Cost.from_string("U"), [CardType.CREATURE, CreatureType.TURTLE], [], "", 0, 5)
 ambush_wolf = Creature_Card("Ambush Wolf (2G)", Cost.from_string(
@@ -88,3 +89,5 @@ elementalist_adept = Creature_Card("Elementalist Adept (1U)", Cost.from_string(
     "1U"), [CardType.CREATURE, CreatureType.HUMAN, CreatureType.WIZARD], [flash, prowess], "", 2, 1)
 elfsworn_giant = Creature_Card("Elfsworn Giant (3GG)", Cost.from_string(
     "3GG"), [CardType.CREATURE, CreatureType.GIANT], [reach, elfsworn_giant_landfall], "", 5, 3)
+erudite_wizard = Creature_Card("Erudite Wizard (2U)", Cost.from_string(
+    "2U"), [CardType.CREATURE, CreatureType.HUMAN, CreatureType.WIZARD], [erudite_wizard_2card], "", 2, 3)

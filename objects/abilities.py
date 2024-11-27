@@ -4,7 +4,7 @@ from cost import Additional_Cost, Cost
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
 from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CostType, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from event import Attack_Event, Card_Draw_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -223,6 +223,10 @@ def tutor_land_top_opt(game, controller, source, event, modes, targets):
     if controller.agent.choose_yes_or_no("Search for a basic land?"):
         game.player_tutor_to_top(controller, lambda c: c.is_land and c.is_basic)
 
+
+def draw_card(game, controller, source, event, modes, targets):
+    game.player_draw(controller)
+
 # Triggers
 
 
@@ -232,10 +236,6 @@ def trigger_on_etb(game, event, object):
 
 def trigger_on_landfall(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent.is_land and event.permanent.controller == object.controller
-
-
-def trigger_on_3_creatures_attack(game, event, object):
-    return isinstance(event, Attack_Event) and event.num_attacking >= 3
 
 
 def trigger_on_controlled_creature_enter(game, event, object):
@@ -254,12 +254,20 @@ def morbid_end_step(game, event, object):
     return isinstance(event, Step_Begin_Event) and event.step == Step.END and event.player == object.controller and game.creature_died_this_turn
 
 
+def trigger_on_3_creatures_attack(game, event, object):
+    return isinstance(event, Attack_Event) and event.num_attacking >= 3
+
+
 def trigger_on_attack_with_ferocious(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_ferocious(object.controller)
 
 
 def trigger_on_attack_with_threshold(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_threshold(object.controller)
+
+
+def trigger_on_second_card(game, event, object):
+    return isinstance(event, Card_Draw_Event) and event.number_this_turn == 2
 
 # Replacement Effects
 
@@ -344,6 +352,7 @@ crypt_feaster_threshold = Triggered_Ability(trigger_on_attack_with_threshold, Si
 dazzling_angel_gain = Triggered_Ability(trigger_on_controlled_creature_enter, SingleMode(None), gain_x(1))
 dwynens_elite_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_elf_warrior, intervening_if_conditional=control_other_elf)
 elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), make_elf_warrior)
+erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None), put_counter_self)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
@@ -358,8 +367,10 @@ selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, t
 dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLUE, ManaType.BLACK), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.BLACK])
 
-bake_into_a_pie_ability = Spell_Ability(destroy_creature_and_make_food, SingleMode([creature_target]))
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
+draw_card_ability = Spell_Ability(draw_card, SingleMode(None))
+
+bake_into_a_pie_ability = Spell_Ability(destroy_creature_and_make_food, SingleMode([creature_target]))
 bite_down_ability = Spell_Ability(creature_bite, SingleMode([creature_you_control_target, creature_planeswalker_dont_control_target]))
 broken_wings_ability = Spell_Ability(destroy_permanent, SingleMode([broken_wings_target]))
 burst_lightning_ability = Spell_Ability(deal_2_kicked_4, SingleMode([damageable_target]))

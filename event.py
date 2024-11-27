@@ -189,3 +189,10 @@ class Trigger_Stack_Event(Event):
     @property
     def stack_object(self):
         return self.trigger_object
+
+
+class Card_Draw_Event(Event):
+    def __init__(self, card, number_this_turn):
+        super().__init__()
+        self.card = card
+        self.number_this_turn = number_this_turn
