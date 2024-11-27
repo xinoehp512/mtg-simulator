@@ -53,6 +53,7 @@ class BasicLandType(Enum):
 
 class ArtifactType(Enum):
     FOOD = 1
+    TREASURE = 2
 
 
 class CreatureType(Enum):
@@ -120,10 +121,6 @@ class AbilityKeyword(Enum):
 
 class AdditionalCostType(Enum):
     KICKED = 0
-
-
-class CostType(Enum):
-    SAC_CREATURE = 0
 
 
 class ModeType(Enum):

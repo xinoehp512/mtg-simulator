@@ -1,7 +1,7 @@
 
 from ability_stack_object import Ability_Stack_Object
 from action import Action
-from cost import Cost
+from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
@@ -145,6 +145,9 @@ class Game:
     def get_permanents_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.controller == player)
 
+    def get_tappable_permanents_of(self, player):
+        return self.battlefield.get_by_criteria(lambda p: p.controller == player and p.tapped == False and not (p.is_creature and p.summoning_sick))
+
     def get_nonland_permanents_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.controller == player and not p.is_land)
 
@@ -166,10 +169,28 @@ class Game:
     def get_planeswalkers_of(self, player):
         return self.battlefield.get_by_criteria(lambda p: p.is_planeswalker and p.controller == player)
 
+    def player_can_pay_cost(self, player, cost):
+        tap_cost = cost.tap_cost
+        tappable_permanents = self.get_tappable_permanents_of(player)
+        for use_cost in tap_cost:
+            options = [permanent for permanent in tappable_permanents if use_cost.acceptance_function(permanent, cost.object)]
+            if len(options) == 0:
+                return False
+        sacrifice_cost = cost.sacrifice_cost
+        saccable_permanents = self.get_permanents_of(player)
+        for use_cost in sacrifice_cost:
+            options = [permanent for permanent in saccable_permanents if use_cost.acceptance_function(permanent, cost.object)]
+            if len(options) == 0:
+                return False
+        return True
+
+    def player_can_activate_ability(self, player, ability):
+        return self.player_can_pay_cost(player, ability.cost)
+
     def get_activated_abilities_of(self, player):
         permanents_with_ability = self.battlefield.get_by_criteria(
             lambda p: p.controller == player and p.has_activated_ability)
-        return [ability for permanent in permanents_with_ability for ability in permanent.activated_abilities if ability.can_be_activated_by(self, player)]
+        return [ability for permanent in permanents_with_ability for ability in permanent.activated_abilities if self.player_can_activate_ability(player, ability)]
 
     def get_mana_abilities_of(self, player):
         return [
@@ -748,13 +769,8 @@ class Game:
         self.backup_manager.add_event(Ability_Activate_Begin_Marker(player, ability))
         # If the ability is a mana ability, simply test the costs, then carry it out.
         if ability.is_mana_ability:
-            try:
-                cost_effect = ability.pay_cost(self, player)  # TODO: Refactor to use the same cost system as spellcasting.
-                ability_effect = ability.resolve(self, player, None)
-                self.backup_manager.add_event(Mana_Ability_Event(cost_effect, ability_effect))
-            except UnpayableCostException:
-                # This exception indicates a rollback needs to take place.
-                raise Exception("Illegal Action")
+            if self.player_pay_cost(player, ability.cost):
+                ability.resolve(self, player, None)
         else:
             modes = None  # TODO: Refactor out mode choice and target choice.
             if ability.is_modal:
@@ -773,10 +789,8 @@ class Game:
                 targets = None
             activation_object = Ability_Stack_Object(player, StackObjectType.ACTIVATED, effect_function=ability.result_function, source=ability.object,
                                                      targets=targets, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes]})
-            try:
-                cost_effect = ability.pay_cost(self, player)
-            except UnpayableCostException:
-                # This exception indicates a rollback needs to take place.
+
+            if not self.player_pay_cost(player, ability.cost):
                 raise Exception("Illegal Action")
             self.put_on_stack(activation_object)
             event = Activation_Event(activation_object)
@@ -791,7 +805,7 @@ class Game:
             raise Exception("Player does not have that spell in hand.")
         player.hand.remove(spell)
         additional_costs = spell.additional_costs
-        cost_increase = Cost([])
+        cost_increase = Total_Cost([])
         costs_paid = []
         modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
@@ -822,7 +836,7 @@ class Game:
             player, StackObjectType.SPELL, effect_function=spell.card.spell_effect, source=None, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes], ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
         spell_object.source = spell_object
 
-        cost = spell.cost+cost_increase
+        cost = Total_Cost([spell.cost])+cost_increase
         self.player_activate_mana(player, cost)
         try:
             if not self.player_pay_cost(player, cost):
@@ -878,17 +892,25 @@ class Game:
             self.player_activate_ability(player, ability)
 
     def player_pay_cost(self, player, cost):
-        mana_cost = cost.mana_cost
+        mana_cost = [mana_sym for mana_cost in cost.mana_cost for mana_sym in mana_cost.mana_cost]
         mana_to_pay = player.agent.choose_mana_to_pay(
             self, player.mana_pool, mana_cost)
         if mana_to_pay is None:
             return False
+        tap_cost = cost.tap_cost
+        permanents_to_tap = player.agent.choose_permanents_to_pay_cost(self, self.get_tappable_permanents_of(player), tap_cost, cost.object)
+        if permanents_to_tap is None:
+            return False
+
         sacrifice_cost = cost.sacrifice_cost
-        permanents_to_sacrifice = player.agent.choose_permanents_to_sacrifice(self, self.get_permanents_of(player), sacrifice_cost)
+        permanents_to_sacrifice = player.agent.choose_permanents_to_pay_cost(
+            self, self.get_permanents_of(player), sacrifice_cost, cost.object)
         if permanents_to_sacrifice is None:
             return False
 
         player.mana_pool.remove(mana_to_pay)
+        for permanent in permanents_to_tap:
+            self.tap(permanent)
         for permanent in permanents_to_sacrifice:
             self.sacrifice(player, permanent)
         return True

@@ -1,9 +1,9 @@
 from action import Action
 from activated_ability import Activated_Ability
-from cost import Additional_Cost, Cost
+from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CostType, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -22,45 +22,6 @@ menace = Keyword_Ability(AbilityKeyword.MENACE)
 flying = Keyword_Ability(AbilityKeyword.FLYING)
 reach = Keyword_Ability(AbilityKeyword.REACH)
 none = Keyword_Ability(None)
-
-
-def can_tap_self(game, _, object):
-    return not (object.tapped or (object.is_creature and object.summoning_sick))
-
-
-def can_sac(game, _, object):
-    return object.is_alive
-
-
-def tap_self(game, _, object):  # TODO: Check if creature and summoning sick.
-    if object.tapped or (object.is_creature and object.summoning_sick):
-        raise UnpayableCostException
-    game.tap(object)
-    return Permanent_Tapped_Event(object)
-
-
-def tap_sac(game, player, object):
-    if object.tapped or (object.is_creature and object.summoning_sick):
-        raise UnpayableCostException
-    game.tap(object)
-    game.sacrifice(player, object)
-
-
-def tap_sac_pay_2(game, player, object):
-    if object.tapped:
-        raise UnpayableCostException
-    cost = Cost.from_string("2")
-    game.player_activate_mana(player, cost)
-    game.player_pay_cost(player, cost)
-    game.tap(object)
-    game.sacrifice(player, object)
-
-
-def sac_pay_1(game, player, object):
-    cost = Cost.from_string("1")
-    game.player_activate_mana(player, cost)
-    game.player_pay_cost(player, cost)
-    game.sacrifice(player, object)
 
 
 def add_one_white_mana(game, player, object, _):
@@ -90,15 +51,26 @@ def add_x_or_y_mana(color1, color2):
     return _
 
 
+def add_any_color_mana(game, player, object, targets):
+    color = player.agent.choose_one([ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN])
+    return game.add_mana(player, [Mana(color, object)])
+
+
 def gain_x(amount):
     def _(game, controller, source, event, modes, targets):
         game.player_gain_life(controller, amount)
     return _
 
 
+tap_self = Tap_Cost(lambda p, o: p == o)
+sac_self = Sacrifice_Cost(lambda p, o: p == o)
+
 food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.",
-                                 can_tap_self, tap_sac_pay_2, gain_x(3), SingleMode(None))
+                                 Total_Cost([Mana_Cost.from_string("2"), tap_self, sac_self]), gain_x(3), SingleMode(None))
 food = Artifact_Token("Food Token", None, [CardType.ARTIFACT, ArtifactType.FOOD], [food_ability], "")
+treasure_ability = Activated_Ability("{T}, Sacrifice this artifact: Add one mana of any color.", Total_Cost([tap_self, sac_self]), add_any_color_mana, SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN])
+treasure = Artifact_Token("Treasure Token", None, [CardType.ARTIFACT, ArtifactType.TREASURE], [treasure_ability], "")
 
 
 def deal_3(game, controller, source, event, modes, targets):
@@ -315,15 +287,15 @@ broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.EN
 artifact_enchanment_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,)])
 creature_planeswalker_target = TargetType([(TargetTypeBase.CREATURE,), (TargetTypeBase.PLANESWALKER,)])
 
-plains_ability = Activated_Ability("{T}: Add {W}", can_tap_self, tap_self,
+plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
-island_ability = Activated_Ability("{T}: Add {U}", can_tap_self, tap_self,
+island_ability = Activated_Ability("{T}: Add {U}", Total_Cost([tap_self]),
                                    add_one_blue_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.BLUE])
-swamp_ability = Activated_Ability("{T}: Add {B}", can_tap_self, tap_self,
+swamp_ability = Activated_Ability("{T}: Add {B}", Total_Cost([tap_self]),
                                   add_one_black_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.BLACK])
-mountain_ability = Activated_Ability("{T}: Add {R}", can_tap_self, tap_self,
+mountain_ability = Activated_Ability("{T}: Add {R}", Total_Cost([tap_self]),
                                      add_one_red_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.RED])
-forest_ability = Activated_Ability("{T}: Add {G}", can_tap_self, tap_self,
+forest_ability = Activated_Ability("{T}: Add {G}", Total_Cost([tap_self]),
                                    add_one_green_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.GREEN])
 
 
@@ -368,18 +340,18 @@ elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None
 erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None), put_counter_self)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
-                                       can_tap_self, tap_self, give_haste, SingleMode([creature_target]))
+                                       Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
 cathar_sac = Activated_Ability("{1}, Sacrifice this creature: Destroy target artifact or enchantment.",
-                               can_sac, sac_pay_1, destroy_permanent, SingleMode([artifact_enchanment_target]))
+                               Total_Cost([Mana_Cost.from_string("1"), sac_self]), destroy_permanent, SingleMode([artifact_enchanment_target]))
 evolving_wilds_sac = Activated_Ability(
-    "{T}, Sacrifice this land: Tutor a basic land card to the battlefield tapped.", can_tap_self, tap_sac, tutor_tapped_basic, SingleMode(None))
+    "{T}, Sacrifice this land: Tutor a basic land card to the battlefield tapped.", Total_Cost([tap_self, sac_self]), tutor_tapped_basic, SingleMode(None))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
-rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
+rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.RED])
-selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
+selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.GREEN, ManaType.WHITE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
-dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", can_tap_self, tap_self, add_x_or_y_mana(ManaType.BLUE, ManaType.BLACK), SingleMode(
+dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLUE, ManaType.BLACK), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.BLACK])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
@@ -393,4 +365,5 @@ bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
     1, [Mode(None, "Search for a basic land", 0), Mode([creature_you_control_target, creature_dont_control_target], "Target creature you control fights target creature you don't control.", 1)]))
 eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planeswalker_target]))
 
-eaten_alive_extra_cost = Additional_Cost([Cost.from_string("3B"), Cost([CostType.SAC_CREATURE])])
+eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
+                                         Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature)])])
