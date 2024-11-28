@@ -239,6 +239,13 @@ def draw_card(game, controller, source, event, modes, targets):
     game.player_draw(controller)
 
 
+def weaken_draw(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, -1, 0)
+    game.create_continuous_effect(effect)
+    game.player_draw(controller)
+
+
 def return_tapped_with_treasure(game, controller, source, event, modes, targets):
     def tap(permanent):
         permanent.tapped = True
@@ -408,6 +415,7 @@ bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
     1, [Mode(None, "Search for a basic land", 0), Mode([creature_you_control_target, creature_dont_control_target], "Target creature you control fights target creature you don't control.", 1)]))
 eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planeswalker_target]))
 fake_your_own_death_ability = Spell_Ability(give_fake_death_ability, SingleMode([creature_target]))
+fleeting_distraction_ability = Spell_Ability(weaken_draw, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
