@@ -7,9 +7,10 @@ from target import Target
 
 
 class TargetType:
-    def __init__(self, target_options, is_optional=False):
+    def __init__(self, target_options, is_optional=False, number=1):
         self.target_options = target_options
         self.is_optional = is_optional
+        self.number = number
 
     @property
     def name(self):
@@ -39,14 +40,16 @@ class TargetType:
                     target_name += " you don't control"
                 if target_modifier == TargetTypeModifier.HAS_FLYING:
                     target_name += " with flying"
+                if target_modifier == TargetTypeModifier.OTHER:
+                    target_name = "other "+target_name
             target_names.append(target_name)
         if len(target_names) == 1:
             return target_names[0]
         if len(target_names) == 2:
             return " or ".join(target_names)
-        return ", ".join(target_names[:-1])+", or " + target_names[-1]
+        return ", ".join(target_names[:-1]) + ", or " + target_names[-1]
 
-    def get_targets(self, game, player):
+    def get_targets(self, game, player, source):
         opponent = game.get_opponents(player)[0]
         objects = []
         base_targets = [target_modifier for target_option in self.target_options for target_modifier in target_option if isinstance(
@@ -85,6 +88,8 @@ class TargetType:
                         fulfilled = fulfilled and t.controller != player
                     if target_modifier == TargetTypeModifier.HAS_FLYING:
                         fulfilled = fulfilled and AbilityKeyword.FLYING in t.keywords
+                    if target_modifier == TargetTypeModifier.OTHER:
+                        fulfilled = fulfilled and t != source
                 if fulfilled:
                     return True
             return False

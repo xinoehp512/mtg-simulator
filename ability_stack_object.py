@@ -27,6 +27,10 @@ class Ability_Stack_Object(Targetable_Object):
         return self.card is not None and self.card.is_permanent
 
     @property
+    def keywords(self):
+        return []
+
+    @property
     def name(self):
         if self.card is not None:
             return self.card.name

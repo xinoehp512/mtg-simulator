@@ -288,17 +288,24 @@ class Agent:
             payment.append(permanent_to_use)
         return payment
 
-    def choose_targets(self, game, player, targets_required):
+    def choose_targets(self, game, player, targets_required, source):
         targets = []
         user_display(game)
         for target_type in targets_required:
-            legal_targets = game.get_targets(player, target_type)
-            if len(legal_targets) == 0:
-                return None
-            target = self.choose_one(legal_targets, f"Choose a {target_type.name} target.")
-            if target == None:
-                continue
-            targets.append(target)
+            target_word = []
+            target_choices = game.get_targets(player, target_type, source)
+            for i in range(target_type.number):
+                legal_targets = [t for t in target_choices if t not in target_word]
+                for target in legal_targets:
+                    if target in target_word:
+                        pass
+                if len(legal_targets) == 0:
+                    return None
+                target = self.choose_one(legal_targets, f"Choose a {target_type.name} target.")
+                if target == None:
+                    continue
+                target_word.append(target)
+            targets.extend(target_word)
         return targets
 
     def choose_modes(self, game, mode_choice):

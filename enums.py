@@ -117,6 +117,7 @@ class AbilityKeyword(Enum):
     FLYING = 4
     MENACE = 5
     REACH = 6
+    LIFELINK = 7
 
 
 class AdditionalCostType(Enum):
@@ -143,6 +144,7 @@ class TargetTypeModifier(Enum):
     OPP_CONTROL = 1
     DONT_CONTROL = 2
     HAS_FLYING = 3
+    OTHER = 4
 
 
 class EffectDuration(Enum):

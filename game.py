@@ -215,8 +215,8 @@ class Game:
             gravecards.extend(player.graveyard.objects)
         return gravecards
 
-    def get_targets(self, player, target_type):  # TODO: De-function this function.
-        return target_type.get_targets(self, player)
+    def get_targets(self, player, target_type, source):  # TODO: De-function this function.
+        return target_type.get_targets(self, player, source)
     # Combat Query functions
 
     def get_legal_attackers(self, player):
@@ -705,14 +705,16 @@ class Game:
         permanent.add_counters(counter_type, number)
         self.apply_effects()
 
-    def deal_damage(self, target, damage):
+    def deal_damage(self, target, source, damage):
         target.take_damage(damage)
+        if AbilityKeyword.LIFELINK in source.keywords:
+            self.player_gain_life(source.controller, damage)
 
     def fight(self, creature1, creature2):
         if creature1 == creature2:
-            self.deal_damage(creature1, creature1.power*2)
-        self.deal_damage(creature1, creature2.power)
-        self.deal_damage(creature2, creature1.power)
+            self.deal_damage(creature1, creature1, creature1.power*2)
+        self.deal_damage(creature1, creature2, creature2.power)
+        self.deal_damage(creature2, creature1, creature1.power)
 
     def put_on_stack(self, spell_object):
         self.stack.add_objects([spell_object])
@@ -789,7 +791,7 @@ class Game:
             for mode in modes:
                 if mode.is_targeted:
                     targets_required = mode.target_types
-                    mode_targets = self.player_choose_targets(player, targets_required)
+                    mode_targets = self.player_choose_targets(player, targets_required, source=ability.object)
                     if mode_targets == None:
                         raise Exception("Illegal Action")
                     targets.extend(mode_targets)
@@ -855,7 +857,7 @@ class Game:
             self.backup_manager.reverse_last_event()
             player.hand.add_objects([spell])
             return False
-        self.put_on_stack(spell_object)
+        self.put_on_stack(spell_object)  # TODO: Spells are actually on the stack at the very start of the process.
         self.backup_manager.add_event(Spellcast_End_Marker(player, spell))
         event = Spellcast_Event(spell_object)
         self.check_event_for_triggers(event)
@@ -873,7 +875,7 @@ class Game:
         for mode in modes:
             if mode.is_targeted:
                 targets_required = mode.target_types
-                mode_targets = self.player_choose_targets(controller, targets_required)
+                mode_targets = self.player_choose_targets(controller, targets_required, source=ability.object)
                 if mode_targets == None:  # TODO: Make modes without valid targets un-choosable.
                     return
                 targets.extend(mode_targets)
@@ -923,8 +925,8 @@ class Game:
             self.sacrifice(player, permanent)
         return True
 
-    def player_choose_targets(self, player, targets_required):
-        targets = player.agent.choose_targets(self, player, targets_required)
+    def player_choose_targets(self, player, targets_required, source=None):
+        targets = player.agent.choose_targets(self, player, targets_required, source)
         if targets is None:
             raise Exception("Illegal Action")
         return targets
@@ -954,7 +956,7 @@ class Game:
 
     def creature_deal_combat_damage(self, creature):
         for damage_amount, target in creature.combat_damage_assignment:
-            self.deal_damage(target, damage_amount)
+            self.deal_damage(target, creature, damage_amount)
 
     def remove_marked_damage_and_end_turn(self):
         for permanent in self.get_permanents():

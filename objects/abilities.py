@@ -21,6 +21,7 @@ trample = Keyword_Ability(AbilityKeyword.TRAMPLE)
 menace = Keyword_Ability(AbilityKeyword.MENACE)
 flying = Keyword_Ability(AbilityKeyword.FLYING)
 reach = Keyword_Ability(AbilityKeyword.REACH)
+lifelink = Keyword_Ability(AbilityKeyword.LIFELINK)
 none = Keyword_Ability(None)
 
 
@@ -75,7 +76,7 @@ treasure = Artifact_Token("Treasure Token", None, [CardType.ARTIFACT, ArtifactTy
 
 def deal_x(amount):
     def _(game, controller, source, event, modes, targets):
-        game.deal_damage(targets[0].object, amount)
+        game.deal_damage(targets[0].object, source, amount)
     return _
 
 
@@ -120,6 +121,14 @@ def put_counter(game, controller, source, event, modes, targets):
 
 def put_counter_self(game, controller, source, event, modes, targets):
     game.put_counters_on(CounterType.P1P1, 1, source)
+
+
+def put_counter_targets(game, controller, source, event, modes, targets):
+    if targets == None:
+        return
+    creatures = [target.object for target in targets]
+    for creature in creatures:
+        game.put_counters_on(CounterType.P1P1, 1, creature)
 
 
 def give_haste(game, controller, source, event, modes, targets):
@@ -180,7 +189,7 @@ def pump_self_p1p0_and_menace(game, controller, source, event, modes, targets):
 def creature_bite(game, controller, source, event, modes, targets):
     biter = targets[0].object
     bitee = targets[1].object
-    game.deal_damage(bitee, biter.power)
+    game.deal_damage(bitee, biter, biter.power)
 
 
 def opponents_discard(game, controller, source, event, modes, targets):
@@ -193,9 +202,9 @@ def deal_2_kicked_4(game, controller, source, event, modes, targets):
     target = targets[0].object
     was_kicked = AdditionalCostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
     if was_kicked:
-        game.deal_damage(target, 4)
+        game.deal_damage(target, source, 4)
     else:
-        game.deal_damage(target, 2)
+        game.deal_damage(target, source, 2)
 
 
 def tutor_land_or_fight(game, controller, source, event, modes, targets):
@@ -308,6 +317,8 @@ broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.EN
                                  (TargetTypeBase.CREATURE, TargetTypeModifier.HAS_FLYING)])
 artifact_enchanment_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,)])
 creature_planeswalker_target = TargetType([(TargetTypeBase.CREATURE,), (TargetTypeBase.PLANESWALKER,)])
+opt_two_other_creatures_you_control_target = TargetType(
+    [(TargetTypeBase.CREATURE, TargetTypeModifier.OTHER, TargetTypeModifier.YOU_CONTROL)], True, 2)
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -360,6 +371,7 @@ dazzling_angel_gain = Triggered_Ability(trigger_on_controlled_creature_enter, Si
 dwynens_elite_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_elf_warrior, intervening_if_conditional=control_other_elf)
 elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), make_elf_warrior)
 erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None), put_counter_self)
+felidar_savior_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_two_other_creatures_you_control_target]), put_counter_targets)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
