@@ -301,7 +301,7 @@ class Agent:
                         pass
                 if len(legal_targets) == 0:
                     return None
-                target = self.choose_one(legal_targets, f"Choose a {target_type.name} target.")
+                target = self.choose_one(legal_targets, f"Choose a {target_type.name}.")
                 if target == None:
                     continue
                 target_word.append(target)

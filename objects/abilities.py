@@ -80,6 +80,12 @@ def deal_x(amount):
     return _
 
 
+def deal_1_to_opponents(game, controller, source, event, modes, targets):
+    opponents = game.get_opponents(controller)
+    for opponent in opponents:
+        game.deal_damage(opponent, source, 1)
+
+
 def grow_3(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
@@ -372,6 +378,7 @@ dwynens_elite_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_elf
 elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), make_elf_warrior)
 erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None), put_counter_self)
 felidar_savior_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_two_other_creatures_you_control_target]), put_counter_targets)
+firebrand_archer_ping = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), deal_1_to_opponents)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
