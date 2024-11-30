@@ -118,6 +118,7 @@ class AbilityKeyword(Enum):
     MENACE = 5
     REACH = 6
     LIFELINK = 7
+    DEFENDER = 8
 
 
 class AdditionalCostType(Enum):

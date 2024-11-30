@@ -108,3 +108,5 @@ fleeting_distraction = Instant_Card("Fleeting Distraction (U)", Mana_Cost.from_s
                                     [CardType.INSTANT], [fleeting_distraction_ability])
 fleeting_flight = Instant_Card("Fleeting Flight (W)", Mana_Cost.from_string("W"), [CardType.INSTANT], [fleeting_flight_ability])
 giant_growth = Instant_Card("Giant Growth (G)", Mana_Cost.from_string("G"), [CardType.INSTANT], [giant_growth_ability])
+gleaming_barrier = Creature_Card("Gleaming Barrier (2)", Mana_Cost.from_string(
+    "2"), [CardType.ARTIFACT, CardType.CREATURE, CreatureType.WALL], [defender, gleaming_barrier_death], 0, 4)

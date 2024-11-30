@@ -22,6 +22,8 @@ menace = Keyword_Ability(AbilityKeyword.MENACE)
 flying = Keyword_Ability(AbilityKeyword.FLYING)
 reach = Keyword_Ability(AbilityKeyword.REACH)
 lifelink = Keyword_Ability(AbilityKeyword.LIFELINK)
+defender = Keyword_Ability(AbilityKeyword.DEFENDER)
+
 none = Keyword_Ability(None)
 
 
@@ -102,6 +104,10 @@ def make_elf_warrior(game, controller, source, event, modes, targets):
     token = Creature_Token("Elf Warrior Token", None, [CardType.CREATURE, CreatureType.ELF,
                            CreatureType.WARRIOR], [], 1, 1, color_indicator=[Color.GREEN])
     game.create_token(controller, token.copy())
+
+
+def make_treasure(game, controller, source, event, modes, targets):
+    game.create_token(controller, treasure.copy())
 
 
 def exile_gravecard(game, controller, source, event, modes, targets):
@@ -400,6 +406,7 @@ elfsworn_giant_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None
 erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None), put_counter_self)
 felidar_savior_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_two_other_creatures_you_control_target]), put_counter_targets)
 firebrand_archer_ping = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), deal_1_to_opponents)
+gleaming_barrier_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_treasure)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
