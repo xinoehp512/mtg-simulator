@@ -38,7 +38,6 @@ dragon = Creature_Card("Dragon (3R)", Mana_Cost.from_string("3R"), [CardType.CRE
 dinosaur = Creature_Card("Dinosaur (3G)", Mana_Cost.from_string("3G"), [CardType.CREATURE], [], 5, 5)
 
 # lightning_bolt = Instant_Card("Lightning Bolt (R)", [ManaCost.RED], [CardType.INSTANT], [lightning_ability])
-# giant_growth = Instant_Card("Giant Growth (G)", [ManaCost.GREEN], [CardType.INSTANT], [giant_growth_ability])
 # rals_reinforcements = Sorcery_Card("Ral's Reinforcements (1R)", [ManaCost.GENERIC, ManaCost.RED], [
 #                                    CardType.SORCERY], [reinforcements_ability])
 
@@ -108,3 +107,4 @@ firebrand_archer = Creature_Card("Firebrand Archer (1R)", Mana_Cost.from_string(
 fleeting_distraction = Instant_Card("Fleeting Distraction (U)", Mana_Cost.from_string("U"),
                                     [CardType.INSTANT], [fleeting_distraction_ability])
 fleeting_flight = Instant_Card("Fleeting Flight (W)", Mana_Cost.from_string("W"), [CardType.INSTANT], [fleeting_flight_ability])
+giant_growth = Instant_Card("Giant Growth (G)", Mana_Cost.from_string("G"), [CardType.INSTANT], [giant_growth_ability])

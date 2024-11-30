@@ -361,7 +361,6 @@ forest_ability = Activated_Ability("{T}: Add {G}", Total_Cost([tap_self]),
 
 
 # lightning_ability = Spell_Ability("Deal 3 damage to any target.", deal_3, [damageable_target])
-# giant_growth_ability = Spell_Ability("Target creature gets +3/+3 until end of turn.", grow_3, [creature_target])
 # reinforcements_ability = Spell_Ability("Create 2 1/1 red and blue Elementals.", make_2_tokens, None)
 
 
@@ -432,6 +431,7 @@ eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planes
 fake_your_own_death_ability = Spell_Ability(give_fake_death_ability, SingleMode([creature_target]))
 fleeting_distraction_ability = Spell_Ability(weaken_draw, SingleMode([creature_target]))
 fleeting_flight_ability = Spell_Ability(fleeting_flight_effect, SingleMode([creature_target]))
+giant_growth_ability = Spell_Ability(grow_3, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
