@@ -4,8 +4,9 @@ from action import Action
 from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
+from effects import Prevention_Effect
 from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -201,6 +202,10 @@ class Game:
     def get_triggered_abilities(self):
         permanents_with_ability = self.battlefield.get_by_criteria(lambda p: p.has_triggered_ability)
         return [ability for permanent in permanents_with_ability for ability in permanent.triggered_abilities]
+
+    def get_prevention_effects(self):
+        return [effect for effect in self.effects if isinstance(effect, Prevention_Effect)]
+
     # Targeting
 
     def get_damageable(self):
@@ -705,10 +710,14 @@ class Game:
         permanent.add_counters(counter_type, number)
         self.apply_effects()
 
-    def deal_damage(self, target, source, damage):
-        target.take_damage(damage)
-        if AbilityKeyword.LIFELINK in source.keywords:
-            self.player_gain_life(source.controller, damage)
+    def deal_damage(self, target, source, damage, is_combat_damage=False):
+        if damage <= 0:
+            return
+        event = Damage_Event(target, source, damage, is_combat_damage)
+        for effect in self.get_prevention_effects():  # TODO: Function this out with replacement effects
+            if effect.applies_to(event):
+                event = effect.prevent(event)
+        event.execute()
 
     def fight(self, creature1, creature2):
         if creature1 == creature2:
@@ -956,7 +965,7 @@ class Game:
 
     def creature_deal_combat_damage(self, creature):
         for damage_amount, target in creature.combat_damage_assignment:
-            self.deal_damage(target, creature, damage_amount)
+            self.deal_damage(target, creature, damage_amount, is_combat_damage=True)
 
     def remove_marked_damage_and_end_turn(self):
         for permanent in self.get_permanents():

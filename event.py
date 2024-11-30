@@ -1,3 +1,6 @@
+from enums import AbilityKeyword
+
+
 class Event:
     def __init__(self):
         self.occurred = False
@@ -196,3 +199,24 @@ class Card_Draw_Event(Event):
         super().__init__()
         self.card = card
         self.number_this_turn = number_this_turn
+
+
+class Damage_Event(Event):
+    def __init__(self, target, source, damage_amount, is_combat_damage, prevented=False):
+        super().__init__()
+        self.target = target
+        self.source = source
+        self.damage_amount = damage_amount
+        self.is_combat_damage = is_combat_damage
+        self.prevented = prevented
+
+    def execute(self):
+        if self.prevented:
+            return
+        self.target.take_damage(self.damage_amount)
+        if AbilityKeyword.LIFELINK in self.source.keywords:
+            self.player_gain_life(self.source.controller, self.damage_amount)
+        self.occurred = True
+
+    def copy(self):
+        return Damage_Event(self.target, self.source, self.damage_amount, self.is_combat_damage, prevented=self.prevented)

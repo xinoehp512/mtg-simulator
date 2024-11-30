@@ -107,3 +107,4 @@ firebrand_archer = Creature_Card("Firebrand Archer (1R)", Mana_Cost.from_string(
     "1R"), [CardType.CREATURE, CreatureType.HUMAN, CreatureType.ARCHER], [firebrand_archer_ping], 2, 1)
 fleeting_distraction = Instant_Card("Fleeting Distraction (U)", Mana_Cost.from_string("U"),
                                     [CardType.INSTANT], [fleeting_distraction_ability])
+fleeting_flight = Instant_Card("Fleeting Flight (W)", Mana_Cost.from_string("W"), [CardType.INSTANT], [fleeting_flight_ability])

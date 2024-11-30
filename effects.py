@@ -22,3 +22,12 @@ class Ability_Grant_Effect(Effect):
     def __init__(self, duration, applicability_function, abilities):
         super().__init__(EffectType.ABILITY, duration, applicability_function)
         self.abilities = abilities
+
+
+class Prevention_Effect(Effect):
+    def __init__(self, duration, applicability_function, prevention_function):
+        super().__init__(EffectType.PREVENTION, duration, applicability_function)
+        self.prevention_function = prevention_function
+
+    def prevent(self, event):
+        return self.prevention_function(event)

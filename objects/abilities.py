@@ -2,7 +2,7 @@ from action import Action
 from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
-from effects import Ability_Grant_Effect, PT_Effect
+from effects import Ability_Grant_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -246,6 +246,15 @@ def weaken_draw(game, controller, source, event, modes, targets):
     game.player_draw(controller)
 
 
+def fleeting_flight_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.put_counters_on(CounterType.P1P1, 1, target)
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [flying])
+    game.create_continuous_effect(effect)
+    effect = Prevention_Effect(EffectDuration.EOT, lambda e: e.is_combat_damage and e.target == target, prevent_damage)
+    game.create_continuous_effect(effect)
+
+
 def return_tapped_with_treasure(game, controller, source, event, modes, targets):
     def tap(permanent):
         permanent.tapped = True
@@ -308,6 +317,12 @@ def replace_enters(event, object):
 def enters_tapped(event):
     new_event = event.copy()
     new_event.permanent.tapped = True
+    return new_event
+
+
+def prevent_damage(event):
+    new_event = event.copy()
+    new_event.prevented = True
     return new_event
 
 # Conditionals
@@ -416,6 +431,7 @@ bushwhack_ability = Spell_Ability(tutor_land_or_fight, ModeChoice(
 eaten_alive_ability = Spell_Ability(exile_permanent, SingleMode([creature_planeswalker_target]))
 fake_your_own_death_ability = Spell_Ability(give_fake_death_ability, SingleMode([creature_target]))
 fleeting_distraction_ability = Spell_Ability(weaken_draw, SingleMode([creature_target]))
+fleeting_flight_ability = Spell_Ability(fleeting_flight_effect, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
