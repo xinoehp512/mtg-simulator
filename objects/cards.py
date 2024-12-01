@@ -104,3 +104,4 @@ gnarlid_colony = Creature_Card("Gnarlid Colony (1G)", "1G", [CardType.CREATURE, 
                                kicker("2G"), gnarlid_kicked_enters, gnarlid_counter_lord], 2, 2)
 goblin_boarders = Creature_Card("Goblin Boarders (2R)", "2R", [CardType.CREATURE,
                                 CreatureType.GOBLIN, CreatureType.PIRATE], [goblin_boarders_enters], 3, 2)
+goblin_surprise = Instant_Card("Goblin Surprise (2R)", "2R", [CardType.INSTANT], [goblin_surprise_ability])

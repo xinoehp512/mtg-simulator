@@ -253,6 +253,13 @@ def weaken_draw(game, controller, source, event, modes, targets):
     game.player_draw(controller)
 
 
+def return_tapped_with_treasure(game, controller, source, event, modes, targets):
+    def tap(permanent):
+        permanent.tapped = True
+    game.return_gravecard_to_battlefield(event.grave_card.owner, event.grave_card, modify_function=tap)
+    game.create_token(controller, treasure.copy())
+
+
 def fleeting_flight_effect(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.put_counters_on(CounterType.P1P1, 1, target)
@@ -262,11 +269,19 @@ def fleeting_flight_effect(game, controller, source, event, modes, targets):
     game.create_continuous_effect(effect)
 
 
-def return_tapped_with_treasure(game, controller, source, event, modes, targets):
-    def tap(permanent):
-        permanent.tapped = True
-    game.return_gravecard_to_battlefield(event.grave_card.owner, event.grave_card, modify_function=tap)
-    game.create_token(controller, treasure.copy())
+def goblin_surprise_effect(game, controller, source, event, modes, targets):
+    mode = modes[ModeType.MODES_CHOSEN][0]
+    if mode == 0:
+        # Pump
+        creatures = game.get_creatures_of(controller)
+        effect = PT_Effect(EffectDuration.EOT, lambda p: p in creatures, 2, 0)
+        game.create_continuous_effect(effect)
+    if mode == 1:
+        # Tokens
+        token = Creature_Token("Goblin Token", None, [CardType.CREATURE, CreatureType.GOBLIN], [], 1, 1, color_indicator=[Color.RED])
+        game.create_token(controller, token.copy())
+        game.create_token(controller, token.copy())
+
 
 # Triggers
 
@@ -456,6 +471,8 @@ fake_your_own_death_ability = Spell_Ability(give_fake_death_ability, SingleMode(
 fleeting_distraction_ability = Spell_Ability(weaken_draw, SingleMode([creature_target]))
 fleeting_flight_ability = Spell_Ability(fleeting_flight_effect, SingleMode([creature_target]))
 giant_growth_ability = Spell_Ability(grow_3, SingleMode([creature_target]))
+goblin_surprise_ability = Spell_Ability(goblin_surprise_effect, ModeChoice(
+    1, [Mode(None, "Creatures you control get +2/+0 until end of turn", 0), Mode(None, "Create two 1/1 red Goblin creature tokens.", 1)]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
