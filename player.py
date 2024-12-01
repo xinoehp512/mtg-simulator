@@ -24,6 +24,8 @@ class Player(Damageable_Object):
 
         self.lands_played_this_turn = 0
         self.cards_drawn_this_turn = 0
+        self.attacked_this_turn = False
+
         self.decked = False
 
         self.agent = agent
@@ -46,6 +48,11 @@ class Player(Damageable_Object):
 
     def take_damage(self, damage):
         self.life -= damage
+
+    def reset_turn_counters(self):
+        self.lands_played_this_turn = 0
+        self.cards_drawn_this_turn = 0
+        self.attacked_this_turn = False
 
     def __str__(self):
         return self.name

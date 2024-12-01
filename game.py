@@ -345,8 +345,7 @@ class Game:
         self.active_player_index = self.player_id_after(
             self.active_player_index)
         for player in self.players:
-            player.lands_played_this_turn = 0
-            player.cards_drawn_this_turn = 0
+            player.reset_turn_counters()
         self.creature_died_this_turn = False
         self.add_turn()
 
@@ -552,6 +551,7 @@ class Game:
         if len(attacks) > 0:
             self.add_step([Phase.COMBAT, Step.COMBAT_DAMAGE])
             self.add_step([Phase.COMBAT, Step.DECLARE_BLOCKERS])
+            self.active_player.attacked_this_turn = True
             event = Attack_Event(attacks)
             self.check_event_for_triggers(event)
 

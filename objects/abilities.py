@@ -325,6 +325,10 @@ def replace_enters_if_kicked(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object and event.permanent.casting_information.get(CastingInformationType.KICKED, False)
 
 
+def replace_enters_if_raid(event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent == object and event.permanent.controller.attacked_this_turn
+
+
 def enters_tapped(event):
     new_event = event.copy()
     new_event.permanent.tapped = True
@@ -457,6 +461,7 @@ eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B"
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
 
 gnarlid_kicked_enters = Replacement_Effect(replace_enters_if_kicked, enters_counters(2))
+goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_counters(1))
 
 gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.STATIC, lambda p: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
