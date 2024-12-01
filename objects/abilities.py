@@ -3,7 +3,7 @@ from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect, Prevention_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
@@ -11,6 +11,7 @@ from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
 from replacement_effect import Replacement_Effect
 from spell_ability import Spell_Ability
+from static_ability import Static_Ability
 from target_type import TargetType
 from triggered_ability import Triggered_Ability
 
@@ -320,10 +321,22 @@ def replace_enters(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
 
+def replace_enters_if_kicked(event, object):
+    return isinstance(event, Permanent_Enter_Event) and event.permanent == object and event.permanent.casting_information.get(CastingInformationType.KICKED, False)
+
+
 def enters_tapped(event):
     new_event = event.copy()
     new_event.permanent.tapped = True
     return new_event
+
+
+def enters_counters(x):
+    def _(event):
+        new_event = event.copy()
+        new_event.permanent.add_counters(CounterType.P1P1, x)  # TODO: This modifies the event to include putting counters.
+        return new_event
+    return _
 
 
 def prevent_damage(event):
@@ -371,7 +384,7 @@ forest_ability = Activated_Ability("{T}: Add {G}", Total_Cost([tap_self]),
 
 
 def kicker(x):
-    return Additional_Cost([x, None])
+    return Additional_Cost([Total_Cost([Mana_Cost.from_string(x)], type=AdditionalCostType.KICKED), None])
 
 
 def ward(x):
@@ -442,3 +455,8 @@ giant_growth_ability = Spell_Ability(grow_3, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
+
+gnarlid_kicked_enters = Replacement_Effect(replace_enters_if_kicked, enters_counters(2))
+
+gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
+    EffectDuration.STATIC, lambda p: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))

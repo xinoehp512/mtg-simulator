@@ -206,6 +206,10 @@ class Game:
     def get_prevention_effects(self):
         return [effect for effect in self.effects if isinstance(effect, Prevention_Effect)]
 
+    def get_static_effects(self):
+        permanents_with_ability = self.battlefield.get_by_criteria(lambda p: p.has_static_ability)
+        return [ability for permanent in permanents_with_ability for ability in permanent.static_abilities]
+
     # Targeting
 
     def get_damageable(self):
@@ -424,7 +428,7 @@ class Game:
                     return
         # Note: a copy of a permanent spell becomes a token as it resolves.
         if stack_object.is_permanent_spell:
-            self.create_battlefield_object(stack_object.controller, stack_object.card)
+            self.create_battlefield_object(stack_object.controller, stack_object.card, casting_information=stack_object.casting_information)
         else:
             stack_object.effect_function(
                 self, stack_object.controller, stack_object.source, stack_object.event, stack_object.modes, stack_object.targets)
@@ -482,6 +486,7 @@ class Game:
             self.triggers_waiting = []
 
     def check_event_for_triggers(self, event):
+        self.apply_effects()
         triggered_abilities = self.get_triggered_abilities()
         if isinstance(event, Permanent_Died_Event):
             triggered_abilities.extend(event.permanent.triggered_abilities)
@@ -500,7 +505,12 @@ class Game:
             creature.power_modification = 0
             creature.toughness_modification = 0
             creature.added_abilities = []  # TODO: All permanents
-        for effect in self.effects:  # TODO: Layers, layers layers!
+        effects = []
+        effects.extend(self.effects)
+        for permanent in self.get_permanents():
+            for static in permanent.static_abilities:
+                effects.append(static.effect)
+        for effect in effects:  # TODO: Layers, layers layers!
             if effect.type == EffectType.PT:
                 for creature in self.get_creatures():
                     if effect.applies_to(creature):
@@ -620,8 +630,8 @@ class Game:
         player.lands_played_this_turn += 1
         return True
 
-    def create_battlefield_object(self, controller, card, modify_function=None):
-        permanent = Permanent(card, controller, self.permanent_id)
+    def create_battlefield_object(self, controller, card, casting_information={}, modify_function=None):
+        permanent = Permanent(card, controller, self.permanent_id, casting_information=casting_information)
         if modify_function is not None:
             modify_function(permanent)
         self.permanent_id += 1
@@ -828,18 +838,19 @@ class Game:
         costs_paid = []
         modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
+        if len(additional_costs) > 0:
+            for additional_cost in additional_costs:
+                cost = player.agent.choose_one(additional_cost.cost_options, message="Choose additional cost:")
+                if cost is None:
+                    continue
+                cost_increase += cost
+                costs_paid.append(cost)
         if spell.is_volatile:
             if spell.spell_ability.is_modal:
                 modes = self.player_choose_modes(player, spell.spell_ability.mode_choice)
             else:
                 modes = spell.spell_ability.mode_choice.modes
-            if len(additional_costs) > 0:
-                for additional_cost in additional_costs:
-                    cost = player.agent.choose_one(additional_cost.cost_options, message="Choose additional cost:")
-                    if cost is None:
-                        continue
-                    cost_increase += cost
-                    costs_paid.append(cost)
+
             targets = []
             for mode in modes:
                 if mode.is_targeted:

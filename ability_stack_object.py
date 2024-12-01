@@ -1,3 +1,4 @@
+from enums import AdditionalCostType, CastingInformationType, ModeType
 from targetable_object import Targetable_Object
 
 
@@ -36,3 +37,9 @@ class Ability_Stack_Object(Targetable_Object):
             return self.card.name
         else:
             return self.type.name+":"+self.source.name
+
+    @property
+    def casting_information(self):
+        was_kicked = AdditionalCostType.KICKED in [cost.type for cost in self.modes[ModeType.COSTS_PAID]]
+        information = {CastingInformationType.KICKED: was_kicked}
+        return information

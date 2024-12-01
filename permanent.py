@@ -2,16 +2,18 @@ from activated_ability import Activated_Ability
 from damageable_object import Damageable_Object
 from keyword_ability import Keyword_Ability
 from replacement_effect import Replacement_Effect
+from static_ability import Static_Ability
 from triggered_ability import Triggered_Ability
 
 
 class Permanent(Damageable_Object):
 
-    def __init__(self, card, controller, id):
+    def __init__(self, card, controller, id, casting_information={}):
         super().__init__()
         self.card = card
         self.controller = controller
         self.id = id
+        self.casting_information = casting_information
 
         self.summoning_sick = True
         self.tapped = False
@@ -107,6 +109,12 @@ class Permanent(Damageable_Object):
                 return True
 
     @property
+    def has_static_ability(self):
+        for ability in self.abilities:
+            if isinstance(ability, Static_Ability):
+                return True
+
+    @property
     def activated_abilities(self):
         abilities = []
         for ability in self.abilities:
@@ -121,6 +129,10 @@ class Permanent(Damageable_Object):
             if isinstance(ability, Triggered_Ability):
                 abilities.append(ability)
         return abilities
+
+    @property
+    def static_abilities(self):
+        return [ability for ability in self.abilities if isinstance(ability, Static_Ability)]
 
     @property
     def replacement_effects(self):

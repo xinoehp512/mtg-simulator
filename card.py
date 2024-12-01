@@ -1,5 +1,5 @@
 from activated_ability import Activated_Ability
-from cost import Additional_Cost
+from cost import Additional_Cost, Mana_Cost
 from enums import CardType, ColorVis, SuperType, color_to_vis, cost_to_colors, AbilityKeyword
 from keyword_ability import Keyword_Ability
 
@@ -8,7 +8,7 @@ class Card:
 
     def __init__(self, name, cost, colors, types, abilities, text) -> None:
         self.name = name
-        self.cost = cost
+        self.cost = Mana_Cost.from_string(cost) if isinstance(cost, str) else cost
         self.color_indicator = colors
         self.types = types
         self.abilities = abilities

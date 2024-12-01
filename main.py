@@ -16,10 +16,10 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 player1 = game.players[0]
 player2 = game.players[1]
 player1.starting_hand_size = 0
-game.add_cards(player1, [cards.gleaming_barrier.copy()])
+game.add_cards(player1, [cards.gnarlid_colony.copy(), cards.fleeting_flight.copy()])
 game.add_cards(player2, [cards.forest.copy() for i in range(1)])
-game.add_permanents(player1, [cards.treasure.copy() for i in range(6)]+[cards.apothecary_stomper.copy(), cards.gleaming_barrier.copy()])
-game.add_permanents(player2, [cards.gleaming_barrier.copy()])
+game.add_permanents(player1, [cards.treasure.copy() for i in range(6)]+[cards.axgard_cavalry.copy()])
+game.add_permanents(player2, [cards.campus_guide.copy()])
 game.add_to_library(player1, [cards.mountain.copy(), cards.forest.copy(),
                     cards.bloodfell_caves.copy(), cards.island.copy(), cards.blossoming_sands.copy()])
 

@@ -130,6 +130,10 @@ class ModeType(Enum):
     COSTS_PAID = 1
 
 
+class CastingInformationType(Enum):
+    KICKED = 0
+
+
 class TargetTypeBase(Enum):
     DAMAGEABLE = 0
     CREATURE = 1
@@ -150,6 +154,7 @@ class TargetTypeModifier(Enum):
 
 class EffectDuration(Enum):
     EOT = 0
+    STATIC = 1
 
 
 class EffectType(Enum):
