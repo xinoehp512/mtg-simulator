@@ -3,8 +3,8 @@ from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from effects import Ability_Grant_Effect, PT_Effect, Prevention_Effect
-from enums import AbilityKeyword, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Card_Draw_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from event import Attack_Event, Card_Draw_Event, Damage_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -91,7 +91,7 @@ def deal_1_to_opponents(game, controller, source, event, modes, targets):
 
 def grow_3(game, controller, source, event, modes, targets):
     target = targets[0].object
-    effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 3, 3)
+    effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, 3, 3)
     game.create_continuous_effect(effect)
 
 
@@ -116,6 +116,11 @@ def exile_gravecard(game, controller, source, event, modes, targets):
         return
     target = targets[0].object
     game.exile_from_graveyard(target)
+
+
+def attach(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.attach_permanents(target, source)
 
 
 def put_2_counters_or_gain_4(game, controller, source, event, modes, targets):
@@ -146,16 +151,16 @@ def put_counter_targets(game, controller, source, event, modes, targets):
 
 def give_haste(game, controller, source, event, modes, targets):
     target = targets[0].object
-    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [haste])
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == target, [haste])
     game.create_continuous_effect(effect)
 
 
 def give_fake_death_ability(game, controller, source, event, modes, targets):
     target = targets[0].object
     ability = Triggered_Ability(trigger_on_death, SingleMode(None), return_tapped_with_treasure)
-    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [ability])
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == target, [ability])
     game.create_continuous_effect(effect)
-    effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, 2, 0)
+    effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, 2, 0)
     game.create_continuous_effect(effect)
 
 
@@ -187,14 +192,14 @@ def bounce_permanent(game, controller, source, event, modes, targets):
 
 def pump_self_pxpy(x, y):
     def pump(game, controller, source, event, modes, targets):
-        effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, x, y)
+        effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == source, x, y)
         game.create_continuous_effect(effect)
     return pump
 
 
 def pump_self_p1p0_and_menace(game, controller, source, event, modes, targets):
-    effect = PT_Effect(EffectDuration.EOT, lambda p: p == source, 1, 0)
-    menace_effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == source, [menace])
+    effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == source, 1, 0)
+    menace_effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == source, [menace])
     game.create_continuous_effect(effect)
     game.create_continuous_effect(menace_effect)
 
@@ -248,7 +253,7 @@ def draw_card(game, controller, source, event, modes, targets):
 
 def weaken_draw(game, controller, source, event, modes, targets):
     target = targets[0].object
-    effect = PT_Effect(EffectDuration.EOT, lambda p: p == target, -1, 0)
+    effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, -1, 0)
     game.create_continuous_effect(effect)
     game.player_draw(controller)
 
@@ -263,9 +268,9 @@ def return_tapped_with_treasure(game, controller, source, event, modes, targets)
 def fleeting_flight_effect(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.put_counters_on(CounterType.P1P1, 1, target)
-    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p: p == target, [flying])
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == target, [flying])
     game.create_continuous_effect(effect)
-    effect = Prevention_Effect(EffectDuration.EOT, lambda e: e.is_combat_damage and e.target == target, prevent_damage)
+    effect = Prevention_Effect(EffectDuration.EOT, lambda e, o: e.is_combat_damage and e.target == target, prevent_damage)
     game.create_continuous_effect(effect)
 
 
@@ -274,7 +279,7 @@ def goblin_surprise_effect(game, controller, source, event, modes, targets):
     if mode == 0:
         # Pump
         creatures = game.get_creatures_of(controller)
-        effect = PT_Effect(EffectDuration.EOT, lambda p: p in creatures, 2, 0)
+        effect = PT_Effect(EffectDuration.EOT, lambda p, o: p in creatures, 2, 0)
         game.create_continuous_effect(effect)
     if mode == 1:
         # Tokens
@@ -324,6 +329,10 @@ def trigger_on_attack_with_ferocious(game, event, object):
 
 def trigger_on_attack_with_threshold(game, event, object):
     return isinstance(event, Attack_Event) and object in event.attackers and game.player_has_threshold(object.controller)
+
+
+def trigger_on_equipped_combat_damage(game, event, object):
+    return isinstance(event, Damage_Event) and object.attached_permanent == event.source
 
 
 def trigger_on_second_card(game, event, object):
@@ -407,13 +416,18 @@ def kicker(x):
 
 
 def ward(x):
+    cost = Total_Cost([Mana_Cost.from_string(x)])
+
     def rhystic_counter(game, controller, source, event, modes, targets):
         ability_stack_object = event.stack_object
-        game.player_activate_mana(ability_stack_object.controller, x)
-        if game.player_pay_cost(ability_stack_object.controller, x):
+        if game.player_pay_cost(ability_stack_object.controller, cost):
             return
         game.counter_stack_object(ability_stack_object)
     return Triggered_Ability(trigger_on_opponent_target, SingleMode(None), rhystic_counter)
+
+
+def equip(x):
+    return Activated_Ability("Equip {X}", Total_Cost([Mana_Cost.from_string(x)]), attach, SingleMode([creature_you_control_target]), activation_restrictions=[ActivationRestrictionType.SORCERY])
 
 
 prowess = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(1, 1))
@@ -439,6 +453,7 @@ erudite_wizard_2card = Triggered_Ability(trigger_on_second_card, SingleMode(None
 felidar_savior_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_two_other_creatures_you_control_target]), put_counter_targets)
 firebrand_archer_ping = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), deal_1_to_opponents)
 gleaming_barrier_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_treasure)
+goldvein_damage_trigger = Triggered_Ability(trigger_on_equipped_combat_damage, SingleMode(None), make_treasure)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -481,4 +496,5 @@ gnarlid_kicked_enters = Replacement_Effect(replace_enters_if_kicked, enters_coun
 goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_counters(1))
 
 gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
-    EffectDuration.STATIC, lambda p: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
+    EffectDuration.STATIC, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
+goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, lambda p, o: o.attached_permanent == p, 1, 1))

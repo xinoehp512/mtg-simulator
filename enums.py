@@ -54,6 +54,7 @@ class BasicLandType(Enum):
 class ArtifactType(Enum):
     FOOD = 1
     TREASURE = 2
+    EQUIPMENT = 3
 
 
 class CreatureType(Enum):
@@ -150,6 +151,10 @@ class TargetTypeModifier(Enum):
     DONT_CONTROL = 2
     HAS_FLYING = 3
     OTHER = 4
+
+
+class ActivationRestrictionType(Enum):
+    SORCERY = 0
 
 
 class EffectDuration(Enum):

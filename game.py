@@ -5,7 +5,7 @@ from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
 from effects import Prevention_Effect
-from enums import AbilityKeyword, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
+from enums import AbilityKeyword, ActivationRestrictionType, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
@@ -186,6 +186,8 @@ class Game:
         return True
 
     def player_can_activate_ability(self, player, ability):
+        if ActivationRestrictionType.SORCERY in ability.activation_restrictions and not self.player_can_sorcery(player):
+            return False
         return self.player_can_pay_cost(player, ability.cost)
 
     def get_activated_abilities_of(self, player):
@@ -433,6 +435,7 @@ class Game:
                 self, stack_object.controller, stack_object.source, stack_object.event, stack_object.modes, stack_object.targets)
             if stack_object.card is not None:
                 self.put_in_graveyard(stack_object.card.owner, stack_object.card)
+        self.apply_effects()
 
     def check_state_based_actions_and_triggered_abilities(self):
         while True:
@@ -720,6 +723,9 @@ class Game:
         permanent.add_counters(counter_type, number)
         self.apply_effects()
 
+    def attach_permanents(self, base, attachment):
+        attachment.attached_permanent = base
+
     def deal_damage(self, target, source, damage, is_combat_damage=False):
         if damage <= 0:
             return
@@ -728,6 +734,7 @@ class Game:
             if effect.applies_to(event):
                 event = effect.prevent(event)
         event.execute()
+        self.check_event_for_triggers(event)
 
     def fight(self, creature1, creature2):
         if creature1 == creature2:
@@ -867,7 +874,6 @@ class Game:
         spell_object.source = spell_object
 
         cost = Total_Cost([spell.cost])+cost_increase
-        self.player_activate_mana(player, cost)
         try:
             if not self.player_pay_cost(player, cost):
                 raise IllegalActionException("Illegal Action")  # TODO: Tidy up
@@ -923,6 +929,8 @@ class Game:
 
     def player_pay_cost(self, player, cost):
         mana_cost = [mana_sym for mana_cost in cost.mana_cost for mana_sym in mana_cost.mana_cost]
+        if len(mana_cost) > 0:
+            self.player_activate_mana(player, cost)
         mana_to_pay = player.agent.choose_mana_to_pay(
             self, player.mana_pool, mana_cost)
         if mana_to_pay is None:
@@ -1113,15 +1121,21 @@ class Game:
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and p.is_land)):
             draw_card(1+i*(card_width+1), p2_lands_y, permanent)
 
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and not (p.is_creature or p.is_land))):
+            draw_card(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y, permanent)
+            if permanent.attached_permanent is not None:
+                canvas.draw_text(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y +
+                                 card_height, f"Atchd {permanent.attached_permanent.name}", 0, 255)
+        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and not (p.is_creature or p.is_land))):
+            draw_card(p2_noncreatures_x+i*(card_width+1), p2_noncreatures_y, permanent)
+            if permanent.attached_permanent is not None:
+                canvas.draw_text(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y +
+                                 card_height, f"Atchd {permanent.attached_permanent.name}", 0, 255)
+
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and p.is_creature)):
             draw_card(1+i*(card_width+1), p1_battlefield_y, permanent)
         for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and p.is_creature)):
             draw_card(1+i*(card_width+1), p2_battlefield_y, permanent)
-
-        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[0] and not (p.is_creature or p.is_land))):
-            draw_card(p1_noncreatures_x+i*(card_width+1), p1_noncreatures_y, permanent)
-        for i, permanent in enumerate(self.battlefield.get_by_criteria(lambda p: p.controller == self.players[1] and not (p.is_creature or p.is_land))):
-            draw_card(p2_noncreatures_x+i*(card_width+1), p2_noncreatures_y, permanent)
 
         # Stack
         canvas.draw_rect(stack_card_x, stack_card_y, stack_card_width, stack_card_height, 0)

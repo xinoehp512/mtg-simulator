@@ -6,9 +6,10 @@ class Effect:
         self.type = type
         self.duration = duration
         self.applicability_function = applicability_function
+        self.object = None
 
     def applies_to(self, object):
-        return self.applicability_function(object)
+        return self.applicability_function(object, self.object)
 
 
 class PT_Effect(Effect):

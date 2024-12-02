@@ -1,6 +1,6 @@
 from cost import Mana_Cost
 from objects.abilities import *
-from card import Creature_Card, Enchantment_Card, Instant_Card, Land_Card, Sorcery_Card
+from card import Artifact_Card, Creature_Card, Enchantment_Card, Instant_Card, Land_Card, Sorcery_Card
 from enums import BasicLandType, CardType, CreatureType, ManaCost, SuperType
 
 # TODO: Tie the basic land abilities to the basic land types.
@@ -67,7 +67,7 @@ burglar_rat = Creature_Card("Burglar Rat (1B)", "1B", [CardType.CREATURE, Creatu
 burst_lightning = Instant_Card("Burst Lightning (R)", "R", [CardType.INSTANT], [burst_lightning_ability, kicker("4")])
 bushwhack = Sorcery_Card("Bushwhack (G)", "G", [CardType.SORCERY], [bushwhack_ability])
 cackling_prowler = Creature_Card("Cackling Prowler (3G)", "3G", [CardType.CREATURE, CreatureType.HYENA, CreatureType.ROGUE], [
-                                 ward(Total_Cost(["2"])), cackling_prowler_morbid], 4, 3)
+                                 ward("2"), cackling_prowler_morbid], 4, 3)
 campus_guide = Creature_Card("Campus Guide (2)", "2", [CardType.ARTIFACT, CardType.CREATURE, CreatureType.GOLEM], [campus_guide_etb], 2, 1)
 cathar_commando = Creature_Card("Cathar Commando (1W)", "1W", [CardType.CREATURE,
                                 CreatureType.HUMAN, CreatureType.SOLDIER], [flash, cathar_sac], 3, 1)
@@ -105,3 +105,5 @@ gnarlid_colony = Creature_Card("Gnarlid Colony (1G)", "1G", [CardType.CREATURE, 
 goblin_boarders = Creature_Card("Goblin Boarders (2R)", "2R", [CardType.CREATURE,
                                 CreatureType.GOBLIN, CreatureType.PIRATE], [goblin_boarders_enters], 3, 2)
 goblin_surprise = Instant_Card("Goblin Surprise (2R)", "2R", [CardType.INSTANT], [goblin_surprise_ability])
+goldvein_pick = Artifact_Card("Goldvein Pick (2)", "2", [CardType.ARTIFACT, ArtifactType.EQUIPMENT], [
+                              goldvein_equip_buff, goldvein_damage_trigger, equip("1")])

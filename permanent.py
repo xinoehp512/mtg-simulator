@@ -35,6 +35,8 @@ class Permanent(Damageable_Object):
 
         self.counters = {}
 
+        self.attached_permanent = None
+
         self.marked_damage = 0
         for ability in self.card.abilities:
             ability.object = self
