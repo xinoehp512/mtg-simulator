@@ -107,3 +107,5 @@ goblin_boarders = Creature_Card("Goblin Boarders (2R)", "2R", [CardType.CREATURE
 goblin_surprise = Instant_Card("Goblin Surprise (2R)", "2R", [CardType.INSTANT], [goblin_surprise_ability])
 goldvein_pick = Artifact_Card("Goldvein Pick (2)", "2", [CardType.ARTIFACT, ArtifactType.EQUIPMENT], [
                               goldvein_equip_buff, goldvein_damage_trigger, equip("1")])
+gorehorn_raider = Creature_Card("Gorehorn Raider (4R)", "4R", [CardType.CREATURE,
+                                CreatureType.MINOTAUR, CreatureType.PIRATE], [gorehorn_raider_etb], 4, 4)

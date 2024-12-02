@@ -379,6 +379,10 @@ def control_other_elf(game, event, object):
     return game.player_controls_permanent_that(object.controller, lambda p: p.is_creature and p != object and CreatureType.ELF in p.types)
 
 
+def attacked_this_turn(game, event, object):
+    return object.controller.attacked_this_turn
+
+
 damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
 creature_target = TargetType([(TargetTypeBase.CREATURE,)])
 opt_gravecard_target = TargetType([(TargetTypeBase.GRAVECARD,)], True)
@@ -454,6 +458,8 @@ felidar_savior_etb = Triggered_Ability(trigger_on_etb, SingleMode([opt_two_other
 firebrand_archer_ping = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), deal_1_to_opponents)
 gleaming_barrier_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_treasure)
 goldvein_damage_trigger = Triggered_Ability(trigger_on_equipped_combat_damage, SingleMode(None), make_treasure)
+gorehorn_raider_etb = Triggered_Ability(trigger_on_etb, SingleMode(
+    [damageable_target]), deal_x(2), intervening_if_conditional=attacked_this_turn)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
