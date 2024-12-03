@@ -761,27 +761,30 @@ class Game:
         event = Card_Draw_Event(card, player.cards_drawn_this_turn)
         self.check_event_for_triggers(event)
 
-    def player_tutor_to_hand(self, player, search_function):
+    def player_tutor_to_hand(self, player, search_function, amount=1):
         # TODO: Move tutoring to agent.
         tutor_targets = player.library.get_by_criteria(search_function)
-        card = player.agent.choose_one(tutor_targets)
-        player.library.remove(card)
+        cards = player.agent.choose_x(tutor_targets, amount, message=f'Choose {amount}:')
+        for card in cards:
+            player.library.remove(card)
+            player.hand.add_objects([Hand_Object(card)])
         player.library.shuffle()
-        player.hand.add_objects([Hand_Object(card)])
 
-    def player_tutor_to_top(self, player, search_function):
+    def player_tutor_to_top(self, player, search_function, amount=1):
         tutor_targets = player.library.get_by_criteria(search_function)
-        card = player.agent.choose_one(tutor_targets)
-        player.library.remove(card)
+        cards = player.agent.choose_x(tutor_targets, amount, message=f'Choose {amount}:')
+        for card in cards:
+            player.library.remove(card)
         player.library.shuffle()
-        player.library.add_objects([card])
+        player.library.add_objects(cards)
 
-    def player_tutor_to_battlefield(self, player, search_function, modify_function=None):
+    def player_tutor_to_battlefield(self, player, search_function, amount=1, modify_function=None):
         tutor_targets = player.library.get_by_criteria(search_function)
-        card = player.agent.choose_one(tutor_targets)
-        player.library.remove(card)
+        cards = player.agent.choose_x(tutor_targets, amount, message=f'Choose {amount}:')
+        for card in cards:
+            player.library.remove(card)
+            self.create_battlefield_object(player, card, modify_function=modify_function)
         player.library.shuffle()
-        self.create_battlefield_object(player, card, modify_function=modify_function)
 
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:

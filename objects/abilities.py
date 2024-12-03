@@ -288,6 +288,13 @@ def goblin_surprise_effect(game, controller, source, event, modes, targets):
         game.create_token(controller, token.copy())
 
 
+def grow_from_the_ashes_effect(game, controller, source, event, modes, targets):
+    was_kicked = AdditionalCostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
+    if was_kicked:
+        game.player_tutor_to_battlefield(controller, lambda c: c.is_land and c.is_basic, amount=2)
+    else:
+        game.player_tutor_to_battlefield(controller, lambda c: c.is_land and c.is_basic)
+
 # Triggers
 
 
@@ -494,6 +501,7 @@ fleeting_flight_ability = Spell_Ability(fleeting_flight_effect, SingleMode([crea
 giant_growth_ability = Spell_Ability(grow_3, SingleMode([creature_target]))
 goblin_surprise_ability = Spell_Ability(goblin_surprise_effect, ModeChoice(
     1, [Mode(None, "Creatures you control get +2/+0 until end of turn", 0), Mode(None, "Create two 1/1 red Goblin creature tokens.", 1)]))
+grow_from_the_ashes_ability = Spell_Ability(grow_from_the_ashes_effect, SingleMode(None))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
