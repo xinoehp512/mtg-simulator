@@ -304,6 +304,14 @@ def gutless_plunderer_effect(game, controller, source, event, modes, targets):
         seen_cards.remove(chosen_card)
     for card in seen_cards:
         game.library_to_graveyard(controller, card)
+
+
+def hare_apparent_effect(game, controller, source, event, modes, targets):
+    other_hares = game.get_permanents_of_that(controller, lambda p: p != source and p.is_creature and p.name == "Hare Apparent")
+    token = Creature_Token("Rabit Token", None, [CardType.CREATURE, CreatureType.RABBIT], [], 1, 1, color_indicator=[Color.WHITE])
+    for hare in other_hares:
+        game.create_token(controller, token.copy())
+
 # Triggers
 
 
@@ -478,6 +486,7 @@ gorehorn_raider_etb = Triggered_Ability(trigger_on_etb, SingleMode(
     [damageable_target]), deal_x(2), intervening_if_conditional=attacked_this_turn)
 gutless_plunderer_etb = Triggered_Ability(trigger_on_etb, SingleMode(
     None), gutless_plunderer_effect, intervening_if_conditional=attacked_this_turn)
+hare_apparent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), hare_apparent_effect)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
