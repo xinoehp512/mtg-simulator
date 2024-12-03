@@ -257,7 +257,8 @@ class Game:
     def get_combat_damage_assignments(self):
         combat_damage_assignments = []
         for creature in self.get_all_in_combat():
-            combat_damage_assignments.extend(creature.combat_damage_assignment)
+            for combat_damage_assignment in creature.combat_damage_assignment:
+                combat_damage_assignments.append((creature,)+combat_damage_assignment)
         return combat_damage_assignments
 
     def is_blocked_legally(self, creature):
@@ -279,8 +280,12 @@ class Game:
         return True
 
     def is_creature_lethaled(self, creature):
-        assigned_damage = sum([damage_amount for damage_amount,
-                              damaged_creature in self.get_combat_damage_assignments() if damaged_creature == creature])
+        assigned_damage = 0
+        for damage_source, damage_amount, damaged_creature in self.get_combat_damage_assignments():
+            if AbilityKeyword.DEATHTOUCH in damage_source.keywords and damage_amount > 0:
+                return True
+            if damaged_creature == creature:
+                assigned_damage += damage_amount
         return assigned_damage+creature.marked_damage >= creature.toughness
 
     # Note to self: Fix this!! No need to check for gamestate actions, ask forgiveness not permission.
@@ -478,6 +483,13 @@ class Game:
             # creature has been dealt lethal damage and is destroyed.
             for permanent in self.get_permanents():
                 if permanent.is_creature and permanent.lethal_damage_dealt:
+                    self.destroy(permanent)
+                    state_based_action_performed = True
+            #  If a creature has toughness greater than 0, and it’s been dealt damage by a source
+            #  with deathtouch since the last time state-based actions were checked, that creature
+            #  is destroyed.
+            for permanent in self.get_permanents():
+                if permanent.is_creature and permanent.is_deathtouched:
                     self.destroy(permanent)
                     state_based_action_performed = True
             if not state_based_action_performed:
@@ -713,6 +725,10 @@ class Game:
         if stack_object.card is not None:
             self.put_in_graveyard(stack_object.card.owner, stack_object.card)
 
+    def library_to_graveyard(self, player, card):
+        player.library.remove(card)
+        self.put_in_graveyard(player, card)
+
     def untap(self, permanent):
         permanent.tapped = False
 
@@ -785,6 +801,12 @@ class Game:
             player.library.remove(card)
             self.create_battlefield_object(player, card, modify_function=modify_function)
         player.library.shuffle()
+
+    def player_look_at_top_x(self, player, amount):
+        if amount == 0:
+            return []
+        seen_cards = player.library.objects[-amount:]
+        return seen_cards
 
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:

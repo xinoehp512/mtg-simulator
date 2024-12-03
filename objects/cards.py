@@ -110,3 +110,5 @@ goldvein_pick = Artifact_Card("Goldvein Pick (2)", "2", [CardType.ARTIFACT, Arti
 gorehorn_raider = Creature_Card("Gorehorn Raider (4R)", "4R", [CardType.CREATURE,
                                 CreatureType.MINOTAUR, CreatureType.PIRATE], [gorehorn_raider_etb], 4, 4)
 grow_from_the_ashes = Sorcery_Card("Grow from the Ashes (2G)", "2G", [CardType.SORCERY], [grow_from_the_ashes_ability, kicker("2")])
+gutless_plunderer = Creature_Card("Gutless Plunderer (2B)", "2B", [CardType.CREATURE, CreatureType.SKELETON, CreatureType.PIRATE], [
+                                  deathtouch, gutless_plunderer_etb], 2, 2)

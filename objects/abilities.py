@@ -24,6 +24,7 @@ flying = Keyword_Ability(AbilityKeyword.FLYING)
 reach = Keyword_Ability(AbilityKeyword.REACH)
 lifelink = Keyword_Ability(AbilityKeyword.LIFELINK)
 defender = Keyword_Ability(AbilityKeyword.DEFENDER)
+deathtouch = Keyword_Ability(AbilityKeyword.DEATHTOUCH)
 
 none = Keyword_Ability(None)
 
@@ -295,6 +296,14 @@ def grow_from_the_ashes_effect(game, controller, source, event, modes, targets):
     else:
         game.player_tutor_to_battlefield(controller, lambda c: c.is_land and c.is_basic)
 
+
+def gutless_plunderer_effect(game, controller, source, event, modes, targets):
+    seen_cards = game.player_look_at_top_x(controller, 3)
+    chosen_card = controller.agent.choose_one(seen_cards+[None])
+    if chosen_card is not None:
+        seen_cards.remove(chosen_card)
+    for card in seen_cards:
+        game.library_to_graveyard(controller, card)
 # Triggers
 
 
@@ -467,6 +476,8 @@ gleaming_barrier_death = Triggered_Ability(trigger_on_death, SingleMode(None), m
 goldvein_damage_trigger = Triggered_Ability(trigger_on_equipped_combat_damage, SingleMode(None), make_treasure)
 gorehorn_raider_etb = Triggered_Ability(trigger_on_etb, SingleMode(
     [damageable_target]), deal_x(2), intervening_if_conditional=attacked_this_turn)
+gutless_plunderer_etb = Triggered_Ability(trigger_on_etb, SingleMode(
+    None), gutless_plunderer_effect, intervening_if_conditional=attacked_this_turn)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))

@@ -1,4 +1,5 @@
 from enums import AbilityKeyword
+from permanent import Permanent
 
 
 class Event:
@@ -216,6 +217,8 @@ class Damage_Event(Event):
         self.target.take_damage(self.damage_amount)
         if AbilityKeyword.LIFELINK in self.source.keywords:
             self.player_gain_life(self.source.controller, self.damage_amount)
+        if AbilityKeyword.DEATHTOUCH in self.source.keywords and isinstance(self.target, Permanent):
+            self.target.is_deathtouched = True
         self.occurred = True
 
     def copy(self):

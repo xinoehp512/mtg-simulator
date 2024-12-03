@@ -38,6 +38,7 @@ class Permanent(Damageable_Object):
         self.attached_permanent = None
 
         self.marked_damage = 0
+        self.is_deathtouched = False
         for ability in self.card.abilities:
             ability.object = self
     # Static Properties
