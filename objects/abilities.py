@@ -69,6 +69,7 @@ def gain_x(amount):
 
 tap_self = Tap_Cost(lambda p, o: p == o)
 sac_self = Sacrifice_Cost(lambda p, o: p == o)
+sac_other_creature = Sacrifice_Cost(lambda p, o: p != o and p.is_creature)
 
 food_ability = Activated_Ability("{T}, Sacrifice this artifact: You gain 3 life.",
                                  Total_Cost([Mana_Cost.from_string("2"), tap_self, sac_self]), gain_x(3), SingleMode(None))
@@ -250,6 +251,11 @@ def tutor_tapped_basic(game, controller, source, event, modes, targets):
 
 def draw_card(game, controller, source, event, modes, targets):
     game.player_draw(controller)
+
+
+def loot(game, controller, source, event, modes, targets):
+    game.player_draw(controller)
+    game.player_discard_x(controller, 1)
 
 
 def weaken_draw(game, controller, source, event, modes, targets):
@@ -487,6 +493,8 @@ gorehorn_raider_etb = Triggered_Ability(trigger_on_etb, SingleMode(
 gutless_plunderer_etb = Triggered_Ability(trigger_on_etb, SingleMode(
     None), gutless_plunderer_effect, intervening_if_conditional=attacked_this_turn)
 hare_apparent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), hare_apparent_effect)
+helpful_hunter_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), draw_card)
+icewind_elemental_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), loot)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -496,6 +504,8 @@ evolving_wilds_sac = Activated_Ability(
     "{T}, Sacrifice this land: Tutor a basic land card to the battlefield tapped.", Total_Cost([tap_self, sac_self]), tutor_tapped_basic, SingleMode(None))
 fanatical_firebrand_sac = Activated_Ability(
     "{T}, Sacrifice this creature: It deals 1 damage to any target.", Total_Cost([tap_self, sac_self]), deal_x(1), SingleMode([damageable_target]))
+hungry_ghoul_sac = Activated_Ability("{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
+                                     Total_Cost([Mana_Cost.from_string("1"), sac_other_creature]), put_counter_self, SingleMode(None))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(

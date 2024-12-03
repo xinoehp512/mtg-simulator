@@ -93,8 +93,8 @@ class Permanent_Enter_Event(Event):
         self.game = game
         self.permanent = permanent
 
-    def execute(self):
-        self.game.battlefield.add_objects([self.permanent])
+    def execute(self, game):
+        game.battlefield.add_objects([self.permanent])
         self.occurred = True
 
     def copy(self):
@@ -211,12 +211,12 @@ class Damage_Event(Event):
         self.is_combat_damage = is_combat_damage
         self.prevented = prevented
 
-    def execute(self):
+    def execute(self, game):
         if self.prevented:
             return
         self.target.take_damage(self.damage_amount)
         if AbilityKeyword.LIFELINK in self.source.keywords:
-            self.player_gain_life(self.source.controller, self.damage_amount)
+            game.player_gain_life(self.source.controller, self.damage_amount)
         if AbilityKeyword.DEATHTOUCH in self.source.keywords and isinstance(self.target, Permanent):
             self.target.is_deathtouched = True
         self.occurred = True

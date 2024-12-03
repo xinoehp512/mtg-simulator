@@ -658,7 +658,7 @@ class Game:
         for effect in permanent.replacement_effects:  # TODO: Make replacement effects work right.
             if effect.replaces(event):
                 event = effect.replace(event)
-        event.execute()
+        event.execute(self)
         self.check_event_for_triggers(event)
 
     def create_token(self, controller, token):
@@ -752,7 +752,7 @@ class Game:
         for effect in self.get_prevention_effects():  # TODO: Function this out with replacement effects
             if effect.applies_to(event):
                 event = effect.prevent(event)
-        event.execute()
+        event.execute(self)
         self.check_event_for_triggers(event)
 
     def fight(self, creature1, creature2):

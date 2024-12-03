@@ -114,3 +114,8 @@ gutless_plunderer = Creature_Card("Gutless Plunderer", "2B", [CardType.CREATURE,
                                   deathtouch, gutless_plunderer_etb], 2, 2)
 hare_apparent = Creature_Card("Hare Apparent", "1W", [CardType.CREATURE,
                               CreatureType.RABBIT, CreatureType.NOBLE], [hare_apparent_etb], 2, 2)
+healers_hawk = Creature_Card("Healer's Hawk", "W", [CardType.CREATURE, CreatureType.BIRD], [flying, lifelink], 1, 1)
+helpful_hunter = Creature_Card("Helpful Hunter", "1W", [CardType.CREATURE, CreatureType.CAT], [helpful_hunter_etb], 1, 1)
+hungry_ghoul = Creature_Card("Hungry Ghoul", "1B", [CardType.CREATURE, CreatureType.ZOMBIE], [hungry_ghoul_sac], 2, 2)
+icewind_elemental = Creature_Card("Icewind Elemental", "4U", [CardType.CREATURE, CreatureType.ELEMENTAL], [
+                                  flying, icewind_elemental_etb], 3, 4)
