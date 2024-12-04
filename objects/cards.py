@@ -119,3 +119,6 @@ helpful_hunter = Creature_Card("Helpful Hunter", "1W", [CardType.CREATURE, Creat
 hungry_ghoul = Creature_Card("Hungry Ghoul", "1B", [CardType.CREATURE, CreatureType.ZOMBIE], [hungry_ghoul_sac], 2, 2)
 icewind_elemental = Creature_Card("Icewind Elemental", "4U", [CardType.CREATURE, CreatureType.ELEMENTAL], [
                                   flying, icewind_elemental_etb], 3, 4)
+incinerating_blast = Sorcery_Card("Incinerating Blast", "4R", [CardType.SORCERY], [incinerating_blast_ability])
+infestation_sage = Creature_Card("Infestation Sage", "B", [CardType.CREATURE,
+                                 CreatureType.ELF, CreatureType.WARLOCK], [infestation_sage_death], 1, 1)

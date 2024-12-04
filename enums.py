@@ -102,6 +102,7 @@ class CreatureType(Enum):
     WIZARD = 41
     WOLF = 42
     ZOMBIE = 43
+    INSECT = 44
 
 
 class StackObjectType(Enum):

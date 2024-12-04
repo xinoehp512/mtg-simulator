@@ -113,6 +113,12 @@ def make_treasure(game, controller, source, event, modes, targets):
     game.create_token(controller, treasure.copy())
 
 
+def make_insect(game, controller, source, event, modes, targets):
+    token = Creature_Token("Insect Token", None, [CardType.CREATURE, CreatureType.INSECT], [
+                           flying], 1, 1, color_indicator=[Color.GREEN, Color.BLACK])
+    game.create_token(controller, token.copy())
+
+
 def exile_gravecard(game, controller, source, event, modes, targets):
     if targets == None:
         return
@@ -318,9 +324,17 @@ def hare_apparent_effect(game, controller, source, event, modes, targets):
     for hare in other_hares:
         game.create_token(controller, token.copy())
 
+
+def incinerating_blast_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.deal_damage(target, source, 6)
+    if controller.hand.size > 0:
+        if controller.agent.choose_yes_or_no("Discard a card to draw a card?"):
+            game.player_discard_x(controller, 1)
+            game.player_draw(controller)
+
+
 # Triggers
-
-
 def trigger_on_etb(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -495,6 +509,7 @@ gutless_plunderer_etb = Triggered_Ability(trigger_on_etb, SingleMode(
 hare_apparent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), hare_apparent_effect)
 helpful_hunter_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), draw_card)
 icewind_elemental_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), loot)
+infestation_sage_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_insect)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -532,6 +547,7 @@ giant_growth_ability = Spell_Ability(grow_3, SingleMode([creature_target]))
 goblin_surprise_ability = Spell_Ability(goblin_surprise_effect, ModeChoice(
     1, [Mode(None, "Creatures you control get +2/+0 until end of turn", 0), Mode(None, "Create two 1/1 red Goblin creature tokens.", 1)]))
 grow_from_the_ashes_ability = Spell_Ability(grow_from_the_ashes_effect, SingleMode(None))
+incinerating_blast_ability = Spell_Ability(incinerating_blast_effect, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
