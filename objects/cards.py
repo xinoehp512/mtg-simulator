@@ -131,3 +131,4 @@ lightshell_duo = Card("Lightshell Duo", "3U", [CardType.CREATURE, CreatureType.R
 llanowar_elves = Card("Llanowar Elves", "G", [CardType.CREATURE, CreatureType.ELF,
                       CreatureType.DRUID], [forest_ability], power=1, toughness=1)
 luminous_rebuke = Card("Luminous Rebuke", "4W", [CardType.INSTANT], [luminous_rebuke_ability, luminous_cost_reduction])
+macabre_waltz = Card("Macabre Waltz", "1B", [CardType.SORCERY], [macabre_waltz_ability])

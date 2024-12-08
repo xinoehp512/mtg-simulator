@@ -145,6 +145,7 @@ class TargetTypeBase(Enum):
     PLANESWALKER = 4
     ARTIFACT = 5
     ENCHANTMENT = 6
+    CREATURE_GRAVECARD = 7
 
 
 class TargetTypeModifier(Enum):

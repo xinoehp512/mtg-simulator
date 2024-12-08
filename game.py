@@ -709,7 +709,7 @@ class Game:
     def exile_from_graveyard(self, card):
         card.owner.graveyard.remove(card)
         card.is_alive = False
-        exile_card = Exile_Object(card)
+        exile_card = Exile_Object(card.card)
         self.exile.add_objects([exile_card])
 
     def exile_until_leaves(self, permanent_exiled, permanent_key):
@@ -730,7 +730,13 @@ class Game:
 
     def return_gravecard_to_battlefield(self, controller, grave_card, modify_function=None):
         grave_card.owner.graveyard.remove(grave_card)
+        grave_card.is_alive = False
         self.create_battlefield_object(controller, grave_card.card, modify_function=modify_function)
+
+    def return_gravecard_to_hand(self, card):
+        card.owner.graveyard.remove(card)
+        card.is_alive = False
+        card.owner.hand.add_objects([Hand_Object(card.card)])
 
     def counter_stack_object(self, stack_object):
         self.stack.remove(stack_object)
