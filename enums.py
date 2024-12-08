@@ -154,6 +154,7 @@ class TargetTypeModifier(Enum):
     DONT_CONTROL = 2
     HAS_FLYING = 3
     OTHER = 4
+    POWER_4_PLUS = 5
 
 
 class ActivationRestrictionType(Enum):

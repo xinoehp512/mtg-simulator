@@ -42,6 +42,8 @@ class TargetType:
                     target_name += " you don't control"
                 if target_modifier == TargetTypeModifier.HAS_FLYING:
                     target_name += " with flying"
+                if target_modifier == TargetTypeModifier.POWER_4_PLUS:
+                    target_name += " with power 4 or greater"
                 if target_modifier == TargetTypeModifier.OTHER:
                     target_name = "other "+target_name
             target_names.append(target_name)
@@ -92,6 +94,8 @@ class TargetType:
                         fulfilled = fulfilled and t.controller != player
                     if target_modifier == TargetTypeModifier.HAS_FLYING:
                         fulfilled = fulfilled and AbilityKeyword.FLYING in t.keywords
+                    if target_modifier == TargetTypeModifier.POWER_4_PLUS:
+                        fulfilled = fulfilled and t.power >= 4
                     if target_modifier == TargetTypeModifier.OTHER:
                         fulfilled = fulfilled and t != source
                 if fulfilled:

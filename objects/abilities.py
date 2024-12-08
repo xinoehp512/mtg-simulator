@@ -480,6 +480,8 @@ creature_planeswalker_target = TargetType([(TargetTypeBase.CREATURE,), (TargetTy
 opt_two_other_creatures_you_control_target = TargetType(
     [(TargetTypeBase.CREATURE, TargetTypeModifier.OTHER, TargetTypeModifier.YOU_CONTROL)], True, 2)
 opt_two_creature_your_gravecards = TargetType([(TargetTypeBase.CREATURE_GRAVECARD, TargetTypeModifier.YOU_CONTROL)], True, 2)
+make_your_move_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
+                                    (TargetTypeBase.CREATURE, TargetTypeModifier.POWER_4_PLUS)])
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -593,6 +595,7 @@ incinerating_blast_ability = Spell_Ability(incinerating_blast_effect, SingleMode
 involuntary_employment_ability = Spell_Ability(involuntary_employment_effect, SingleMode([creature_target]))
 luminous_rebuke_ability = Spell_Ability(destroy_permanent, SingleMode([creature_target]))
 macabre_waltz_ability = Spell_Ability(macabre_waltz_effect, SingleMode([opt_two_creature_your_gravecards]))
+make_your_move_ability = Spell_Ability(destroy_permanent, SingleMode([make_your_move_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
