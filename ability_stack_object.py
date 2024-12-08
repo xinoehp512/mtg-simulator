@@ -24,6 +24,10 @@ class Ability_Stack_Object(Targetable_Object):
         return False
 
     @property
+    def is_spell(self):
+        return self.card is not None
+
+    @property
     def is_permanent_spell(self):
         return self.card is not None and self.card.is_permanent
 

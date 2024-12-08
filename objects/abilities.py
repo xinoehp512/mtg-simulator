@@ -123,6 +123,11 @@ def make_insect(game, controller, source, event, modes, targets):
     game.create_token(controller, token.copy())
 
 
+def make_cat(game, controller, source, event, modes, targets):
+    token = Creature_Token("Cat Token", None, [CardType.CREATURE, CreatureType.CAT], [], 1, 1, color_indicator=[Color.WHITE])
+    game.create_token(controller, token.copy())
+
+
 def exile_gravecard(game, controller, source, event, modes, targets):
     if targets == None:
         return
@@ -375,6 +380,13 @@ def pilfer_effect(game, controller, source, event, modes, targets):
     chosen_card = controller.agent.choose_one(seen_cards)
     game.player_discard_card(target, chosen_card)
 
+
+def refute_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.counter_stack_object(target)
+    game.player_draw(controller)
+    game.player_discard_x(controller, 1)
+
 # Triggers
 
 
@@ -502,6 +514,7 @@ opt_two_creature_your_gravecards = TargetType([(TargetTypeBase.CREATURE_GRAVECAR
 make_your_move_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
                                     (TargetTypeBase.CREATURE, TargetTypeModifier.POWER_4_PLUS)])
 opponent_target = TargetType([(TargetTypeBase.OPPONENT,)])
+spell_target = TargetType([(TargetTypeBase.SPELL,)])
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -535,7 +548,7 @@ def ward(x):
 
 
 def equip(x):
-    return Activated_Ability("Equip {X}", Total_Cost([Mana_Cost.from_string(x)]), attach, SingleMode([creature_you_control_target]), activation_restrictions=[ActivationRestrictionType.SORCERY])
+    return Activated_Ability(f"Equip {x}", Total_Cost([Mana_Cost.from_string(x)]), attach, SingleMode([creature_you_control_target]), activation_restrictions=[ActivationRestrictionType.SORCERY])
 
 
 prowess = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(1, 1))
@@ -572,6 +585,7 @@ icewind_elemental_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), loot
 infestation_sage_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_insect)
 lightshell_duo_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), surveil(2))
 blight_priest_ability = Triggered_Ability(trigger_on_lifegain, SingleMode(None), blight_priest_effect)
+prideful_parent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_cat)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -593,7 +607,8 @@ dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", Total_Cost([tap_se
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.BLACK])
 golgari_land_ability = Activated_Ability("{T}: Add {B} or {G}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.GREEN), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.GREEN])
-
+gruul_land_ability = Activated_Ability("{T}: Add {R} or {G}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.RED, ManaType.GREEN), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.RED, ManaType.GREEN])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))
@@ -618,6 +633,7 @@ luminous_rebuke_ability = Spell_Ability(destroy_permanent, SingleMode([creature_
 macabre_waltz_ability = Spell_Ability(macabre_waltz_effect, SingleMode([opt_two_creature_your_gravecards]))
 make_your_move_ability = Spell_Ability(destroy_permanent, SingleMode([make_your_move_target]))
 pilfer_ability = Spell_Ability(pilfer_effect, SingleMode([opponent_target]))
+refute_ability = Spell_Ability(refute_effect, SingleMode([spell_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
@@ -633,5 +649,8 @@ paladin_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.YOUR_TURN, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [first_strike]))
 mocking_sprite_discount = Static_Ability(Cost_Modification_Effect(
     EffectDuration.STATIC, lambda s: s.is_instant or s.is_sorcery, Total_Cost([Mana_Cost.from_string("1")]), True))
+katana_equip_buff_1 = Static_Ability(PT_Effect(EffectDuration.YOUR_TURN, lambda p,
+                                     o: o.attached_permanent == p, 2, 0))  # TODO: Combine these effects into one
+katana_equip_buff_2 = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: o.attached_permanent == p, [first_strike]))
 
 luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)

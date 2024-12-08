@@ -36,6 +36,8 @@ class TargetType:
                     target_name += " creature card from a graveyard"
                 if target_modifier == TargetTypeBase.OPPONENT:
                     target_name += " opponent"
+                if target_modifier == TargetTypeBase.SPELL:
+                    target_name += " spell"
                 if target_modifier == TargetTypeModifier.YOU_CONTROL:
                     target_name += " you control"
                 if target_modifier == TargetTypeModifier.OPP_CONTROL:
@@ -67,6 +69,8 @@ class TargetType:
         if TargetTypeBase.GRAVECARD in base_targets or TargetTypeBase.CREATURE_GRAVECARD in base_targets:
             for player_ in game.players:
                 objects.extend(player_.graveyard.objects)
+        if TargetTypeBase.SPELL in base_targets:
+            objects.extend(game.stack.objects)
 
         def applicability_function(t):
             for target_option in self.target_options:
@@ -90,6 +94,8 @@ class TargetType:
                         fulfilled = fulfilled and (isinstance(t, Graveyard_Object) and t.is_creature)
                     if target_modifier == TargetTypeBase.OPPONENT:
                         fulfilled = fulfilled and (isinstance(t, Player) and t == opponent)
+                    if target_modifier == TargetTypeBase.SPELL:
+                        fulfilled = fulfilled and (isinstance(t, Ability_Stack_Object) and t.is_spell)
                     if target_modifier == TargetTypeModifier.YOU_CONTROL:
                         fulfilled = fulfilled and not isinstance(t, Player) and t.controller == player
                     if target_modifier == TargetTypeModifier.OPP_CONTROL:
