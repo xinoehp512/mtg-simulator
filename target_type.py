@@ -34,6 +34,8 @@ class TargetType:
                     target_name += " card from a graveyard"
                 if target_modifier == TargetTypeBase.CREATURE_GRAVECARD:
                     target_name += " creature card from a graveyard"
+                if target_modifier == TargetTypeBase.OPPONENT:
+                    target_name += " opponent"
                 if target_modifier == TargetTypeModifier.YOU_CONTROL:
                     target_name += " you control"
                 if target_modifier == TargetTypeModifier.OPP_CONTROL:
@@ -60,7 +62,7 @@ class TargetType:
             target_modifier, TargetTypeBase)]
         if TargetTypeBase.ARTIFACT in base_targets or TargetTypeBase.ENCHANTMENT in base_targets or TargetTypeBase.CREATURE in base_targets or TargetTypeBase.PLANESWALKER in base_targets or TargetTypeBase.NL_PERMANENT in base_targets or TargetTypeBase.DAMAGEABLE in base_targets:
             objects.extend(game.battlefield.objects)
-        if TargetTypeBase.DAMAGEABLE in base_targets:
+        if TargetTypeBase.DAMAGEABLE in base_targets or TargetTypeBase.OPPONENT in base_targets:
             objects.extend(game.players)
         if TargetTypeBase.GRAVECARD in base_targets or TargetTypeBase.CREATURE_GRAVECARD in base_targets:
             for player_ in game.players:
@@ -86,6 +88,8 @@ class TargetType:
                         fulfilled = fulfilled and (isinstance(t, Graveyard_Object))
                     if target_modifier == TargetTypeBase.CREATURE_GRAVECARD:
                         fulfilled = fulfilled and (isinstance(t, Graveyard_Object) and t.is_creature)
+                    if target_modifier == TargetTypeBase.OPPONENT:
+                        fulfilled = fulfilled and (isinstance(t, Player) and t == opponent)
                     if target_modifier == TargetTypeModifier.YOU_CONTROL:
                         fulfilled = fulfilled and not isinstance(t, Player) and t.controller == player
                     if target_modifier == TargetTypeModifier.OPP_CONTROL:

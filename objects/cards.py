@@ -139,3 +139,4 @@ marauding_blight_priest = Card("Marauding Blight-Priest", "2B",
                                [CardType.CREATURE, CreatureType.VAMPIRE, CreatureType.CLERIC], [blight_priest_ability], power=3, toughness=2)
 mocking_sprite = Card("Mocking Sprite", "2U", [CardType.CREATURE, CreatureType.FAERIE, CreatureType.ROGUE], [
                       flying, mocking_sprite_discount], power=2, toughness=1)
+pilfer = Card("Pilfer", "1B", [CardType.SORCERY], [pilfer_ability])

@@ -368,6 +368,13 @@ def blight_priest_effect(game, controller, source, event, modes, targets):
     for opponent in opponents:
         game.player_lose_life(opponent, 1)
 
+
+def pilfer_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    seen_cards = game.player_look_at_hand(controller, target)
+    chosen_card = controller.agent.choose_one(seen_cards)
+    game.player_discard_card(target, chosen_card)
+
 # Triggers
 
 
@@ -494,6 +501,7 @@ opt_two_other_creatures_you_control_target = TargetType(
 opt_two_creature_your_gravecards = TargetType([(TargetTypeBase.CREATURE_GRAVECARD, TargetTypeModifier.YOU_CONTROL)], True, 2)
 make_your_move_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
                                     (TargetTypeBase.CREATURE, TargetTypeModifier.POWER_4_PLUS)])
+opponent_target = TargetType([(TargetTypeBase.OPPONENT,)])
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -609,6 +617,7 @@ involuntary_employment_ability = Spell_Ability(involuntary_employment_effect, Si
 luminous_rebuke_ability = Spell_Ability(destroy_permanent, SingleMode([creature_target]))
 macabre_waltz_ability = Spell_Ability(macabre_waltz_effect, SingleMode([opt_two_creature_your_gravecards]))
 make_your_move_ability = Spell_Ability(destroy_permanent, SingleMode([make_your_move_target]))
+pilfer_ability = Spell_Ability(pilfer_effect, SingleMode([opponent_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

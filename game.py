@@ -865,6 +865,10 @@ class Game:
             player.library.remove(card)
         player.library.add_objects(top_order[::-1])
 
+    def player_look_at_hand(self, player, other_player):
+        seen_cards = other_player.hand.objects
+        return seen_cards
+
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:
             raise Exception("Can't discard a card that isn't there!")
