@@ -312,3 +312,8 @@ class Agent:
         user_display(game)
         mode = self.choose_x(mode_choice.modes, mode_choice.modes_required)
         return mode
+
+    def choose_surveil(self, cards):
+        to_graveyard = self.choose_any(cards, message="Choose Cards to send to Graveyard: ")
+        top_order = self.choose_order([card for card in cards if card not in to_graveyard], message="Choose order of cards on top: ")
+        return to_graveyard, top_order

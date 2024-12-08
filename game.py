@@ -821,6 +821,15 @@ class Game:
         seen_cards = player.library.objects[-amount:]
         return seen_cards
 
+    def player_surveil(self, player, amount):
+        cards = self.player_look_at_top_x(player, amount)
+        to_graveyard, top_order = player.agent.choose_surveil(cards)
+        for card in to_graveyard:
+            self.library_to_graveyard(player, card)
+        for card in top_order:
+            player.library.remove(card)
+        player.library.add_objects(top_order[::-1])
+
     def player_discard_card(self, player, card):
         if card not in player.hand.objects:
             raise Exception("Can't discard a card that isn't there!")

@@ -264,6 +264,12 @@ def loot(game, controller, source, event, modes, targets):
     game.player_discard_x(controller, 1)
 
 
+def surveil(x):
+    def surveil_x(game, controller, source, event, modes, targets):
+        game.player_surveil(controller, x)
+    return surveil_x
+
+
 def weaken_draw(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, -1, 0)
@@ -522,6 +528,7 @@ hare_apparent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), hare_app
 helpful_hunter_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), draw_card)
 icewind_elemental_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), loot)
 infestation_sage_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_insect)
+lightshell_duo_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), surveil(2))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -541,6 +548,9 @@ selesnya_land_ability = Activated_Ability("{T}: Add {G} or {W}", Total_Cost([tap
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.WHITE])
 dimir_land_ability = Activated_Ability("{T}: Add {U} or {B}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLUE, ManaType.BLACK), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.BLACK])
+golgari_land_ability = Activated_Ability("{T}: Add {B} or {G}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.GREEN), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.GREEN])
+
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))

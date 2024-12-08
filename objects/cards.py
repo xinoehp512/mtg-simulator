@@ -125,3 +125,6 @@ incinerating_blast = Card("Incinerating Blast", "4R", [CardType.SORCERY], [incin
 infestation_sage = Card("Infestation Sage", "B", [CardType.CREATURE, CreatureType.ELF,
                         CreatureType.WARLOCK], [infestation_sage_death], power=1, toughness=1)
 involuntary_employment = Card("Involuntary Employment", "3R", [CardType.SORCERY], [involuntary_employment_ability])
+jungle_hollow = Card("Jungle Hollow", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, golgari_land_ability])
+lightshell_duo = Card("Lightshell Duo", "3U", [CardType.CREATURE, CreatureType.RAT,
+                      CreatureType.OTTER], [prowess, lightshell_duo_etb], power=3, toughness=4)
