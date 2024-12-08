@@ -223,3 +223,13 @@ class Damage_Event(Event):
 
     def copy(self):
         return Damage_Event(self.target, self.source, self.damage_amount, self.is_combat_damage, prevented=self.prevented)
+
+
+class Lifegain_Event(Event):
+    def __init__(self, player, amount):
+        super().__init__()
+        self.player = player
+        self.amount = amount
+
+    def copy(self):
+        return Lifegain_Event(self.player, self.amount)

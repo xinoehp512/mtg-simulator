@@ -135,3 +135,5 @@ llanowar_elves = Card("Llanowar Elves", "G", [CardType.CREATURE, CreatureType.EL
 luminous_rebuke = Card("Luminous Rebuke", "4W", [CardType.INSTANT], [luminous_rebuke_ability, luminous_cost_reduction])
 macabre_waltz = Card("Macabre Waltz", "1B", [CardType.SORCERY], [macabre_waltz_ability])
 make_your_move = Card("Make Your Move", "2W", [CardType.INSTANT], [make_your_move_ability])
+marauding_blight_priest = Card("Marauding Blight-Priest", "2B",
+                               [CardType.CREATURE, CreatureType.VAMPIRE, CreatureType.CLERIC], [blight_priest_ability], power=3, toughness=2)

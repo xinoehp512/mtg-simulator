@@ -5,7 +5,7 @@ from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Control_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
-from event import Attack_Event, Card_Draw_Event, Damage_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from event import Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -362,6 +362,12 @@ def macabre_waltz_effect(game, controller, source, event, modes, targets):
         game.return_gravecard_to_hand(card)
     game.player_discard_x(controller, 1)
 
+
+def blight_priest_effect(game, controller, source, event, modes, targets):
+    opponents = game.get_opponents(controller)
+    for opponent in opponents:
+        game.player_lose_life(opponent, 1)
+
 # Triggers
 
 
@@ -411,6 +417,10 @@ def trigger_on_equipped_combat_damage(game, event, object):
 
 def trigger_on_second_card(game, event, object):
     return isinstance(event, Card_Draw_Event) and event.number_this_turn == 2
+
+
+def trigger_on_lifegain(game, event, object):
+    return isinstance(event, Lifegain_Event) and event.player == object.controller
 
 # Replacement Effects
 
@@ -553,6 +563,7 @@ helpful_hunter_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), draw_ca
 icewind_elemental_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), loot)
 infestation_sage_death = Triggered_Ability(trigger_on_death, SingleMode(None), make_insect)
 lightshell_duo_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), surveil(2))
+blight_priest_ability = Triggered_Ability(trigger_on_lifegain, SingleMode(None), blight_priest_effect)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
