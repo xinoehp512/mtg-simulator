@@ -60,6 +60,15 @@ class Total_Cost:
     def tap_cost(self):
         return [cost for cost in self.costs if isinstance(cost, Tap_Cost)]
 
+    def reduce_by(self, other):
+        mana_reduction = [mana_cost for cost in other.costs if isinstance(cost, Mana_Cost) for mana_cost in cost.mana_cost]
+        self_mana_cost = [mana_cost for cost in self.costs if isinstance(cost, Mana_Cost) for mana_cost in cost.mana_cost]
+        for mana_cost in mana_reduction:
+            if mana_cost in self_mana_cost:
+                self_mana_cost.remove(mana_cost)
+        self.costs = [cost for cost in self.costs if not isinstance(cost, Mana_Cost)]
+        self.costs.append(Mana_Cost(self_mana_cost))
+
     def copy(self):
         return Total_Cost(self.costs, type=self.type)
 

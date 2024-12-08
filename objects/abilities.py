@@ -2,6 +2,7 @@ from action import Action
 from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
+from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Control_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Damage_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
@@ -9,6 +10,7 @@ from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
+from permanent import Permanent
 from replacement_effect import Replacement_Effect
 from spell_ability import Spell_Ability
 from static_ability import Static_Ability
@@ -444,6 +446,15 @@ def control_other_elf(game, event, object):
 def attacked_this_turn(game, event, object):
     return object.controller.attacked_this_turn
 
+# Spell conditionals
+
+
+def targets_tapped_creature(game, spell):
+    for target in spell.targets:
+        if isinstance(target.object, Permanent) and target.object.is_creature and target.object.tapped == True:
+            return True
+    return False
+
 
 damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
 creature_target = TargetType([(TargetTypeBase.CREATURE,)])
@@ -571,6 +582,7 @@ goblin_surprise_ability = Spell_Ability(goblin_surprise_effect, ModeChoice(
 grow_from_the_ashes_ability = Spell_Ability(grow_from_the_ashes_effect, SingleMode(None))
 incinerating_blast_ability = Spell_Ability(incinerating_blast_effect, SingleMode([creature_target]))
 involuntary_employment_ability = Spell_Ability(involuntary_employment_effect, SingleMode([creature_target]))
+luminous_rebuke_ability = Spell_Ability(destroy_permanent, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
@@ -581,3 +593,5 @@ goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_count
 gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.STATIC, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
 goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, lambda p, o: o.attached_permanent == p, 1, 1))
+
+luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)

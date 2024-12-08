@@ -44,15 +44,15 @@ class Card:
 
     @property
     def color_vis(self):
-        colors = []
+        colors = set()
         for color in self.colors:
-            colors.append(color_to_vis(color))
+            colors.add(color_to_vis(color))
         for ability in self.abilities:
             if isinstance(ability, Activated_Ability) and ability.mana_produced is not None:
-                colors.extend(color_to_vis(color) for color in ability.mana_produced)
+                colors.update(color_to_vis(color) for color in ability.mana_produced)
 
         if len(colors) == 1:
-            return colors[0]
+            return colors.pop()
         elif len(colors) == 0:
             return ColorVis.COLORLESS
         else:

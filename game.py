@@ -889,6 +889,7 @@ class Game:
         player.hand.remove(spell)
         additional_costs = spell.additional_costs
         cost_increase = Total_Cost([])
+        cost_reduction = Total_Cost([])
         costs_paid = []
         modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
@@ -920,7 +921,15 @@ class Game:
             player, StackObjectType.SPELL, effect_function=spell.card.spell_effect, source=None, modes={ModeType.MODES_CHOSEN: [mode.id for mode in modes], ModeType.COSTS_PAID: costs_paid}, targets=targets, card=spell.card)
         spell_object.source = spell_object
 
+        for cost_modification in spell.cost_modifications:
+            if cost_modification.conditional(self, spell_object):
+                if cost_modification.is_reduction:
+                    cost_reduction += cost_modification.cost
+                else:
+                    cost_increase += cost_modification.cost
+
         cost = Total_Cost([spell.cost])+cost_increase
+        cost.reduce_by(cost_reduction)
         try:
             if not self.player_pay_cost(player, cost):
                 raise IllegalActionException("Illegal Action")  # TODO: Tidy up

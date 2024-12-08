@@ -1,3 +1,4 @@
+from cost_modification import Cost_Modification
 from targetable_object import Targetable_Object
 
 
@@ -58,6 +59,14 @@ class Card_Object(Targetable_Object):
     @property
     def spell_ability(self):
         return self.card.spell_ability
+
+    @property
+    def cost_modifications(self):
+        abilities = []
+        for ability in self.card.abilities:
+            if isinstance(ability, Cost_Modification):
+                abilities.append(ability)
+        return abilities
 
     @property
     def is_token(self):

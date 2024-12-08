@@ -128,3 +128,6 @@ involuntary_employment = Card("Involuntary Employment", "3R", [CardType.SORCERY]
 jungle_hollow = Card("Jungle Hollow", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, golgari_land_ability])
 lightshell_duo = Card("Lightshell Duo", "3U", [CardType.CREATURE, CreatureType.RAT,
                       CreatureType.OTTER], [prowess, lightshell_duo_etb], power=3, toughness=4)
+llanowar_elves = Card("Llanowar Elves", "G", [CardType.CREATURE, CreatureType.ELF,
+                      CreatureType.DRUID], [forest_ability], power=1, toughness=1)
+luminous_rebuke = Card("Luminous Rebuke", "4W", [CardType.INSTANT], [luminous_rebuke_ability, luminous_cost_reduction])
