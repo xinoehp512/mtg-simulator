@@ -53,6 +53,9 @@ class Game:
 
         self.creature_died_this_turn = False
 
+        self.first_strike_happened_this_combat = False
+        self.dealt_first_strike_damage = []
+
         self.permanent_id = 0
 
         self.effects = []
@@ -532,6 +535,8 @@ class Game:
             for static in permanent.static_abilities:
                 effects.append(static.effect)
         for effect in effects:  # TODO: Layers, layers layers!
+            if effect.duration == EffectDuration.YOUR_TURN and effect.object.controller != self.active_player:
+                continue
             if effect.type == EffectType.PT:
                 for permanent in self.get_permanents():
                     if effect.applies_to(permanent):
@@ -609,8 +614,26 @@ class Game:
                 self.creature_become_unblocked(attacker)
 
     def turn_resolve_combat_damage(self):
+        is_first_strike_phase = False
+        is_second_strike_phase = False
+        if not self.first_strike_happened_this_combat:
+            for creature in self.get_all_attackers():
+                if AbilityKeyword.FIRST_STRIKE in creature.keywords or AbilityKeyword.DOUBLE_STRIKE in creature.keywords:
+                    is_first_strike_phase = True
+                    self.dealt_first_strike_damage.append(creature)
+        else:
+            is_second_strike_phase = True
+        if is_first_strike_phase:
+            self.add_step([Phase.COMBAT, Step.COMBAT_DAMAGE])
+            self.first_strike_happened_this_combat = True
         for player in self.apnap_order:
             creatures = self.get_all_in_combat_of(player)
+            if is_first_strike_phase:
+                creatures = [
+                    creature for creature in creatures if AbilityKeyword.FIRST_STRIKE in creature.keywords or AbilityKeyword.DOUBLE_STRIKE in creature.keywords]
+            if is_second_strike_phase:
+                creatures = [
+                    creature for creature in creatures if AbilityKeyword.DOUBLE_STRIKE in creature.keywords or creature not in self.dealt_first_strike_damage]
             damage_assignment_legally_assigned = False
             while not damage_assignment_legally_assigned:
                 damage_assignments = player.agent.choose_damage_assignments(
@@ -632,6 +655,8 @@ class Game:
     def turn_end_combat(self):
         for permanent in self.get_permanents():
             permanent.remove_from_combat()
+        self.first_strike_happened_this_combat = False
+        self.dealt_first_strike_damage = []
 
     def turn_cleanup(self):
         self.player_discard_to_hand_size(self.active_player)
@@ -1047,6 +1072,7 @@ class Game:
     def creature_deal_combat_damage(self, creature):
         for damage_amount, target in creature.combat_damage_assignment:
             self.deal_damage(target, creature, damage_amount, is_combat_damage=True)
+        creature.combat_damage_assignment = []
 
     def remove_marked_damage_and_end_turn(self):
         for permanent in self.get_permanents():
@@ -1059,11 +1085,13 @@ class Game:
         self.apply_effects()
 
     # Direct Gamestate Editing functions
-    def add_permanents(self, controller, cards):
+    def add_permanents(self, controller, cards, modify_function=None):
         for card in cards:
             card.set_owner(controller)
             permanent = Permanent(card, controller, self.permanent_id)
             self.permanent_id += 1
+            if modify_function is not None:
+                modify_function(permanent)
             self.battlefield.add_objects([permanent])
 
     def add_cards(self, player, cards):

@@ -122,6 +122,8 @@ class AbilityKeyword(Enum):
     LIFELINK = 7
     DEFENDER = 8
     DEATHTOUCH = 9
+    FIRST_STRIKE = 10
+    DOUBLE_STRIKE = 11
 
 
 class AdditionalCostType(Enum):
@@ -164,6 +166,7 @@ class ActivationRestrictionType(Enum):
 class EffectDuration(Enum):
     EOT = 0
     STATIC = 1
+    YOUR_TURN = 2
 
 
 class EffectType(Enum):

@@ -27,6 +27,8 @@ reach = Keyword_Ability(AbilityKeyword.REACH)
 lifelink = Keyword_Ability(AbilityKeyword.LIFELINK)
 defender = Keyword_Ability(AbilityKeyword.DEFENDER)
 deathtouch = Keyword_Ability(AbilityKeyword.DEATHTOUCH)
+first_strike = Keyword_Ability(AbilityKeyword.FIRST_STRIKE)
+double_strike = Keyword_Ability(AbilityKeyword.DOUBLE_STRIKE)
 
 none = Keyword_Ability(None)
 
@@ -606,5 +608,9 @@ goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_count
 gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.STATIC, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
 goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, lambda p, o: o.attached_permanent == p, 1, 1))
+paladin_self_anthem = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: p == o, [first_strike]))
+paladin_counter_lord = Static_Ability(Ability_Grant_Effect(
+    EffectDuration.YOUR_TURN, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [first_strike]))
+
 
 luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)

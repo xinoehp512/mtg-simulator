@@ -124,6 +124,8 @@ icewind_elemental = Card("Icewind Elemental", "4U", [CardType.CREATURE, Creature
 incinerating_blast = Card("Incinerating Blast", "4R", [CardType.SORCERY], [incinerating_blast_ability])
 infestation_sage = Card("Infestation Sage", "B", [CardType.CREATURE, CreatureType.ELF,
                         CreatureType.WARLOCK], [infestation_sage_death], power=1, toughness=1)
+inspiring_paladin = Card("Inspiring Paladin", "2W", [CardType.CREATURE, CreatureType.HUMAN, CreatureType.KNIGHT], [
+                         paladin_self_anthem, paladin_counter_lord], power=3, toughness=3)
 involuntary_employment = Card("Involuntary Employment", "3R", [CardType.SORCERY], [involuntary_employment_ability])
 jungle_hollow = Card("Jungle Hollow", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, golgari_land_ability])
 lightshell_duo = Card("Lightshell Duo", "3U", [CardType.CREATURE, CreatureType.RAT,

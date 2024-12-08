@@ -1,6 +1,7 @@
 import random
 
 from agent import Agent
+from enums import CounterType
 from game import Game
 from objects.decks import *
 
@@ -16,10 +17,11 @@ game = Game([Agent("Player 1", deck_empty), Agent("Player 2", deck_empty)])
 player1 = game.players[0]
 player2 = game.players[1]
 player1.starting_hand_size = 0
-game.add_cards(player1, [cards.make_your_move.copy()])
+game.add_cards(player1, [])
 game.add_cards(player2, [cards.forest.copy() for i in range(1)])
-game.add_permanents(player1, [cards.treasure.copy() for i in range(6)])
-game.add_permanents(player2, [cards.dazzling_angel.copy(), cards.apothecary_stomper.copy(), cards.banishing_light.copy()])
+game.add_permanents(player1, [cards.treasure.copy() for i in range(6)]+[cards.inspiring_paladin.copy()])
+game.add_permanents(player1, [cards.campus_guide.copy()], modify_function=lambda p: p.add_counters(CounterType.P1P1, 1))
+game.add_permanents(player2, [cards.beast_kin_ranger.copy(), cards.apothecary_stomper.copy()])
 game.add_to_library(player1, [cards.mountain.copy(), cards.forest.copy(),
                     cards.bloodfell_caves.copy(), cards.island.copy(), cards.blossoming_sands.copy()])
 game.add_gravecards(player1, [cards.infestation_sage.copy(), cards.hungry_ghoul.copy()])
