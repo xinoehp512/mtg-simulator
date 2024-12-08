@@ -38,3 +38,10 @@ class Prevention_Effect(Effect):
 
     def prevent(self, event):
         return self.prevention_function(event)
+
+
+class Cost_Modification_Effect(Effect):
+    def __init__(self, duration, applicability_function, cost, is_reduction):
+        super().__init__(EffectType.COST_MODIFICATION, duration, applicability_function)
+        self.cost = cost
+        self.is_reduction = is_reduction

@@ -137,3 +137,5 @@ macabre_waltz = Card("Macabre Waltz", "1B", [CardType.SORCERY], [macabre_waltz_a
 make_your_move = Card("Make Your Move", "2W", [CardType.INSTANT], [make_your_move_ability])
 marauding_blight_priest = Card("Marauding Blight-Priest", "2B",
                                [CardType.CREATURE, CreatureType.VAMPIRE, CreatureType.CLERIC], [blight_priest_ability], power=3, toughness=2)
+mocking_sprite = Card("Mocking Sprite", "2U", [CardType.CREATURE, CreatureType.FAERIE, CreatureType.ROGUE], [
+                      flying, mocking_sprite_discount], power=2, toughness=1)

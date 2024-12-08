@@ -91,6 +91,10 @@ class Card:
         return CardType.INSTANT in self.types
 
     @property
+    def is_sorcery(self):
+        return CardType.SORCERY in self.types
+
+    @property
     def is_volatile(self):
         return CardType.INSTANT in self.types or CardType.SORCERY in self.types
 

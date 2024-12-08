@@ -103,6 +103,7 @@ class CreatureType(Enum):
     WOLF = 42
     ZOMBIE = 43
     INSECT = 44
+    FAERIE = 45
 
 
 class StackObjectType(Enum):
@@ -174,6 +175,7 @@ class EffectType(Enum):
     ABILITY = 1
     PREVENTION = 2
     CONTROL = 3
+    COST_MODIFICATION = 4
 
 
 class CounterType(Enum):

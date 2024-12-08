@@ -3,7 +3,7 @@ from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
-from effects import Ability_Grant_Effect, Control_Effect, PT_Effect, Prevention_Effect
+from effects import Ability_Grant_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -622,6 +622,7 @@ goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, lambda p, 
 paladin_self_anthem = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: p == o, [first_strike]))
 paladin_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.YOUR_TURN, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [first_strike]))
-
+mocking_sprite_discount = Static_Ability(Cost_Modification_Effect(
+    EffectDuration.STATIC, lambda s: s.is_instant or s.is_sorcery, Total_Cost([Mana_Cost.from_string("1")]), True))
 
 luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)

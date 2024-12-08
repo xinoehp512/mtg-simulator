@@ -4,7 +4,7 @@ from action import Action
 from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
-from effects import Prevention_Effect
+from effects import Cost_Modification_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -58,7 +58,7 @@ class Game:
 
         self.permanent_id = 0
 
-        self.effects = []
+        self.floating_effects = []
         self.triggers_waiting = []
         self.listeners = []
     # Properties
@@ -78,6 +78,11 @@ class Game:
     @property
     def apnap_order(self):
         return self.players[self.active_player_index:] + self.players[:self.active_player_index]
+
+    @property
+    def effects(self):
+        permanents_with_ability = self.battlefield.get_by_criteria(lambda p: p.has_static_ability)
+        return self.floating_effects+[ability.effect for permanent in permanents_with_ability for ability in permanent.static_abilities]
 
     # Query Functions
 
@@ -214,9 +219,8 @@ class Game:
     def get_prevention_effects(self):
         return [effect for effect in self.effects if isinstance(effect, Prevention_Effect)]
 
-    def get_static_effects(self):
-        permanents_with_ability = self.battlefield.get_by_criteria(lambda p: p.has_static_ability)
-        return [ability for permanent in permanents_with_ability for ability in permanent.static_abilities]
+    def get_cost_modification_effects(self):
+        return [effect for effect in self.effects if isinstance(effect, Cost_Modification_Effect)]
 
     # Targeting
 
@@ -529,12 +533,7 @@ class Game:
             controller_storage[permanent.id] = permanent.controller
             permanent.modified_controller = None
 
-        effects = []
-        effects.extend(self.effects)
-        for permanent in self.get_permanents():
-            for static in permanent.static_abilities:
-                effects.append(static.effect)
-        for effect in effects:  # TODO: Layers, layers layers!
+        for effect in self.effects:  # TODO: Layers, layers layers!
             if effect.duration == EffectDuration.YOUR_TURN and effect.object.controller != self.active_player:
                 continue
             if effect.type == EffectType.PT:
@@ -963,6 +962,12 @@ class Game:
                     cost_reduction += cost_modification.cost
                 else:
                     cost_increase += cost_modification.cost
+        for cost_modification in self.get_cost_modification_effects():  # TODO: Combine these
+            if cost_modification.applicability_function(spell_object):
+                if cost_modification.is_reduction:
+                    cost_reduction += cost_modification.cost
+                else:
+                    cost_increase += cost_modification.cost
 
         cost = Total_Cost([spell.cost])+cost_increase
         cost.reduce_by(cost_reduction)
@@ -1082,7 +1087,7 @@ class Game:
     def remove_marked_damage_and_end_turn(self):
         for permanent in self.get_permanents():
             permanent.remove_marked_damage()
-        self.effects = [effect for effect in self.effects if effect.duration != EffectDuration.EOT]
+        self.floating_effects = [effect for effect in self.floating_effects if effect.duration != EffectDuration.EOT]
         self.apply_effects()
 
     def create_continuous_effect(self, effect):

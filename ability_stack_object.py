@@ -28,6 +28,14 @@ class Ability_Stack_Object(Targetable_Object):
         return self.card is not None and self.card.is_permanent
 
     @property
+    def is_instant(self):
+        return self.card is not None and self.card.is_instant
+
+    @property
+    def is_sorcery(self):
+        return self.card is not None and self.card.is_sorcery
+
+    @property
     def keywords(self):
         return []
 
