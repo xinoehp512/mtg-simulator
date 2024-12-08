@@ -11,7 +11,7 @@ class Permanent(Damageable_Object):
     def __init__(self, card, controller, id, casting_information={}):
         super().__init__()
         self.card = card
-        self.controller = controller
+        self.base_controller = controller
         self.id = id
         self.casting_information = casting_information
 
@@ -32,6 +32,7 @@ class Permanent(Damageable_Object):
         self.power_modification = 0
         self.toughness_modification = 0
         self.added_abilities = []
+        self.modified_controller = None
 
         self.counters = {}
 
@@ -80,8 +81,16 @@ class Permanent(Damageable_Object):
         return self.card.is_copy
 
     @property
+    def is_damageable(self):
+        return self.is_creature
+
+    @property
     def owner(self):
         return self.card.owner
+
+    @property
+    def controller(self):
+        return self.base_controller if self.modified_controller is None else self.modified_controller
 
     @property
     def power(self):
@@ -90,10 +99,6 @@ class Permanent(Damageable_Object):
     @property
     def toughness(self):
         return self.card.toughness+self.toughness_modification if self.card.toughness is not None else 0
-
-    @property
-    def is_damageable(self):
-        return self.is_creature
 
     @property
     def abilities(self):

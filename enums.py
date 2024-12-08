@@ -168,6 +168,7 @@ class EffectType(Enum):
     PT = 0
     ABILITY = 1
     PREVENTION = 2
+    CONTROL = 3
 
 
 class CounterType(Enum):

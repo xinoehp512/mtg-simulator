@@ -518,10 +518,14 @@ class Game:
         self.listeners = [listener for listener in self.listeners if not listener.dead]
 
     def apply_effects(self):
-        for creature in self.get_creatures():
-            creature.power_modification = 0
-            creature.toughness_modification = 0
-            creature.added_abilities = []  # TODO: All permanents
+        controller_storage = {}
+        for permanent in self.get_permanents():
+            permanent.power_modification = 0
+            permanent.toughness_modification = 0
+            permanent.added_abilities = []
+            controller_storage[permanent.id] = permanent.controller
+            permanent.modified_controller = None
+
         effects = []
         effects.extend(self.effects)
         for permanent in self.get_permanents():
@@ -529,21 +533,27 @@ class Game:
                 effects.append(static.effect)
         for effect in effects:  # TODO: Layers, layers layers!
             if effect.type == EffectType.PT:
-                for creature in self.get_creatures():
-                    if effect.applies_to(creature):
-                        creature.power_modification += effect.power_change
-                        creature.toughness_modification += effect.toughness_change
+                for permanent in self.get_permanents():
+                    if effect.applies_to(permanent):
+                        permanent.power_modification += effect.power_change
+                        permanent.toughness_modification += effect.toughness_change
             if effect.type == EffectType.ABILITY:
-                for creature in self.get_creatures():
-                    if effect.applies_to(creature):
+                for permanent in self.get_permanents():
+                    if effect.applies_to(permanent):
                         for ability in effect.abilities:
                             creature_ability = ability.copy()  # TODO: This won't work with effects that give abilities with state
-                            creature.added_abilities.append(creature_ability)
-                            creature_ability.object = creature
-        for creature in self.get_creatures():
-            if CounterType.P1P1 in creature.counters:
-                creature.power_modification += creature.counters[CounterType.P1P1]
-                creature.toughness_modification += creature.counters[CounterType.P1P1]
+                            permanent.added_abilities.append(creature_ability)
+                            creature_ability.object = permanent
+            if effect.type == EffectType.CONTROL:
+                for permanent in self.get_permanents():
+                    if effect.applies_to(permanent):
+                        permanent.modified_controller = effect.controller
+        for permanent in self.get_permanents():
+            if CounterType.P1P1 in permanent.counters:
+                permanent.power_modification += permanent.counters[CounterType.P1P1]
+                permanent.toughness_modification += permanent.counters[CounterType.P1P1]
+            if permanent.controller != controller_storage[permanent.id]:
+                permanent.summoning_sick = True
 
     # Turn actions
 

@@ -6,12 +6,14 @@ from keyword_ability import Keyword_Ability
 
 class Card:
 
-    def __init__(self, name, cost, colors, types, abilities, text) -> None:
+    def __init__(self, name, cost, types, abilities,  power=0, toughness=0, text="", color_indicator=[]) -> None:
         self.name = name
         self.cost = Mana_Cost.from_string(cost) if isinstance(cost, str) else cost
-        self.color_indicator = colors
+        self.color_indicator = color_indicator
         self.types = types
         self.abilities = abilities
+        self.power = power
+        self.toughness = toughness
         self.text = text
         self.owner = None
         self.is_alive = True
@@ -26,8 +28,8 @@ class Card:
         return self
 
     def copy(self):
-        return Card(self.name, self.cost, self.color_indicator, self.types,
-                    [ability.copy() for ability in self.abilities], self.text)
+        return Card(self.name, self.cost, self.types,
+                    [ability.copy() for ability in self.abilities], power=self.power, toughness=self.toughness, text=self.text, color_indicator=self.color_indicator)
 
     # Properties
     @property
@@ -125,67 +127,9 @@ class Card:
     __repr__ = __str__
 
 
-class Creature_Card(Card):
-
-    def __init__(self, name, cost, types, abilities,  power, toughness, text="", color_indicator=[]):
-        super().__init__(name, cost, color_indicator, types, abilities, text)
-        self.power = power
-        self.toughness = toughness
-
-    def copy(self):
-        return Creature_Card(self.name, self.cost, self.types,
-                             [ability.copy() for ability in self.abilities],
-                             self.power, self.toughness, text=self.text, color_indicator=self.color_indicator)
-
-
-class Artifact_Card(Card):
-    def __init__(self, name, cost, types, abilities, text="", color_indicator=[]):
-        super().__init__(name, cost, color_indicator, types, abilities, text)
-
-    def copy(self):
-        return Artifact_Card(self.name, self.cost, self.types, [ability.copy() for ability in self.abilities], text=self.text, color_indicator=self.color_indicator)
-
-
-class Enchantment_Card(Card):
-    def __init__(self, name, cost, types, abilities, text="", color_indicator=[]):
-        super().__init__(name, cost, color_indicator, types, abilities, text)
-
-    def copy(self):
-        return Enchantment_Card(self.name, self.cost, self.types, [ability.copy() for ability in self.abilities], text=self.text, color_indicator=self.color_indicator)
-
-
-class Land_Card(Card):
-
-    def __init__(self, name, types, abilities, text=""):
-        super().__init__(name, None, [], types, abilities, text)
-
-    def copy(self):
-        return Land_Card(self.name, self.types,
-                         [ability.copy() for ability in self.abilities], text=self.text)
-
-
-class Instant_Card(Card):
-
-    def __init__(self, name, cost, types, abilities, text=""):
-        super().__init__(name, cost, [], types, abilities, text)
-
-    def copy(self):
-        return Instant_Card(self.name, self.cost, self.types,
-                            [ability.copy() for ability in self.abilities], text=self.text)
-
-
-class Sorcery_Card(Card):
-    def __init__(self, name, cost, types, abilities, text=""):
-        super().__init__(name, cost, [], types, abilities, text)
-
-    def copy(self):
-        return Sorcery_Card(self.name, self.cost, self.types,
-                            [ability.copy() for ability in self.abilities], text=self.text)
-
-
 class Creature_Token(Card):
     def __init__(self, name, cost, types, abilities, power, toughness, text="", color_indicator=[]):
-        super().__init__(name, cost, color_indicator, types, abilities, text)
+        super().__init__(name, cost, types, abilities, text=text, color_indicator=color_indicator)
         self.power = power
         self.toughness = toughness
         self.is_token = True
@@ -198,9 +142,10 @@ class Creature_Token(Card):
 
 class Artifact_Token(Card):
     def __init__(self, name, cost, types, abilities, text="", color_indicator=[]):
-        super().__init__(name, cost, color_indicator, types, abilities, text)
+        super().__init__(name, cost, types, abilities, text=text, color_indicator=color_indicator)
         self.is_token = True
 
     def copy(self):
+
         return Artifact_Token(self.name, self.cost, self.types,
                               [ability.copy() for ability in self.abilities], text=self.text)

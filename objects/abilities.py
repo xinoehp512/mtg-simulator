@@ -2,7 +2,7 @@ from action import Action
 from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
-from effects import Ability_Grant_Effect, PT_Effect, Prevention_Effect
+from effects import Ability_Grant_Effect, Control_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
 from event import Attack_Event, Card_Draw_Event, Damage_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -334,7 +334,19 @@ def incinerating_blast_effect(game, controller, source, event, modes, targets):
             game.player_draw(controller)
 
 
+def involuntary_employment_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    effect = Control_Effect(EffectDuration.EOT, lambda p, o: p == target, controller)
+    game.create_continuous_effect(effect)
+    game.untap(target)
+    effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == target, [haste])
+    game.create_continuous_effect(effect)
+    game.create_token(controller, treasure.copy())
+
+
 # Triggers
+
+
 def trigger_on_etb(game, event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object
 
@@ -548,6 +560,7 @@ goblin_surprise_ability = Spell_Ability(goblin_surprise_effect, ModeChoice(
     1, [Mode(None, "Creatures you control get +2/+0 until end of turn", 0), Mode(None, "Create two 1/1 red Goblin creature tokens.", 1)]))
 grow_from_the_ashes_ability = Spell_Ability(grow_from_the_ashes_effect, SingleMode(None))
 incinerating_blast_ability = Spell_Ability(incinerating_blast_effect, SingleMode([creature_target]))
+involuntary_employment_ability = Spell_Ability(involuntary_employment_effect, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

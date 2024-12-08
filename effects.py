@@ -25,6 +25,12 @@ class Ability_Grant_Effect(Effect):
         self.abilities = abilities
 
 
+class Control_Effect(Effect):
+    def __init__(self, duration, applicability_function, controller):
+        super().__init__(EffectType.CONTROL, duration, applicability_function)
+        self.controller = controller
+
+
 class Prevention_Effect(Effect):
     def __init__(self, duration, applicability_function, prevention_function):
         super().__init__(EffectType.PREVENTION, duration, applicability_function)
