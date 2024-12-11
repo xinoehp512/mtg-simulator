@@ -6,7 +6,7 @@ from agent import Agent
 from canvas import Text_Canvas
 from effects import Cost_Modification_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -735,6 +735,9 @@ class Game:
         card.is_alive = False
         exile_card = Exile_Object(card.card)
         self.exile.add_objects([exile_card])
+        event = Gravecard_Exiled_Event(card, exile_card)
+        self.check_event_for_triggers(event)
+        return event
 
     def exile_until_leaves(self, permanent_exiled, permanent_key):
         if not permanent_key.is_alive:

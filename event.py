@@ -115,6 +115,13 @@ class Permanent_Died_Event(Event):
         self.grave_card = grave_card
 
 
+class Gravecard_Exiled_Event(Event):
+    def __init__(self, grave_card, exile_card):
+        super().__init__()
+        self.grave_card = grave_card
+        self.exile_card = exile_card
+
+
 class Attack_Event(Event):
     def __init__(self, attacks):
         super().__init__()

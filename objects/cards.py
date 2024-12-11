@@ -147,3 +147,8 @@ quick_draw_katana = Card("Quick-Draw Katana", "2", [CardType.ARTIFACT, ArtifactT
 refute = Card("Refute", "1UU", [CardType.INSTANT], [refute_ability])
 rugged_highlands = Card("Rugged Highlands", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, gruul_land_ability])
 run_away_together = Card("Run Away Together", "1U", [CardType.INSTANT], [run_away_together_ability])
+sanguine_syphoner = Card("Sanguine Syphoner", "1B", [CardType.CREATURE, CreatureType.VAMPIRE,
+                         CreatureType.WARLOCK], [syphoner_attack], power=1, toughness=3)
+scoured_barrens = Card("Scoured Barrens", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, orzhov_land_ability])
+soul_shackled_zombie = Card("Soul-Shackled Zombie", "3B", [CardType.CREATURE,
+                            CreatureType.ZOMBIE], [soul_shackled_etb], power=4, toughness=2)

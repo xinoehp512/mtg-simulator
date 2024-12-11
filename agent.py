@@ -305,7 +305,7 @@ class Agent:
                     if len(legal_targets) == 0:
                         return None
                     target = self.choose_one(legal_targets, f"Choose a target: ")
-                    if target == None:
+                    if target == None:  # TODO: None needs to be a placeholder for spells with multiple optional targets
                         continue
                     target_word.append(target)
                 targets_legally_chosen = target_type.total_req_function is None or target_type.total_req_function(target_word)

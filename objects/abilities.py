@@ -5,7 +5,7 @@ from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, ObjectType, Step
-from event import Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from event import Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -280,6 +280,13 @@ def surveil(x):
     return surveil_x
 
 
+def drain_opponents_1(game, controller, source, event, modes, targets):
+    opponents = game.get_opponents(controller)
+    for opponent in opponents:
+        game.player_lose_life(opponent, 1)
+    game.player_gain_life(controller, 1)
+
+
 def weaken_draw(game, controller, source, event, modes, targets):
     target = targets[0].object
     effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, -1, 0)
@@ -394,6 +401,21 @@ def run_away_effect(game, controller, source, event, modes, targets):
     for creature in creatures:
         game.return_permanent_to_hand(creature)
 
+
+def soul_shackled_effect(game, controller, source, event, modes, targets):
+    if targets == None:
+        return
+    cards = [target.object for target in targets]
+    creature_card_exiled = False
+    for card in cards:
+        event = game.exile_from_graveyard(card)
+        if isinstance(event, Gravecard_Exiled_Event) and event.grave_card.is_creature:
+            creature_card_exiled = True
+    if creature_card_exiled:
+        for opponent in game.get_opponents(controller):
+            game.player_lose_life(opponent, 2)
+        game.player_gain_life(controller, 2)
+
 # Triggers
 
 
@@ -427,6 +449,10 @@ def morbid_end_step(game, event, object):
 
 def trigger_on_3_creatures_attack(game, event, object):
     return isinstance(event, Attack_Event) and event.num_attacking >= 3
+
+
+def trigger_on_attack(game, event, object):
+    return isinstance(event, Attack_Event) and object in event.attackers
 
 
 def trigger_on_attack_with_ferocious(game, event, object):
@@ -536,6 +562,8 @@ spell_target = TargetWord([ObjectType.STACK_OBJECT],
                           lambda g, t, p, s: t.is_spell, "target spell")
 run_away_target = TargetWord([ObjectType.PERMANENT],
                              lambda g, t, p, s: t.is_creature, "two target creatures controlled by different players", number=2, total_req_function=lambda w: w[0].object.controller != w[1].object.controller)
+soul_shackled_target = TargetWord([ObjectType.GRAVE_CARD],
+                                  lambda g, t, p, s: True, "up to two target cards from a single graveyard", number=2, total_req_function=lambda w: len(w) < 2 or w[0].object.owner == w[1].object.owner, is_optional=True)
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -607,6 +635,8 @@ infestation_sage_death = Triggered_Ability(trigger_on_death, SingleMode(None), m
 lightshell_duo_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), surveil(2))
 blight_priest_ability = Triggered_Ability(trigger_on_lifegain, SingleMode(None), blight_priest_effect)
 prideful_parent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_cat)
+syphoner_attack = Triggered_Ability(trigger_on_attack, SingleMode(None), drain_opponents_1)
+soul_shackled_etb = Triggered_Ability(trigger_on_etb, SingleMode([soul_shackled_target]), soul_shackled_effect)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -630,6 +660,8 @@ golgari_land_ability = Activated_Ability("{T}: Add {B} or {G}", Total_Cost([tap_
     None), is_mana_ability=True, mana_produced=[ManaType.BLACK, ManaType.GREEN])
 gruul_land_ability = Activated_Ability("{T}: Add {R} or {G}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.RED, ManaType.GREEN), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.RED, ManaType.GREEN])
+orzhov_land_ability = Activated_Ability("{T}: Add {W} or {B}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.WHITE, ManaType.BLACK), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLACK])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))
