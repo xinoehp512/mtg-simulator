@@ -146,3 +146,4 @@ quick_draw_katana = Card("Quick-Draw Katana", "2", [CardType.ARTIFACT, ArtifactT
                          [katana_equip_buff_1, katana_equip_buff_2, equip("2")])
 refute = Card("Refute", "1UU", [CardType.INSTANT], [refute_ability])
 rugged_highlands = Card("Rugged Highlands", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, gruul_land_ability])
+run_away_together = Card("Run Away Together", "1U", [CardType.INSTANT], [run_away_together_ability])

@@ -4,17 +4,18 @@ from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cos
 from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
-from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, Step, TargetTypeBase, TargetTypeModifier
+from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, ObjectType, Step
 from event import Attack_Event, Card_Draw_Event, Damage_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
 from modes import Mode, ModeChoice, SingleMode
 from permanent import Permanent
+from player import Player
 from replacement_effect import Replacement_Effect
 from spell_ability import Spell_Ability
 from static_ability import Static_Ability
-from target_type import TargetType
+from target_word import TargetWord
 from triggered_ability import Triggered_Ability
 
 flash = Keyword_Ability(AbilityKeyword.FLASH)
@@ -387,6 +388,12 @@ def refute_effect(game, controller, source, event, modes, targets):
     game.player_draw(controller)
     game.player_discard_x(controller, 1)
 
+
+def run_away_effect(game, controller, source, event, modes, targets):
+    creatures = [target.object for target in targets]
+    for creature in creatures:
+        game.return_permanent_to_hand(creature)
+
 # Triggers
 
 
@@ -495,26 +502,40 @@ def targets_tapped_creature(game, spell):
     return False
 
 
-damageable_target = TargetType([(TargetTypeBase.DAMAGEABLE,)])
-creature_target = TargetType([(TargetTypeBase.CREATURE,)])
-opt_gravecard_target = TargetType([(TargetTypeBase.GRAVECARD,)], True)
-creature_you_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.YOU_CONTROL)])
-creature_dont_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.DONT_CONTROL)])
-creature_opp_control_target = TargetType([(TargetTypeBase.CREATURE, TargetTypeModifier.OPP_CONTROL)])
-nl_permanent_opp_control_target = TargetType([(TargetTypeBase.NL_PERMANENT, TargetTypeModifier.OPP_CONTROL)])
-creature_planeswalker_dont_control_target = TargetType(
-    [(TargetTypeBase.CREATURE, TargetTypeModifier.DONT_CONTROL), (TargetTypeBase.PLANESWALKER, TargetTypeModifier.DONT_CONTROL)])
-broken_wings_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
-                                 (TargetTypeBase.CREATURE, TargetTypeModifier.HAS_FLYING)])
-artifact_enchanment_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,)])
-creature_planeswalker_target = TargetType([(TargetTypeBase.CREATURE,), (TargetTypeBase.PLANESWALKER,)])
-opt_two_other_creatures_you_control_target = TargetType(
-    [(TargetTypeBase.CREATURE, TargetTypeModifier.OTHER, TargetTypeModifier.YOU_CONTROL)], True, 2)
-opt_two_creature_your_gravecards = TargetType([(TargetTypeBase.CREATURE_GRAVECARD, TargetTypeModifier.YOU_CONTROL)], True, 2)
-make_your_move_target = TargetType([(TargetTypeBase.ARTIFACT,), (TargetTypeBase.ENCHANTMENT,),
-                                    (TargetTypeBase.CREATURE, TargetTypeModifier.POWER_4_PLUS)])
-opponent_target = TargetType([(TargetTypeBase.OPPONENT,)])
-spell_target = TargetType([(TargetTypeBase.SPELL,)])
+damageable_target = TargetWord([ObjectType.PERMANENT, ObjectType.PLAYER],
+                               lambda g, t, p, s: isinstance(t, Player) or (isinstance(t, Permanent) and t.is_damageable), "any target")
+creature_target = TargetWord([ObjectType.PERMANENT],
+                             lambda g, t, p, s: t.is_creature, "target creature")
+opt_gravecard_target = TargetWord([ObjectType.GRAVE_CARD],
+                                  lambda g, t, p, s: True, "up to one target card in a graveyard", is_optional=True)
+creature_you_control_target = TargetWord([ObjectType.PERMANENT],
+                                         lambda g, t, p, s: t.is_creature and t.controller == p, "target creature you control")
+creature_dont_control_target = TargetWord([ObjectType.PERMANENT],
+                                          lambda g, t, p, s: t.is_creature and t.controller != p, "target creature you don't control")
+creature_opp_control_target = TargetWord([ObjectType.PERMANENT],
+                                         lambda g, t, p, s: t.is_creature and t.controller in g.get_opponents(p), "target creature an opponent controls")
+nl_permanent_opp_control_target = TargetWord([ObjectType.PERMANENT],
+                                             lambda g, t, p, s: t.controller in g.get_opponents(p), "target nonland permanent an opponent controls")
+creature_planeswalker_dont_control_target = TargetWord([ObjectType.PERMANENT],
+                                                       lambda g, t, p, s: (t.is_creature or t.is_planeswalker) and t.controller != p, "target creature or planeswalker you don't control")
+broken_wings_target = TargetWord([ObjectType.PERMANENT],
+                                 lambda g, t, p, s: (t.is_artifact or t.is_enchantment or (t.is_creature and AbilityKeyword.FLYING in t.keywords)), "target artifact, enchantment, or creature with flying")
+artifact_enchanment_target = TargetWord([ObjectType.PERMANENT],
+                                        lambda g, t, p, s: t.is_artifact or t.is_enchantment, "target artifact or enchantment")
+creature_planeswalker_target = TargetWord([ObjectType.PERMANENT],
+                                          lambda g, t, p, s: t.is_creature or t.is_planeswalker, "target creature or planeswalker")
+opt_two_other_creatures_you_control_target = TargetWord([ObjectType.PERMANENT],
+                                                        lambda g, t, p, s: t.is_creature and t.controller == p and t != s, "up to two target creatures", number=2, is_optional=True)
+opt_two_creature_your_gravecards = TargetWord([ObjectType.GRAVE_CARD],
+                                              lambda g, t, p, s: t.owner == p, "up to two cards from your graveyard", number=2, is_optional=True)
+make_your_move_target = TargetWord([ObjectType.PERMANENT],
+                                   lambda g, t, p, s: (t.is_artifact or t.is_enchantment or (t.is_creature and t.power >= 4)), "target artifact, enchantment, or creature with power 4 or greater")
+opponent_target = TargetWord([ObjectType.PLAYER],
+                             lambda g, t, p, s: t in g.get_opponents(p), "target opponent")
+spell_target = TargetWord([ObjectType.STACK_OBJECT],
+                          lambda g, t, p, s: t.is_spell, "target spell")
+run_away_target = TargetWord([ObjectType.PERMANENT],
+                             lambda g, t, p, s: t.is_creature, "two target creatures controlled by different players", number=2, total_req_function=lambda w: w[0].object.controller != w[1].object.controller)
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -634,6 +655,7 @@ macabre_waltz_ability = Spell_Ability(macabre_waltz_effect, SingleMode([opt_two_
 make_your_move_ability = Spell_Ability(destroy_permanent, SingleMode([make_your_move_target]))
 pilfer_ability = Spell_Ability(pilfer_effect, SingleMode([opponent_target]))
 refute_ability = Spell_Ability(refute_effect, SingleMode([spell_target]))
+run_away_together_ability = Spell_Ability(run_away_effect, SingleMode([run_away_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

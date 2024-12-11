@@ -292,19 +292,23 @@ class Agent:
         targets = []
         user_display(game)
         for target_type in targets_required:
-            target_word = []
+            targets_legally_chosen = False
             target_choices = game.get_targets(player, target_type, source)
-            for i in range(target_type.number):
-                legal_targets = [t for t in target_choices if t not in target_word]
-                for target in legal_targets:
-                    if target in target_word:
-                        pass
-                if len(legal_targets) == 0:
-                    return None
-                target = self.choose_one(legal_targets, f"Choose a {target_type.name}.")
-                if target == None:
-                    continue
-                target_word.append(target)
+            while not targets_legally_chosen:
+                target_word = []
+                print(f"Choose {target_type.name}.")
+                for i in range(target_type.number):
+                    legal_targets = [t for t in target_choices if t not in target_word]
+                    for target in legal_targets:
+                        if target in target_word:
+                            pass
+                    if len(legal_targets) == 0:
+                        return None
+                    target = self.choose_one(legal_targets, f"Choose a target: ")
+                    if target == None:
+                        continue
+                    target_word.append(target)
+                targets_legally_chosen = target_type.total_req_function is None or target_type.total_req_function(target_word)
             targets.extend(target_word)
         return targets
 

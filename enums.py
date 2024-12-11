@@ -29,6 +29,13 @@ class Step(Enum):
     CLEANUP = 10
 
 
+class ObjectType(Enum):
+    PLAYER = 0
+    PERMANENT = 1
+    STACK_OBJECT = 2
+    GRAVE_CARD = 3
+
+
 class SuperType(Enum):
     BASIC = 0
 
@@ -138,28 +145,6 @@ class ModeType(Enum):
 
 class CastingInformationType(Enum):
     KICKED = 0
-
-
-class TargetTypeBase(Enum):
-    DAMAGEABLE = 0
-    CREATURE = 1
-    NL_PERMANENT = 2
-    GRAVECARD = 3
-    PLANESWALKER = 4
-    ARTIFACT = 5
-    ENCHANTMENT = 6
-    CREATURE_GRAVECARD = 7
-    OPPONENT = 8
-    SPELL = 9
-
-
-class TargetTypeModifier(Enum):
-    YOU_CONTROL = 0
-    OPP_CONTROL = 1
-    DONT_CONTROL = 2
-    HAS_FLYING = 3
-    OTHER = 4
-    POWER_4_PLUS = 5
 
 
 class ActivationRestrictionType(Enum):

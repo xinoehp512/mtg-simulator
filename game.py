@@ -436,7 +436,7 @@ class Game:
         stack_object.is_alive = False
         if stack_object.targets is not None:  # TODO: Update targeting to work properly (note to turn illegal targets to 'None')
             for target in stack_object.targets:
-                if target.is_legal():
+                if target.is_legal(self, stack_object.controller, stack_object.source):
                     break
                 else:
                     if stack_object.card is not None:

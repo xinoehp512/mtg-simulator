@@ -4,8 +4,8 @@ class Target:
         self.legality_function = legality_function
         self.object = object
 
-    def is_legal(self):
-        return self.legality_function(self.object)
+    def is_legal(self, game, player, source):
+        return self.legality_function(game, self.object, player, source)
 
     def __str__(self) -> str:
         return str(self.object)
