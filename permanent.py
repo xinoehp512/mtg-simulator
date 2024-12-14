@@ -33,6 +33,7 @@ class Permanent(Damageable_Object):
         self.toughness_modification = 0
         self.added_abilities = []
         self.modified_controller = None
+        self.additional_effects = []
 
         self.counters = {}
 

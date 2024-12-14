@@ -163,6 +163,7 @@ class EffectType(Enum):
     PREVENTION = 2
     CONTROL = 3
     COST_MODIFICATION = 4
+    BLOCK_RESTRICTION = 5
 
 
 class CounterType(Enum):

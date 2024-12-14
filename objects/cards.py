@@ -152,3 +152,4 @@ sanguine_syphoner = Card("Sanguine Syphoner", "1B", [CardType.CREATURE, Creature
 scoured_barrens = Card("Scoured Barrens", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, orzhov_land_ability])
 soul_shackled_zombie = Card("Soul-Shackled Zombie", "3B", [CardType.CREATURE,
                             CreatureType.ZOMBIE], [soul_shackled_etb], power=4, toughness=2)
+sower_of_chaos = Card("Sower of Chaos", "3R", [CardType.CREATURE, CreatureType.DEVIL], [sower_of_chaos_activated], power=4, toughness=3)

@@ -3,7 +3,7 @@ from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
-from effects import Ability_Grant_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
+from effects import Ability_Grant_Effect, Block_Restriction_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, ObjectType, Step
 from event import Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -182,6 +182,12 @@ def give_fake_death_ability(game, controller, source, event, modes, targets):
     game.create_continuous_effect(effect)
 
 
+def stun_blocks(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    effect = Block_Restriction_Effect(EffectDuration.EOT, lambda p, o: p == target)
+    game.create_continuous_effect(effect)
+
+
 def destroy_creature_and_make_food(game, controller, source, event, modes, targets):
     target = targets[0].object
     game.destroy(target)
@@ -285,6 +291,9 @@ def drain_opponents_1(game, controller, source, event, modes, targets):
     for opponent in opponents:
         game.player_lose_life(opponent, 1)
     game.player_gain_life(controller, 1)
+
+
+#
 
 
 def weaken_draw(game, controller, source, event, modes, targets):
@@ -648,6 +657,8 @@ fanatical_firebrand_sac = Activated_Ability(
     "{T}, Sacrifice this creature: It deals 1 damage to any target.", Total_Cost([tap_self, sac_self]), deal_x(1), SingleMode([damageable_target]))
 hungry_ghoul_sac = Activated_Ability("{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
                                      Total_Cost([Mana_Cost.from_string("1"), sac_other_creature]), put_counter_self, SingleMode(None))
+sower_of_chaos_activated = Activated_Ability("2R: Target creature can't block this turn.", Total_Cost(
+    [Mana_Cost.from_string("2R")]), stun_blocks, SingleMode([creature_target]))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(

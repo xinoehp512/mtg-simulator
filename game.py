@@ -4,7 +4,7 @@ from action import Action
 from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
-from effects import Cost_Modification_Effect, Prevention_Effect
+from effects import Block_Restriction_Effect, Cost_Modification_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
 from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
@@ -279,7 +279,10 @@ class Game:
                 for blocker in creature.blockers:
                     if AbilityKeyword.FLYING not in blocker.keywords and AbilityKeyword.REACH not in blocker.keywords:
                         return False
-
+            for blocker in creature.blockers:
+                for effect in blocker.additional_effects:
+                    if isinstance(effect, Block_Restriction_Effect):
+                        return False
         return True
 
     def is_combat_damage_legally_assigned(self, creature):
@@ -532,6 +535,7 @@ class Game:
             permanent.added_abilities = []
             controller_storage[permanent.id] = permanent.controller
             permanent.modified_controller = None
+            permanent.additional_effects = []
 
         for effect in self.effects:  # TODO: Layers, layers layers!
             if effect.duration == EffectDuration.YOUR_TURN and effect.object.controller != self.active_player:
@@ -552,6 +556,10 @@ class Game:
                 for permanent in self.get_permanents():
                     if effect.applies_to(permanent):
                         permanent.modified_controller = effect.controller
+            if effect.type == EffectType.BLOCK_RESTRICTION:
+                for permanent in self.get_permanents():
+                    if effect.applies_to(permanent):
+                        permanent.additional_effects.append(effect)
         for permanent in self.get_permanents():
             if CounterType.P1P1 in permanent.counters:
                 permanent.power_modification += permanent.counters[CounterType.P1P1]
@@ -1098,7 +1106,7 @@ class Game:
         self.apply_effects()
 
     def create_continuous_effect(self, effect):
-        self.effects.append(effect)
+        self.floating_effects.append(effect)
         self.apply_effects()
 
     # Direct Gamestate Editing functions

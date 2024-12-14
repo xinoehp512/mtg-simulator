@@ -45,3 +45,8 @@ class Cost_Modification_Effect(Effect):
         super().__init__(EffectType.COST_MODIFICATION, duration, applicability_function)
         self.cost = cost
         self.is_reduction = is_reduction
+
+
+class Block_Restriction_Effect(Effect):
+    def __init__(self, duration, applicability_function):
+        super().__init__(EffectType.BLOCK_RESTRICTION, duration, applicability_function)
