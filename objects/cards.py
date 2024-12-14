@@ -156,3 +156,7 @@ sower_of_chaos = Card("Sower of Chaos", "3R", [CardType.CREATURE, CreatureType.D
 spitfire_lagac = Card("Spitfire Lagac", "3R", [CardType.CREATURE, CreatureType.LIZARD], [spitfire_landfall], power=3, toughness=4)
 squad_rallier = Card("Squad Rallier", "3W", [CardType.CREATURE, CreatureType.HUMAN,
                      CreatureType.SCOUT], [squad_rallier_activated], power=3, toughness=4)
+stab = Card("Stab", "B", [CardType.INSTANT], [stab_ability])
+strix_lookout = Card("Strix Lookout", "1U", [CardType.CREATURE, CreatureType.BIRD], [flying, vigilance, strix_loot], power=1, toughness=2)
+sure_strike = Card("Sure Strike", "1R", [CardType.INSTANT], [sure_strike_ability])
+swiftwater_cliffs = Card("Swiftwater Cliffs", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, izzet_land_ability])

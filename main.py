@@ -18,10 +18,11 @@ player1 = game.players[0]
 player2 = game.players[1]
 player1.starting_hand_size = 0
 player2.starting_hand_size = 0
-game.add_cards(player1, [])
+game.add_cards(player1, [cards.sure_strike.copy()])
 game.add_cards(player2, [cards.forest.copy()])
-game.add_permanents(player1, [cards.treasure.copy() for i in range(6)]+[cards.squad_rallier.copy()])
-game.add_permanents(player2, [cards.island.copy() for i in range(3)]+[cards.apothecary_stomper.copy(), cards.beast_kin_ranger.copy()])
+game.add_permanents(player1, [cards.treasure.copy() for i in range(6)]+[cards.sanguine_syphoner.copy()])
+game.add_permanents(player2, [cards.island.copy() for i in range(3)]+[cards.apothecary_stomper.copy(),
+                    cards.soul_shackled_zombie.copy(), cards.infestation_sage.copy()])
 game.add_to_library(player1, [cards.forest.copy(), cards.blossoming_sands.copy(),
                     cards.sanguine_syphoner.copy(), cards.prideful_parent.copy(), cards.soul_shackled_zombie.copy()])
 game.add_to_library(player2, [cards.mountain.copy(), cards.forest.copy(),

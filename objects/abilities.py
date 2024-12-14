@@ -102,6 +102,14 @@ def grow_3(game, controller, source, event, modes, targets):
     game.create_continuous_effect(effect)
 
 
+def shrink_x(x):
+    def shrink(game, controller, source, event, modes, targets):
+        target = targets[0].object
+        effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, -x, -x)
+        game.create_continuous_effect(effect)
+    return shrink
+
+
 def make_2_tokens(game, controller, source, event, modes, targets):
     token = Creature_Token("Elemental Token", None, [CardType.CREATURE], [], 1, 1, color_indicator=[Color.RED, Color.BLUE])
     game.create_token(controller, token.copy())
@@ -429,6 +437,14 @@ def soul_shackled_effect(game, controller, source, event, modes, targets):
 def squad_rallier_effect(game, controller, source, event, modes, targets):
     game.player_seek_to_hand(controller, 4, lambda c: c.is_creature and c.power <= 2)
 
+
+def sure_strike_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    effect = PT_Effect(EffectDuration.EOT, lambda p, o: p == target, 3, 0)
+    ability_effect = Ability_Grant_Effect(EffectDuration.EOT, lambda p, o: p == target, [first_strike])
+    game.create_continuous_effect(effect)
+    game.create_continuous_effect(ability_effect)
+
 # Triggers
 
 
@@ -666,6 +682,7 @@ sower_of_chaos_activated = Activated_Ability("{2R}: Target creature can't block 
     [Mana_Cost.from_string("2R")]), stun_blocks, SingleMode([creature_target]))
 squad_rallier_activated = Activated_Ability("{2W}: Seek 4 for a creature card with power 2 or less.", Total_Cost([
                                             Mana_Cost.from_string("2W")]), squad_rallier_effect, SingleMode(None))
+strix_loot = Activated_Ability("{1U}{T}: Loot.", Total_Cost([Mana_Cost.from_string("1U"), tap_self]), loot, SingleMode(None))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
@@ -680,6 +697,8 @@ gruul_land_ability = Activated_Ability("{T}: Add {R} or {G}", Total_Cost([tap_se
     None), is_mana_ability=True, mana_produced=[ManaType.RED, ManaType.GREEN])
 orzhov_land_ability = Activated_Ability("{T}: Add {W} or {B}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.WHITE, ManaType.BLACK), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLACK])
+izzet_land_ability = Activated_Ability("{T}: Add {U} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLUE, ManaType.RED), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.RED])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))
@@ -706,6 +725,8 @@ make_your_move_ability = Spell_Ability(destroy_permanent, SingleMode([make_your_
 pilfer_ability = Spell_Ability(pilfer_effect, SingleMode([opponent_target]))
 refute_ability = Spell_Ability(refute_effect, SingleMode([spell_target]))
 run_away_together_ability = Spell_Ability(run_away_effect, SingleMode([run_away_target]))
+stab_ability = Spell_Ability(shrink_x(2), SingleMode([creature_target]))
+sure_strike_ability = Spell_Ability(sure_strike_effect, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
