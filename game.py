@@ -1,4 +1,5 @@
 
+import random
 from ability_stack_object import Ability_Stack_Object
 from action import Action
 from cost import Total_Cost
@@ -783,6 +784,10 @@ class Game:
         player.library.remove(card)
         self.put_in_graveyard(player, card)
 
+    def library_to_hand(self, player, card):
+        player.library.remove(card)
+        card.owner.hand.add_objects([Hand_Object(card)])
+
     def untap(self, permanent):
         permanent.tapped = False
 
@@ -866,6 +871,18 @@ class Game:
             return []
         seen_cards = player.library.objects[-amount:]
         return seen_cards
+
+    def player_seek_to_hand(self, player, amount, conditional):
+        cards = self.player_look_at_top_x(player, amount)
+        choosable_cards = [card for card in cards if conditional(card)]
+        card = player.agent.choose_one(choosable_cards+[None])
+        if card is not None:
+            self.library_to_hand(player, card)
+            choosable_cards.remove(card)
+        for card in choosable_cards:
+            player.library.remove(card)
+        random.shuffle(choosable_cards)
+        player.library.add_objects_to_bottom(choosable_cards)
 
     def player_surveil(self, player, amount):
         cards = self.player_look_at_top_x(player, amount)

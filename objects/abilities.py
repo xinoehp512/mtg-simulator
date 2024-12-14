@@ -425,6 +425,10 @@ def soul_shackled_effect(game, controller, source, event, modes, targets):
             game.player_lose_life(opponent, 2)
         game.player_gain_life(controller, 2)
 
+
+def squad_rallier_effect(game, controller, source, event, modes, targets):
+    game.player_seek_to_hand(controller, 4, lambda c: c.is_creature and c.power <= 2)
+
 # Triggers
 
 
@@ -646,6 +650,7 @@ blight_priest_ability = Triggered_Ability(trigger_on_lifegain, SingleMode(None),
 prideful_parent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_cat)
 syphoner_attack = Triggered_Ability(trigger_on_attack, SingleMode(None), drain_opponents_1)
 soul_shackled_etb = Triggered_Ability(trigger_on_etb, SingleMode([soul_shackled_target]), soul_shackled_effect)
+spitfire_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), deal_1_to_opponents)
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -657,8 +662,10 @@ fanatical_firebrand_sac = Activated_Ability(
     "{T}, Sacrifice this creature: It deals 1 damage to any target.", Total_Cost([tap_self, sac_self]), deal_x(1), SingleMode([damageable_target]))
 hungry_ghoul_sac = Activated_Ability("{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
                                      Total_Cost([Mana_Cost.from_string("1"), sac_other_creature]), put_counter_self, SingleMode(None))
-sower_of_chaos_activated = Activated_Ability("2R: Target creature can't block this turn.", Total_Cost(
+sower_of_chaos_activated = Activated_Ability("{2R}: Target creature can't block this turn.", Total_Cost(
     [Mana_Cost.from_string("2R")]), stun_blocks, SingleMode([creature_target]))
+squad_rallier_activated = Activated_Ability("{2W}: Seek 4 for a creature card with power 2 or less.", Total_Cost([
+                                            Mana_Cost.from_string("2W")]), squad_rallier_effect, SingleMode(None))
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(

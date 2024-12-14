@@ -153,3 +153,6 @@ scoured_barrens = Card("Scoured Barrens", None, [CardType.LAND], [enters_tapped_
 soul_shackled_zombie = Card("Soul-Shackled Zombie", "3B", [CardType.CREATURE,
                             CreatureType.ZOMBIE], [soul_shackled_etb], power=4, toughness=2)
 sower_of_chaos = Card("Sower of Chaos", "3R", [CardType.CREATURE, CreatureType.DEVIL], [sower_of_chaos_activated], power=4, toughness=3)
+spitfire_lagac = Card("Spitfire Lagac", "3R", [CardType.CREATURE, CreatureType.LIZARD], [spitfire_landfall], power=3, toughness=4)
+squad_rallier = Card("Squad Rallier", "3W", [CardType.CREATURE, CreatureType.HUMAN,
+                     CreatureType.SCOUT], [squad_rallier_activated], power=3, toughness=4)

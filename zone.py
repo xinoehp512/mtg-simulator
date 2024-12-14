@@ -24,6 +24,9 @@ class Zone:
     def add_objects(self, objects):
         self._objects.extend(objects)
 
+    def add_objects_to_bottom(self, objects):
+        self._objects = objects+self._objects
+
     def shuffle(self):
         random.shuffle(self._objects)
 
