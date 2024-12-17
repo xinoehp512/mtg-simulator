@@ -1,11 +1,11 @@
 from action import Action
 from activated_ability import Activated_Ability
-from cost import Additional_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
+from cost import Additional_Cost, Alternative_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Block_Restriction_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
-from enums import AbilityKeyword, ActivationRestrictionType, AdditionalCostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, ObjectType, Step
-from event import Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Step_Begin_Event, Targeting_Event
+from enums import AbilityKeyword, ActivationRestrictionType, CostType, ArtifactType, CardType, CastingInformationType, Color, CounterType, CreatureType, EffectDuration, ManaCost, ManaType, ModeType, ObjectType, Step, ZoneType
+from event import Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Tapped_Event, Spellcast_Event, Stack_Died_Event, Stack_Exiled_Event, Step_Begin_Event, Targeting_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from keyword_ability import Keyword_Ability
 from mana import Mana
@@ -250,7 +250,7 @@ def opponents_discard(game, controller, source, event, modes, targets):
 
 def deal_2_kicked_4(game, controller, source, event, modes, targets):
     target = targets[0].object
-    was_kicked = AdditionalCostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
+    was_kicked = CostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
     if was_kicked:
         game.deal_damage(target, source, 4)
     else:
@@ -342,7 +342,7 @@ def goblin_surprise_effect(game, controller, source, event, modes, targets):
 
 
 def grow_from_the_ashes_effect(game, controller, source, event, modes, targets):
-    was_kicked = AdditionalCostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
+    was_kicked = CostType.KICKED in [cost.type for cost in modes[ModeType.COSTS_PAID]]
     if was_kicked:
         game.player_tutor_to_battlefield(controller, lambda c: c.is_land and c.is_basic, amount=2)
     else:
@@ -518,24 +518,37 @@ def replace_enters_if_raid(event, object):
     return isinstance(event, Permanent_Enter_Event) and event.permanent == object and event.permanent.controller.attacked_this_turn
 
 
-def enters_tapped(event):
+def replace_leave_stack(event, object):
+    # TODO: fix to catch all zone transitions. consider moving flashbacking logic here
+    return isinstance(event, Stack_Died_Event) and event.stack_object == object
+
+
+def enters_tapped(event, object):
     new_event = event.copy()
     new_event.permanent.tapped = True
     return new_event
 
 
 def enters_counters(x):
-    def _(event):
+    def _(event, object):
         new_event = event.copy()
         new_event.permanent.add_counters(CounterType.P1P1, x)  # TODO: This modifies the event to include putting counters.
         return new_event
     return _
 
 
-def prevent_damage(event):
+def prevent_damage(event, object):
     new_event = event.copy()
     new_event.prevented = True
     return new_event
+
+
+def flashback_to_exile(event, object):
+    was_flashedback = CostType.FLASHBACK in [cost.type for cost in object.modes[ModeType.COSTS_PAID]]
+    if was_flashedback:
+        new_event = Stack_Exiled_Event(event.stack_object)
+        return new_event
+    return event
 
 # Conditionals
 
@@ -611,7 +624,7 @@ forest_ability = Activated_Ability("{T}: Add {G}", Total_Cost([tap_self]),
 
 
 def kicker(x):
-    return Additional_Cost([Total_Cost([Mana_Cost.from_string(x)], type=AdditionalCostType.KICKED), None])
+    return Additional_Cost([Total_Cost([Mana_Cost.from_string(x)], type=CostType.KICKED), None])
 
 
 def ward(x):
@@ -627,6 +640,13 @@ def ward(x):
 
 def equip(x):
     return Activated_Ability(f"Equip {x}", Total_Cost([Mana_Cost.from_string(x)]), attach, SingleMode([creature_you_control_target]), activation_restrictions=[ActivationRestrictionType.SORCERY])
+
+
+def flashback(x):
+    # TODO: Flashback only works for instants and sorceries.
+    flashback_cost = Alternative_Cost(Total_Cost([Mana_Cost.from_string(x)], type=CostType.FLASHBACK), [ZoneType.GRAVEYARD])
+    flashback_exile = Replacement_Effect(replace_leave_stack, flashback_to_exile, functions_in=[ZoneType.STACK])
+    return [flashback_cost, flashback_exile]
 
 
 prowess = Triggered_Ability(trigger_on_noncreature_cast, SingleMode(None), pump_self_pxpy(1, 1))
@@ -727,6 +747,7 @@ refute_ability = Spell_Ability(refute_effect, SingleMode([spell_target]))
 run_away_together_ability = Spell_Ability(run_away_effect, SingleMode([run_away_target]))
 stab_ability = Spell_Ability(shrink_x(2), SingleMode([creature_target]))
 sure_strike_ability = Spell_Ability(sure_strike_effect, SingleMode([creature_target]))
+think_twice_ability = Spell_Ability(draw_card, SingleMode(None))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

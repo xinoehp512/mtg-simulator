@@ -1,3 +1,4 @@
+from cost import Alternative_Cost
 from cost_modification import Cost_Modification
 from targetable_object import Targetable_Object
 
@@ -6,6 +7,8 @@ class Card_Object(Targetable_Object):
     def __init__(self, card) -> None:
         super().__init__()
         self.card = card
+        for ability in self.card.abilities:
+            ability.object = self
     # Properties
 
     @property
@@ -67,6 +70,10 @@ class Card_Object(Targetable_Object):
             if isinstance(ability, Cost_Modification):
                 abilities.append(ability)
         return abilities
+
+    @property
+    def alternative_costs(self):
+        return [ability for ability in self.card.abilities if isinstance(ability, Alternative_Cost)]
 
     @property
     def is_token(self):

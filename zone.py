@@ -33,6 +33,10 @@ class Zone:
     def pop(self):
         return self._objects.pop()
 
+    @property
+    def top(self):
+        return self._objects[-1]
+
     def remove(self, object):
         self._objects.remove(object)
 

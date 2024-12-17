@@ -1,7 +1,16 @@
+from collections.abc import Iterable
 from activated_ability import Activated_Ability
 from cost import Additional_Cost, Mana_Cost
 from enums import CardType, ColorVis, SuperType, color_to_vis, cost_to_colors, AbilityKeyword
 from keyword_ability import Keyword_Ability
+
+
+def flatten(xs):
+    for x in xs:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        else:
+            yield x
 
 
 class Card:
@@ -11,7 +20,7 @@ class Card:
         self.cost = Mana_Cost.from_string(cost) if isinstance(cost, str) else cost
         self.color_indicator = color_indicator
         self.types = types
-        self.abilities = abilities
+        self.abilities = list(flatten(abilities))
         self.power = power
         self.toughness = toughness
         self.text = text

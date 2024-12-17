@@ -1,4 +1,5 @@
-from enums import AdditionalCostType, CastingInformationType, ModeType
+from enums import CostType, CastingInformationType, ModeType
+from replacement_effect import Replacement_Effect
 from targetable_object import Targetable_Object
 
 
@@ -14,6 +15,9 @@ class Ability_Stack_Object(Targetable_Object):
         self.targets = targets
         self.modes = modes
         self.card = card
+        if self.card is not None:
+            for ability in self.card.abilities:
+                ability.object = self
 
     @property
     def is_token(self):
@@ -40,6 +44,14 @@ class Ability_Stack_Object(Targetable_Object):
         return self.card is not None and self.card.is_sorcery
 
     @property
+    def abilities(self):
+        return self.card.abilities if self.card is not None else []
+
+    @property
+    def replacement_effects(self):
+        return [ability for ability in self.abilities if isinstance(ability, Replacement_Effect)]
+
+    @property
     def keywords(self):
         return []
 
@@ -52,6 +64,6 @@ class Ability_Stack_Object(Targetable_Object):
 
     @property
     def casting_information(self):
-        was_kicked = AdditionalCostType.KICKED in [cost.type for cost in self.modes[ModeType.COSTS_PAID]]
+        was_kicked = CostType.KICKED in [cost.type for cost in self.modes[ModeType.COSTS_PAID]]
         information = {CastingInformationType.KICKED: was_kicked}
         return information

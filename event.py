@@ -1,4 +1,5 @@
 from enums import AbilityKeyword
+from exile_object import Exile_Object
 from permanent import Permanent
 
 
@@ -90,7 +91,7 @@ class Mana_Ability_Event(Event):
 class Permanent_Enter_Event(Event):
     def __init__(self, game, permanent):
         super().__init__()
-        self.game = game
+        self.game = game  # TODO: remove game
         self.permanent = permanent
 
     def execute(self, game):
@@ -120,6 +121,39 @@ class Gravecard_Exiled_Event(Event):
         super().__init__()
         self.grave_card = grave_card
         self.exile_card = exile_card
+
+
+class Stack_Died_Event(Event):
+    def __init__(self, stack_object):  # TODO: Yup... refactor zone changes. Just refactor the whole event system >.<
+        super().__init__()
+        self.stack_object = stack_object
+
+    def execute(self, game):
+        game.stack.remove(self.stack_object)
+        self.stack_object.is_alive = False
+        if self.stack_object.card is not None:
+            game.put_in_graveyard(self.stack_object.card.owner, self.stack_object.card)
+        self.occurred = True
+
+    def copy(self):
+        return Stack_Died_Event(self.stack_object)
+
+
+class Stack_Exiled_Event(Event):
+    def __init__(self, stack_object):  # TODO: Yup... refactor zone changes. Just refactor the whole event system >.<
+        super().__init__()
+        self.stack_object = stack_object
+
+    def execute(self, game):
+        game.stack.remove(self.stack_object)
+        self.stack_object.is_alive = False
+        if self.stack_object.card is not None:
+            exile_card = Exile_Object(self.stack_object.card)
+            game.exile.add_objects([exile_card])
+        self.occurred = True
+
+    def copy(self):
+        return Stack_Exiled_Event(self.stack_object)
 
 
 class Attack_Event(Event):

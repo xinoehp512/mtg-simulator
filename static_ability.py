@@ -1,7 +1,11 @@
+from enums import ZoneType
+
+
 class Static_Ability:
-    def __init__(self, effect):
+    def __init__(self, effect, functions_in=[ZoneType.BATTLEFIELD]):
         self.effect = effect
         self._object = None
+        self.functions_in = functions_in
 
     @property
     def object(self):
@@ -13,4 +17,4 @@ class Static_Ability:
         self.effect.object = object
 
     def copy(self):
-        return Static_Ability(self.effect)
+        return Static_Ability(self.effect, functions_in=self.functions_in)

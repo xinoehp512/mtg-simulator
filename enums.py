@@ -7,6 +7,15 @@ class Privacy(Enum):
     HIDDEN = 2
 
 
+class ZoneType(Enum):
+    BATTLEFIELD = 0
+    STACK = 1
+    EXILE = 2
+    GRAVEYARD = 3
+    HAND = 4
+    LIBRARY = 5
+
+
 class Phase(Enum):
     NONE = -1
     BEGINNING = 0
@@ -134,8 +143,9 @@ class AbilityKeyword(Enum):
     DOUBLE_STRIKE = 11
 
 
-class AdditionalCostType(Enum):
+class CostType(Enum):
     KICKED = 0
+    FLASHBACK = 1
 
 
 class ModeType(Enum):

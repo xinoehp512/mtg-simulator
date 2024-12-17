@@ -132,7 +132,7 @@ class Permanent(Damageable_Object):
         return abilities
 
     @property
-    def triggered_abilities(self):
+    def triggered_abilities(self):  # TODO: make these functions work like the bottom two
         abilities = []
         for ability in self.abilities:
             if isinstance(ability, Triggered_Ability):

@@ -1,4 +1,4 @@
-from enums import AdditionalCostType, ManaCost
+from enums import CostType, ManaCost, ZoneType
 
 
 class Mana_Cost:
@@ -44,7 +44,7 @@ class Tap_Cost:
 
 class Total_Cost:
     def __init__(self, costs, type=None):
-        self.costs = costs
+        self.costs = costs  # TODO: Combine mana costs into one
         self.type = type
         self.object = None
 
@@ -82,8 +82,19 @@ class Total_Cost:
 
 
 class Additional_Cost:
-    def __init__(self, cost_options):
+    def __init__(self, cost_options, functions_in=[ZoneType.STACK]):
         self.cost_options = cost_options
+        self.functions_in = functions_in
 
     def copy(self):
-        return Additional_Cost(self.cost_options)
+        return Additional_Cost(self.cost_options, functions_in=self.functions_in)
+
+
+class Alternative_Cost:
+    def __init__(self, cost, zones, functions_in=[ZoneType.STACK]):
+        self.cost = cost
+        self.zones = zones
+        self.functions_in = functions_in
+
+    def copy(self):
+        return Alternative_Cost(self.cost, self.zones, functions_in=self.functions_in)

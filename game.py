@@ -7,7 +7,7 @@ from agent import Agent
 from canvas import Text_Canvas
 from effects import Block_Restriction_Effect, Cost_Modification_Effect, Prevention_Effect
 from enums import AbilityKeyword, ActivationRestrictionType, CounterType, EffectDuration, EffectType, ModeType, Phase, Privacy, StackObjectType, Step
-from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Step_Begin_Event, Trigger_Stack_Event
+from event import Ability_Activate_Begin_Marker, Ability_Activate_End_Marker, Activation_Event, Attack_Event, Card_Draw_Event, Damage_Event, Gravecard_Exiled_Event, Lifegain_Event, Mana_Ability_Event, Mana_Produced_Event, Permanent_Died_Event, Permanent_Enter_Event, Permanent_Exiled_Event, Spellcast_Begin_Marker, Spellcast_End_Marker, Spellcast_Event, Stack_Died_Event, Step_Begin_Event, Trigger_Stack_Event
 from exceptions import IllegalActionException, UnpayableCostException
 from exile_object import Exile_Object
 from graveyard_object import Graveyard_Object
@@ -133,6 +133,12 @@ class Game:
 
             return _
 
+        def create_alternate_spellcast_action(spell_card):
+            def _():
+                return self.player_cast_spell(player, spell_card, is_alternative=True)
+
+            return _
+
         if self.player_can_make_land_drop(player):
             for card in player.hand.get_by_criteria(lambda x: x.is_land):
                 actions.append(Action(
@@ -144,9 +150,15 @@ class Game:
             for card in player.hand.get_by_criteria(lambda x: x.is_spell and not (x.is_instant_speed)):
                 actions.append(
                     Action(descriptor=f"Cast: {card.name}", action=create_spellcast_action(card)))
+            for card in player.graveyard.get_by_criteria(lambda x: x.can_cast and not (x.is_instant_speed)):
+                actions.append(
+                    Action(descriptor=f"Cast: {card.name}", action=create_alternate_spellcast_action(card)))  # TODO: Correctly identify alternative costs
         for card in player.hand.get_by_criteria(lambda x: x.is_spell and x.is_instant_speed):
             actions.append(
                 Action(descriptor=f"Cast: {card.name}", action=create_spellcast_action(card)))
+        for card in player.graveyard.get_by_criteria(lambda x: x.can_cast and x.is_instant_speed):
+            actions.append(
+                Action(descriptor=f"Cast: {card.name}", action=create_alternate_spellcast_action(card)))
         return actions
 
     def get_permanents(self):
@@ -434,26 +446,25 @@ class Game:
                     num_players_passing += 1
             if self.stack.is_empty():
                 return
-            self.resolve_stack_object(self.stack.pop())  # TODO: Objects don't leave the stack until they've resolved.
+            self.resolve_stack_object(self.stack.top)  # TODO: Objects don't leave the stack until they've resolved.
 
     def resolve_stack_object(self, stack_object):
-        stack_object.is_alive = False
         if stack_object.targets is not None:  # TODO: Update targeting to work properly (note to turn illegal targets to 'None')
             for target in stack_object.targets:
                 if target.is_legal(self, stack_object.controller, stack_object.source):
                     break
                 else:
-                    if stack_object.card is not None:
-                        self.put_in_graveyard(stack_object.card.owner, stack_object.card)
+                    self.stack_to_graveyard(stack_object)
                     return
         # Note: a copy of a permanent spell becomes a token as it resolves.
         if stack_object.is_permanent_spell:
+            self.stack.remove(self.stack_object)
+            self.stack_object.is_alive = False
             self.create_battlefield_object(stack_object.controller, stack_object.card, casting_information=stack_object.casting_information)
         else:
             stack_object.effect_function(
                 self, stack_object.controller, stack_object.source, stack_object.event, stack_object.modes, stack_object.targets)
-            if stack_object.card is not None:
-                self.put_in_graveyard(stack_object.card.owner, stack_object.card)
+            self.stack_to_graveyard(stack_object)
         self.apply_effects()
 
     def check_state_based_actions_and_triggered_abilities(self):
@@ -774,11 +785,16 @@ class Game:
         card.is_alive = False
         card.owner.hand.add_objects([Hand_Object(card.card)])
 
+    def stack_to_graveyard(self, stack_object):
+        event = Stack_Died_Event(stack_object)
+        for effect in stack_object.replacement_effects:  # TODO: Fix replacement effects
+            if effect.replaces(event):
+                event = effect.replace(event)
+        event.execute(self)
+        self.check_event_for_triggers(event)
+
     def counter_stack_object(self, stack_object):
-        self.stack.remove(stack_object)
-        stack_object.is_alive = False
-        if stack_object.card is not None:
-            self.put_in_graveyard(stack_object.card.owner, stack_object.card)
+        self.stack_to_graveyard(stack_object)
 
     def library_to_graveyard(self, player, card):
         player.library.remove(card)
@@ -949,15 +965,22 @@ class Game:
 
         return True
 
-    def player_cast_spell(self, player, spell):
+    def player_cast_spell(self, player, spell, is_alternative=False):
         self.backup_manager.add_event(Spellcast_Begin_Marker(player, spell))
-        if spell not in player.hand.objects:
-            raise Exception("Player does not have that spell in hand.")
-        player.hand.remove(spell)
+        if isinstance(spell, Hand_Object):
+            if spell not in player.hand.objects:
+                raise Exception("Player does not have that spell in hand.")
+            player.hand.remove(spell)
+        if isinstance(spell, Graveyard_Object):
+            if spell not in player.graveyard.objects:
+                raise Exception("Player does not have that spell in graveyard.")
+            player.graveyard.remove(spell)  # TODO: Event
         additional_costs = spell.additional_costs
         cost_increase = Total_Cost([])
         cost_reduction = Total_Cost([])
         costs_paid = []
+        if is_alternative:
+            costs_paid.append(spell.alternative_costs[0].cost)
         modes = []  # TODO: Refactor out mode choice and target choice.
         targets = None
         if len(additional_costs) > 0:
@@ -1001,7 +1024,8 @@ class Game:
                 else:
                     cost_increase += cost_modification.cost
 
-        cost = Total_Cost([spell.cost])+cost_increase
+        cost = Total_Cost([spell.cost]) if not is_alternative else spell.alternative_costs[0].cost  # TODO: Fix alternative costs
+        cost += cost_increase
         cost.reduce_by(cost_reduction)
         try:
             if not self.player_pay_cost(player, cost):
