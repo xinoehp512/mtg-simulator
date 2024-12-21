@@ -44,6 +44,10 @@ class Card_Object(Targetable_Object):
         return self.card.is_instant
 
     @property
+    def is_sorcery(self):
+        return self.card.is_sorcery
+
+    @property
     def is_instant_speed(self):
         return self.card.is_instant_speed
 

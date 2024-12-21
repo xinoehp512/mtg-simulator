@@ -163,3 +163,5 @@ swiftwater_cliffs = Card("Swiftwater Cliffs", None, [CardType.LAND], [enters_tap
 think_twice = Card("Think Twice", "1U", [CardType.INSTANT], [think_twice_ability, flashback("2U")])
 thornwood_falls = Card("Thornwood Falls", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, simic_land_ability])
 thrill_of_possibility = Card("Thrill of Possibility", "1R", [CardType.INSTANT], [thrill_ability, thrill_extra_cost])
+tolarian_terror = Card("Tolarian Terror", "6U", [CardType.CREATURE, CreatureType.SERPENT],
+                       [tolarian_cost_reduction, ward("2")], power=5, toughness=5)

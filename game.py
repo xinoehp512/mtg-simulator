@@ -458,8 +458,8 @@ class Game:
                     return
         # Note: a copy of a permanent spell becomes a token as it resolves.
         if stack_object.is_permanent_spell:
-            self.stack.remove(self.stack_object)
-            self.stack_object.is_alive = False
+            self.stack.remove(stack_object)
+            stack_object.is_alive = False
             self.create_battlefield_object(stack_object.controller, stack_object.card, casting_information=stack_object.casting_information)
         else:
             stack_object.effect_function(
@@ -1012,11 +1012,11 @@ class Game:
         spell_object.source = spell_object
 
         for cost_modification in spell.cost_modifications:
-            if cost_modification.conditional(self, spell_object):
-                if cost_modification.is_reduction:
-                    cost_reduction += cost_modification.cost
-                else:
-                    cost_increase += cost_modification.cost
+            modification = cost_modification.calc_function(self, spell_object)
+            if cost_modification.is_reduction:
+                cost_reduction += modification
+            else:
+                cost_increase += modification
         for cost_modification in self.get_cost_modification_effects():  # TODO: Combine these
             if cost_modification.applicability_function(spell_object):
                 if cost_modification.is_reduction:

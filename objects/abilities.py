@@ -1,3 +1,4 @@
+from ability_stack_object import Ability_Stack_Object
 from action import Action
 from activated_ability import Activated_Ability
 from cost import Additional_Cost, Alternative_Cost, Discard_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
@@ -570,11 +571,19 @@ def attacked_this_turn(game, event, object):
 # Spell conditionals
 
 
-def targets_tapped_creature(game, spell):
+def luminous_cost_calculation(game, spell):
     for target in spell.targets:
         if isinstance(target.object, Permanent) and target.object.is_creature and target.object.tapped == True:
-            return True
-    return False
+            return Total_Cost([Mana_Cost.from_string("3")])
+    return Total_Cost([])
+
+
+def tolarian_cost_calculation(game, spell):
+    instants_sorceries_in_grave = 0
+    for card in spell.controller.graveyard.objects:
+        if card.is_instant or card.is_sorcery:
+            instants_sorceries_in_grave += 1
+    return Total_Cost([Mana_Cost.from_string(str(instants_sorceries_in_grave))])
 
 
 damageable_target = TargetWord([ObjectType.PERMANENT, ObjectType.PLAYER],
@@ -778,4 +787,6 @@ katana_equip_buff_1 = Static_Ability(PT_Effect(EffectDuration.YOUR_TURN, lambda 
                                      o: o.attached_permanent == p, 2, 0))  # TODO: Combine these effects into one
 katana_equip_buff_2 = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: o.attached_permanent == p, [first_strike]))
 
-luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)
+# luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)
+luminous_cost_reduction = Cost_Modification(luminous_cost_calculation, True)
+tolarian_cost_reduction = Cost_Modification(tolarian_cost_calculation, True)
