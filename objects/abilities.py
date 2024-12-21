@@ -1,6 +1,6 @@
 from action import Action
 from activated_ability import Activated_Ability
-from cost import Additional_Cost, Alternative_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
+from cost import Additional_Cost, Alternative_Cost, Discard_Cost, Mana_Cost, Sacrifice_Cost, Tap_Cost, Total_Cost
 from card import Artifact_Token, Creature_Token
 from cost_modification import Cost_Modification
 from effects import Ability_Grant_Effect, Block_Restriction_Effect, Control_Effect, Cost_Modification_Effect, PT_Effect, Prevention_Effect
@@ -281,6 +281,13 @@ def tutor_tapped_basic(game, controller, source, event, modes, targets):
 
 def draw_card(game, controller, source, event, modes, targets):
     game.player_draw(controller)
+
+
+def draw_x(x):
+    def draw(game, controller, source, event, modes, targets):
+        for i in range(x):
+            game.player_draw(controller)
+    return draw
 
 
 def loot(game, controller, source, event, modes, targets):
@@ -719,6 +726,8 @@ orzhov_land_ability = Activated_Ability("{T}: Add {W} or {B}", Total_Cost([tap_s
     None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLACK])
 izzet_land_ability = Activated_Ability("{T}: Add {U} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLUE, ManaType.RED), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.RED])
+simic_land_ability = Activated_Ability("{T}: Add {G} or {U}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.GREEN, ManaType.BLUE), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.BLUE])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))
@@ -748,9 +757,11 @@ run_away_together_ability = Spell_Ability(run_away_effect, SingleMode([run_away_
 stab_ability = Spell_Ability(shrink_x(2), SingleMode([creature_target]))
 sure_strike_ability = Spell_Ability(sure_strike_effect, SingleMode([creature_target]))
 think_twice_ability = Spell_Ability(draw_card, SingleMode(None))
+thrill_ability = Spell_Ability(draw_x(2), SingleMode(None))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])
+thrill_extra_cost = Additional_Cost([Total_Cost([Discard_Cost(lambda c: True, name="Discard a Card")])])
 
 gnarlid_kicked_enters = Replacement_Effect(replace_enters_if_kicked, enters_counters(2))
 goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_counters(1))

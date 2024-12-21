@@ -161,3 +161,5 @@ strix_lookout = Card("Strix Lookout", "1U", [CardType.CREATURE, CreatureType.BIR
 sure_strike = Card("Sure Strike", "1R", [CardType.INSTANT], [sure_strike_ability])
 swiftwater_cliffs = Card("Swiftwater Cliffs", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, izzet_land_ability])
 think_twice = Card("Think Twice", "1U", [CardType.INSTANT], [think_twice_ability, flashback("2U")])
+thornwood_falls = Card("Thornwood Falls", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, simic_land_ability])
+thrill_of_possibility = Card("Thrill of Possibility", "1R", [CardType.INSTANT], [thrill_ability, thrill_extra_cost])

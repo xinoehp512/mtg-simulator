@@ -42,6 +42,16 @@ class Tap_Cost:
     __repr__ = __str__
 
 
+class Discard_Cost:
+    def __init__(self, acceptance_function, name=""):
+        self.acceptance_function = acceptance_function
+        self.name = name
+
+    def __str__(self):
+        return self.name
+    __repr__ = __str__
+
+
 class Total_Cost:
     def __init__(self, costs, type=None):
         self.costs = costs  # TODO: Combine mana costs into one
@@ -59,6 +69,10 @@ class Total_Cost:
     @property
     def tap_cost(self):
         return [cost for cost in self.costs if isinstance(cost, Tap_Cost)]
+
+    @property
+    def discard_cost(self):
+        return [cost for cost in self.costs if isinstance(cost, Discard_Cost)]
 
     def reduce_by(self, other):
         mana_reduction = [mana_cost for cost in other.costs if isinstance(cost, Mana_Cost) for mana_cost in cost.mana_cost]

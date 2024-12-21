@@ -288,6 +288,17 @@ class Agent:
             payment.append(permanent_to_use)
         return payment
 
+    def choose_cards_to_pay(self, game, cards, cost):
+        payment = []
+        for use_cost in cost:
+            options = [card for card in cards if use_cost.acceptance_function(
+                card) and card not in payment]
+            if len(options) == 0:
+                return None
+            card_to_use = self.choose_one(options)
+            payment.append(card_to_use)
+        return payment
+
     def choose_targets(self, game, player, targets_required, source):
         targets = []
         user_display(game)

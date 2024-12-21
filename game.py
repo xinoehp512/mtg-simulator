@@ -1081,6 +1081,8 @@ class Game:
             self.player_activate_ability(player, ability)
 
     def player_pay_cost(self, player, cost):
+        if not isinstance(player, Player) or not isinstance(player.agent, Agent):
+            raise Exception("Incorrect Arguments")
         mana_cost = [mana_sym for mana_cost in cost.mana_cost for mana_sym in mana_cost.mana_cost]
         if len(mana_cost) > 0:
             self.player_activate_mana(player, cost)
@@ -1099,11 +1101,18 @@ class Game:
         if permanents_to_sacrifice is None:
             return False
 
+        discard_cost = cost.discard_cost
+        cards_to_discard = player.agent.choose_cards_to_pay(self, player.hand.objects, discard_cost)
+        if cards_to_discard is None:
+            return False
+
         player.mana_pool.remove(mana_to_pay)
         for permanent in permanents_to_tap:
             self.tap(permanent)
         for permanent in permanents_to_sacrifice:
             self.sacrifice(player, permanent)
+        for card in cards_to_discard:
+            self.player_discard_card(player, card)
         return True
 
     def player_choose_targets(self, player, targets_required, source=None):
