@@ -719,6 +719,8 @@ sower_of_chaos_activated = Activated_Ability("{2R}: Target creature can't block 
 squad_rallier_activated = Activated_Ability("{2W}: Seek 4 for a creature card with power 2 or less.", Total_Cost([
                                             Mana_Cost.from_string("2W")]), squad_rallier_effect, SingleMode(None))
 strix_loot = Activated_Ability("{1U}{T}: Loot.", Total_Cost([Mana_Cost.from_string("1U"), tap_self]), loot, SingleMode(None))
+treetop_snarespinner_activated = Activated_Ability("{2G}: Put a +1/+1 counter on target creature you control. Activate as a sorcery.", Total_Cost([
+                                                   Mana_Cost.from_string("2G")]), put_counter, SingleMode([creature_you_control_target]), activation_restrictions=[ActivationRestrictionType.SORCERY])
 
 enters_tapped_replacement = Replacement_Effect(replace_enters, enters_tapped)
 rakdos_land_ability = Activated_Ability("{T}: Add {B} or {R}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.BLACK, ManaType.RED), SingleMode(
@@ -737,6 +739,8 @@ izzet_land_ability = Activated_Ability("{T}: Add {U} or {R}", Total_Cost([tap_se
     None), is_mana_ability=True, mana_produced=[ManaType.BLUE, ManaType.RED])
 simic_land_ability = Activated_Ability("{T}: Add {G} or {U}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.GREEN, ManaType.BLUE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.BLUE])
+azorius_land_ability = Activated_Ability("{T}: Add {W} or {U}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.WHITE, ManaType.BLUE), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLUE])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))

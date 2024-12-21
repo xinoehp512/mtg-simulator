@@ -165,3 +165,6 @@ thornwood_falls = Card("Thornwood Falls", None, [CardType.LAND], [enters_tapped_
 thrill_of_possibility = Card("Thrill of Possibility", "1R", [CardType.INSTANT], [thrill_ability, thrill_extra_cost])
 tolarian_terror = Card("Tolarian Terror", "6U", [CardType.CREATURE, CreatureType.SERPENT],
                        [tolarian_cost_reduction, ward("2")], power=5, toughness=5)
+tranquil_cove = Card("Tranquil Cove", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, azorius_land_ability])
+treetop_snarespinner = Card("Treetop Snarespinner", "3G", [CardType.CREATURE, CreatureType.SPIDER], [
+                            reach, deathtouch, treetop_snarespinner_activated], power=1, toughness=4)
