@@ -2,6 +2,7 @@
 import random
 from ability_stack_object import Ability_Stack_Object
 from action import Action
+from activated_ability import Activated_Ability
 from cost import Total_Cost
 from agent import Agent
 from canvas import Text_Canvas
@@ -529,9 +530,18 @@ class Game:
         triggered_abilities = self.get_triggered_abilities()
         if isinstance(event, Permanent_Died_Event):
             triggered_abilities.extend(event.permanent.triggered_abilities)
-        for ability in triggered_abilities:
-            if ability.is_triggered_by(self, event):
-                self.triggers_waiting.append(ability.get_trigger(event))
+        for triggered_ability in triggered_abilities:
+            temp = []
+            if isinstance(event, Permanent_Died_Event):  # TODO: More elegant way to do this?
+                for ability in event.permanent.card.abilities:
+                    temp.append((ability, ability.object))
+                    ability.object = event.permanent
+            if triggered_ability.is_triggered_by(self, event):
+                self.triggers_waiting.append(triggered_ability.get_trigger(event))
+            if isinstance(event, Permanent_Died_Event):
+                for ability, object in temp:
+                    ability.object = object
+
         for listener in self.listeners:
             if listener.dead:
                 continue

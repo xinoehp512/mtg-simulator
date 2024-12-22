@@ -16,17 +16,18 @@ class Triggered_Ability:
         return False
 
     def get_trigger(self, event):
-        return Trigger_Instance(self, self.object.controller, event)
+        return Trigger_Instance(self, self.object.controller, event, self.object)
 
     def copy(self):
         return Triggered_Ability(self.trigger_function, self.mode_choice, self.result_function, intervening_if_conditional=self.intervening_if_conditional, functions_in=self.functions_in)
 
 
 class Trigger_Instance:
-    def __init__(self, ability, controller, event):
+    def __init__(self, ability, controller, event, object):
         self.ability = ability
         self.controller = controller
         self.event = event
+        self.object = object
 
     @property
     def mode_choice(self):
@@ -39,10 +40,6 @@ class Trigger_Instance:
     @property
     def result_function(self):
         return self.ability.result_function
-
-    @property
-    def object(self):
-        return self.ability.object
 
     @property
     def intervening_if_conditional(self):

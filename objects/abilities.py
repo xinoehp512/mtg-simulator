@@ -530,6 +530,15 @@ def trigger_on_lifegain(game, event, object):
 def trigger_on_first_lifegain(game, event, object):
     return isinstance(event, Lifegain_Event) and event.player == object.controller and event.player.life_gained_this_turn == event.amount
 
+
+def trigger_on_etb_or_death(game, event, object):
+    if isinstance(event, Permanent_Enter_Event):
+        pass
+    if isinstance(event, Permanent_Died_Event):
+        if event.permanent == object:
+            pass
+    return (isinstance(event, Permanent_Enter_Event) or isinstance(event, Permanent_Died_Event)) and event.permanent == object
+
 # Replacement Effects
 
 
@@ -726,6 +735,7 @@ soul_shackled_etb = Triggered_Ability(trigger_on_etb, SingleMode([soul_shackled_
 spitfire_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), deal_1_to_opponents)
 soulcaller_etb = Triggered_Ability(trigger_on_etb, SingleMode([soulcaller_target]), soulcaller_effect)
 vanguard_seraph_trigger = Triggered_Ability(trigger_on_first_lifegain, SingleMode(None), surveil(1))
+thespian_etb_die = Triggered_Ability(trigger_on_etb_or_death, SingleMode(None), surveil(1))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -764,6 +774,8 @@ simic_land_ability = Activated_Ability("{T}: Add {G} or {U}", Total_Cost([tap_se
     None), is_mana_ability=True, mana_produced=[ManaType.GREEN, ManaType.BLUE])
 azorius_land_ability = Activated_Ability("{T}: Add {W} or {U}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.WHITE, ManaType.BLUE), SingleMode(
     None), is_mana_ability=True, mana_produced=[ManaType.WHITE, ManaType.BLUE])
+boros_land_ability = Activated_Ability("{T}: Add {R} or {W}", Total_Cost([tap_self]), add_x_or_y_mana(ManaType.RED, ManaType.WHITE), SingleMode(
+    None), is_mana_ability=True, mana_produced=[ManaType.RED, ManaType.WHITE])
 
 destroy_ability = Spell_Ability(destroy_permanent, SingleMode([nl_permanent_opp_control_target]))
 draw_card_ability = Spell_Ability(draw_card, SingleMode(None))

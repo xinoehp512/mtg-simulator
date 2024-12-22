@@ -173,3 +173,6 @@ vampire_soulcaller = Card("Vampire Soulcaller", "4B", [CardType.CREATURE, Creatu
                           flying, cant_block, soulcaller_etb], power=3, toughness=2)
 vanguard_seraph = Card("Vanguard Seraph", "3W", [CardType.CREATURE, CreatureType.ANGEL, CreatureType.WARRIOR], [
                        flying, vanguard_seraph_trigger], power=3, toughness=3)
+wary_thespian = Card("Wary Thespian", "1G", [CardType.CREATURE, CreatureType.CAT,
+                     CreatureType.DRUID], [thespian_etb_die], power=3, toughness=1)
+wind_scarred_crag = Card("Wind-Scarred Crag", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, boros_land_ability])
