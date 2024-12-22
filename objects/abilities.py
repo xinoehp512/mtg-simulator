@@ -453,6 +453,17 @@ def sure_strike_effect(game, controller, source, event, modes, targets):
     game.create_continuous_effect(effect)
     game.create_continuous_effect(ability_effect)
 
+
+def uncharted_voyage_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    position = target.owner.agent.choose_one(["Top", "Bottom"], message="Choose Top or Bottom: ")
+    if position == "Top":
+        position = 0
+    else:
+        position = -1
+    game.return_permanent_to_library(target, position)
+    game.player_surveil(controller, 1)
+
 # Triggers
 
 
@@ -771,6 +782,7 @@ stab_ability = Spell_Ability(shrink_x(2), SingleMode([creature_target]))
 sure_strike_ability = Spell_Ability(sure_strike_effect, SingleMode([creature_target]))
 think_twice_ability = Spell_Ability(draw_card, SingleMode(None))
 thrill_ability = Spell_Ability(draw_x(2), SingleMode(None))
+uncharted_voyage_ability = Spell_Ability(uncharted_voyage_effect, SingleMode([creature_target]))
 
 eaten_alive_extra_cost = Additional_Cost([Total_Cost([Mana_Cost.from_string("3B")]),
                                          Total_Cost([Sacrifice_Cost(lambda p, o: p.is_creature, name="Sacrifice a creature")])])

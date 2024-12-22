@@ -168,3 +168,4 @@ tolarian_terror = Card("Tolarian Terror", "6U", [CardType.CREATURE, CreatureType
 tranquil_cove = Card("Tranquil Cove", None, [CardType.LAND], [enters_tapped_replacement, gain_1_etb, azorius_land_ability])
 treetop_snarespinner = Card("Treetop Snarespinner", "3G", [CardType.CREATURE, CreatureType.SPIDER], [
                             reach, deathtouch, treetop_snarespinner_activated], power=1, toughness=4)
+uncharted_voyage = Card("Uncharted Voyage", "3U", [CardType.INSTANT], [uncharted_voyage_ability])

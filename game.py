@@ -775,6 +775,15 @@ class Game:
         owner = permanent.owner
         owner.hand.add_objects([Hand_Object(permanent.card)])
 
+    def return_permanent_to_library(self, permanent, position):
+        self.battlefield.remove(permanent)
+        permanent.is_alive = False
+        owner = permanent.owner
+        if position == -1:
+            owner.library.add_objects_to_bottom([permanent.card])
+        else:
+            owner.library.add_object_at_position(permanent.card, position)
+
     def return_gravecard_to_battlefield(self, controller, grave_card, modify_function=None):
         grave_card.owner.graveyard.remove(grave_card)
         grave_card.is_alive = False
