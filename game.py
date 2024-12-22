@@ -851,6 +851,7 @@ class Game:
 
     def player_gain_life(self, player, amount):
         player.life += amount
+        player.life_gained_this_turn += amount
         event = Lifegain_Event(player, amount)
         self.check_event_for_triggers(event)
 

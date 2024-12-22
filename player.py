@@ -25,6 +25,7 @@ class Player(Damageable_Object):
         self.lands_played_this_turn = 0
         self.cards_drawn_this_turn = 0
         self.attacked_this_turn = False
+        self.life_gained_this_turn = 0
 
         self.decked = False
 
@@ -53,6 +54,7 @@ class Player(Damageable_Object):
         self.lands_played_this_turn = 0
         self.cards_drawn_this_turn = 0
         self.attacked_this_turn = False
+        self.life_gained_this_turn = 0
 
     def __str__(self):
         return self.name

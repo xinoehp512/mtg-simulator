@@ -169,3 +169,7 @@ tranquil_cove = Card("Tranquil Cove", None, [CardType.LAND], [enters_tapped_repl
 treetop_snarespinner = Card("Treetop Snarespinner", "3G", [CardType.CREATURE, CreatureType.SPIDER], [
                             reach, deathtouch, treetop_snarespinner_activated], power=1, toughness=4)
 uncharted_voyage = Card("Uncharted Voyage", "3U", [CardType.INSTANT], [uncharted_voyage_ability])
+vampire_soulcaller = Card("Vampire Soulcaller", "4B", [CardType.CREATURE, CreatureType.VAMPIRE, CreatureType.WARLOCK], [
+                          flying, cant_block, soulcaller_etb], power=3, toughness=2)
+vanguard_seraph = Card("Vanguard Seraph", "3W", [CardType.CREATURE, CreatureType.ANGEL, CreatureType.WARRIOR], [
+                       flying, vanguard_seraph_trigger], power=3, toughness=3)

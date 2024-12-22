@@ -464,6 +464,10 @@ def uncharted_voyage_effect(game, controller, source, event, modes, targets):
     game.return_permanent_to_library(target, position)
     game.player_surveil(controller, 1)
 
+
+def soulcaller_effect(game, controller, source, event, modes, targets):
+    target = targets[0].object
+    game.return_gravecard_to_hand(target)
 # Triggers
 
 
@@ -521,6 +525,10 @@ def trigger_on_second_card(game, event, object):
 
 def trigger_on_lifegain(game, event, object):
     return isinstance(event, Lifegain_Event) and event.player == object.controller
+
+
+def trigger_on_first_lifegain(game, event, object):
+    return isinstance(event, Lifegain_Event) and event.player == object.controller and event.player.life_gained_this_turn == event.amount
 
 # Replacement Effects
 
@@ -622,7 +630,7 @@ creature_planeswalker_target = TargetWord([ObjectType.PERMANENT],
 opt_two_other_creatures_you_control_target = TargetWord([ObjectType.PERMANENT],
                                                         lambda g, t, p, s: t.is_creature and t.controller == p and t != s, "up to two target creatures", number=2, is_optional=True)
 opt_two_creature_your_gravecards = TargetWord([ObjectType.GRAVE_CARD],
-                                              lambda g, t, p, s: t.owner == p, "up to two cards from your graveyard", number=2, is_optional=True)
+                                              lambda g, t, p, s: t.owner == p and t.is_creature, "up to two creature cards from your graveyard", number=2, is_optional=True)
 make_your_move_target = TargetWord([ObjectType.PERMANENT],
                                    lambda g, t, p, s: (t.is_artifact or t.is_enchantment or (t.is_creature and t.power >= 4)), "target artifact, enchantment, or creature with power 4 or greater")
 opponent_target = TargetWord([ObjectType.PLAYER],
@@ -633,6 +641,8 @@ run_away_target = TargetWord([ObjectType.PERMANENT],
                              lambda g, t, p, s: t.is_creature, "two target creatures controlled by different players", number=2, total_req_function=lambda w: w[0].object.controller != w[1].object.controller)
 soul_shackled_target = TargetWord([ObjectType.GRAVE_CARD],
                                   lambda g, t, p, s: True, "up to two target cards from a single graveyard", number=2, total_req_function=lambda w: len(w) < 2 or w[0].object.owner == w[1].object.owner, is_optional=True)
+soulcaller_target = TargetWord([ObjectType.GRAVE_CARD],
+                               lambda g, t, p, s: t.owner == p and t.is_creature, "target creature card from your graveard")
 
 plains_ability = Activated_Ability("{T}: Add {W}", Total_Cost([tap_self]),
                                    add_one_white_mana, SingleMode(None), is_mana_ability=True, mana_produced=[ManaType.WHITE])
@@ -714,6 +724,8 @@ prideful_parent_etb = Triggered_Ability(trigger_on_etb, SingleMode(None), make_c
 syphoner_attack = Triggered_Ability(trigger_on_attack, SingleMode(None), drain_opponents_1)
 soul_shackled_etb = Triggered_Ability(trigger_on_etb, SingleMode([soul_shackled_target]), soul_shackled_effect)
 spitfire_landfall = Triggered_Ability(trigger_on_landfall, SingleMode(None), deal_1_to_opponents)
+soulcaller_etb = Triggered_Ability(trigger_on_etb, SingleMode([soulcaller_target]), soulcaller_effect)
+vanguard_seraph_trigger = Triggered_Ability(trigger_on_first_lifegain, SingleMode(None), surveil(1))
 
 axgard_cavalry_tap = Activated_Ability("{T}: Target creature gains haste until end of turn.",
                                        Total_Cost([tap_self]), give_haste, SingleMode([creature_target]))
@@ -791,17 +803,22 @@ thrill_extra_cost = Additional_Cost([Total_Cost([Discard_Cost(lambda c: True, na
 gnarlid_kicked_enters = Replacement_Effect(replace_enters_if_kicked, enters_counters(2))
 goblin_boarders_enters = Replacement_Effect(replace_enters_if_raid, enters_counters(1))
 
+
+def is_equipped_creature(p, o): return o.attached_permanent == p
+
+
 gnarlid_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.STATIC, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [trample]))
-goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, lambda p, o: o.attached_permanent == p, 1, 1))
+goldvein_equip_buff = Static_Ability(PT_Effect(EffectDuration.STATIC, is_equipped_creature, 1, 1))
 paladin_self_anthem = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: p == o, [first_strike]))
 paladin_counter_lord = Static_Ability(Ability_Grant_Effect(
     EffectDuration.YOUR_TURN, lambda p, o: p.counters.get(CounterType.P1P1, 0) > 0, [first_strike]))
 mocking_sprite_discount = Static_Ability(Cost_Modification_Effect(
     EffectDuration.STATIC, lambda s: s.is_instant or s.is_sorcery, Total_Cost([Mana_Cost.from_string("1")]), True))
-katana_equip_buff_1 = Static_Ability(PT_Effect(EffectDuration.YOUR_TURN, lambda p,
-                                     o: o.attached_permanent == p, 2, 0))  # TODO: Combine these effects into one
-katana_equip_buff_2 = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, lambda p, o: o.attached_permanent == p, [first_strike]))
+katana_equip_buff_1 = Static_Ability(PT_Effect(EffectDuration.YOUR_TURN, is_equipped_creature, 2, 0)
+                                     )  # TODO: Combine these effects into one
+katana_equip_buff_2 = Static_Ability(Ability_Grant_Effect(EffectDuration.YOUR_TURN, is_equipped_creature, [first_strike]))
+cant_block = Static_Ability(Block_Restriction_Effect(EffectDuration.STATIC, lambda p, o: p == o))
 
 # luminous_cost_reduction = Cost_Modification(targets_tapped_creature, Total_Cost([Mana_Cost.from_string("3")]), True)
 luminous_cost_reduction = Cost_Modification(luminous_cost_calculation, True)
